@@ -61,6 +61,17 @@
 - [x] `docs/OPERATOR_RUNBOOK.md` — 人工操作手册：环境自检、创建/查看/校验/派发/完成任务、查看审计、force 覆盖规则、禁止事项、进入真实 ACP 执行的条件。
 - [x] 更新 `README.md` 与 `PROJECT_PLAN.md` 加入新脚本说明。
 
+### 前置安全闸第三块（已验收，2026-06-17）
+
+- [x] `scripts/dispatch_task.py` preflight — 完整派工前校验（validate_task → agent 校验 → policies 加载）
+- [x] `config/policies.json` 新增约束字段（maxRuntimeMinutes / maxOutputKB / allowedPaths）
+- [x] `scripts/audit_log.py` environment 字段支持 — 区分测试/正式环境
+- [x] 4 处 code review 修复（main 顺序、中文编码、硬编码序号、sys.path 清理）
+
+### 前置安全闸第四块（已验收，2026-06-18）
+
+- [x] `scripts/show_history.py` — 历史任务查询与统计报表。支持按状态/assignee/日期/优先级过滤，支持 `--report` 报表模式与 `--json` 输出。仅标准库，只读不写。由 CodeWhale 实现，胖小 code review 通过。
+
 ### 待实现
 
 - [ ] 根据需求启用第二个 Agent（仍保持 ext 席位多数 disabled）
