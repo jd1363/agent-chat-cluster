@@ -14,7 +14,7 @@
       "id": "agent-ext-01",
       "role": "external",
       "type": "extension",
-      "enabled": false,
+      "enabled": true,
       "cwd": "agents/ext/ext01",
       "riskLevel": "medium",
       "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
