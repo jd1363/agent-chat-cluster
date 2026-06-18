@@ -23,6 +23,7 @@
 11. [禁止事项](#11-禁止事项)
 12. [消息总线操作](#12-消息总线操作)
 13. [何时可以进入真实 ACP 执行](#13-何时可以进入真实-acp-执行)
+14. [Agent 执行任务拆分原则](#14-agent-执行任务拆分原则)
 
 ---
 
@@ -427,4 +428,57 @@ python scripts/list_messages.py --to agent-ext-01 --status sent --json
 
 ---
 
-*文档版本：Phase2-v1.0*
+*文档版本：Phase2-v1.1（新增第14节：任务拆分原则）*
+
+---
+
+## 14. Agent 执行任务拆分原则
+
+> **背景**：OpenClaw exec 工具有超时限制，单次命令超过阈值会收到 SIGKILL 信号（Windows 下为 TerminateProcess）。大任务如果不拆碎，会被强制中断，已完成的工作可能丢失。
+
+### 核心原则
+
+**每个子任务控制在 10 分钟以内。**
+
+> 大任务 → 拆成 10 分钟以内的子任务 → 分别派工 → 各自 commit → 接续完成
+
+### 何时必须拆分
+
+| 任务类型 | 预估耗时 | 处理方式 |
+|:---|:---|:---|
+| 单一脚本修改 | <10 分钟 | 单次派工 |
+| 多文件修改（>3个） | >10 分钟 | 按文件/模块拆成多个子任务 |
+| 新脚本 + 修改已有文件 | >10 分钟 | 分两次：先写新脚本，再改旧文件 |
+| 文档批量更新 | >10 分钟 | 按章节/文件拆 |
+| 需要 read→analyze→write 循环 | >10 分钟 | 每轮循环单独派工 |
+
+### 拆分示例
+
+❌ 一次派工（易 SIGKILL）：
+> "修改 scripts/send_message.py、增加 scripts/broadcast.py、增加 scripts/resend_unacked.py，然后 git add + commit"
+
+✅ 分三次派工（各 <10 分钟）：
+> 1. "修改 scripts/send_message.py，支持 --to all 多播参数，不要 git commit"
+> 2. "新增 scripts/broadcast.py，调用 send_message.py 的 send_broadcast()，不要 git commit"
+> 3. "新增 scripts/resend_unacked.py，实现超时重发逻辑，然后 git add + commit"
+
+### SIGKILL 后如何接续
+
+1. 检查 git status，看看哪些文件被改动了
+2. 用 `git diff` 查看改动是否完整
+3. 完整则手动 git add + commit；不完整则基于已有改动继续补完
+4. 记录 SIGKILL 发生点，下一次派工时将任务拆得更细
+
+### 任务描述规范
+
+每个派工任务描述必须包含：
+- **做什么**：明确文件/函数/功能
+- **做到什么程度**：可验收的标准
+- **不做什么**：明确排除范围（如"不要 git commit"）
+- **完成后报告**：列出改动的文件和关键逻辑
+
+### 与 cron job 的区分
+
+- **需要人工交互/判断的任务** → 用 sessions_spawn 派给 Agent
+- **纯后台定时任务（如 auto-snapshot）** → 用 cron job，不占用 exec 时间预算
+
