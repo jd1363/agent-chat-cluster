@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0",
+  "policies": {
+    "communication": {
+      "globalBroadcast": {
+        "allowed": false,
+        "reason": "MVP 阶段禁止全局广播，仅支持主控到单 Agent 点对点通信。",
+        "overrideRequires": ["manualApproval", "auditLog"]
+      },
+      "autoOutbound": {
+        "allowed": false,
+        "reason": "禁止 Agent 自动发起外部网络请求，防止信息泄漏与不可控副作用。",
+        "overrideRequires": ["manualApproval", "whitelistReview"]
+      }
+    },
+    "execution": {
+      "autoSelfHeal": {
+        "allowed": false,
+        "reason": "禁止自动自愈。任何修复动作需人工确认或明确的审批工作流。",
+        "overrideRequires": ["manualApproval", "rollbackPlan"]
+      },
+      "dangerousCommands": {
+        "allowed": false,
+        "reason": "默认禁止执行 rm -rf /、format、fdisk、regedit 等危险命令。",
+        "overrideRequires": ["manualApproval", "sandboxValidation"]
+      },
+      "maxConcurrency": {
+        "value": 1,
+        "reason": "MVP 阶段最大并发为 1，确保主控对单 Agent 的完全可控。"
+      },
+      "maxRetries": {
+        "value": 1,
+        "reason": "失败任务最多重试 1 次，之后转人工复核，防止无限循环。"
+      },
+      "maxRuntimeMinutes": {
+        "value": 30,
+        "reason": "单次任务最大运行时间 30 分钟，防止僵尸任务耗尽资源。"
+      },
+      "maxOutputKB": {
+        "value": 1024,
+        "reason": "单次任务输出上限 1024 KB，防止日志爆炸。"
+      },
+      "allowedPaths": {
+        "value": ["scripts/", "tasks/", "logs/", "config/", "docs/"],
+        "reason": "Agent 只允许在指定目录内读写，防止越权访问。"
+      }
+    },
+    "audit": {
+      "logAllCommands": true,
+      "logRetentionDays": 30,
+      "notes": "所有主控下发的指令与 Agent 返回结果必须记录到 logs/audit。"
+    }
+  }
+}

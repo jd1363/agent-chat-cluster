@@ -1,0 +1,26 @@
+{"timestamp": "2026-06-14T07:00:13.293576+00:00", "eventType": "task_created", "taskId": "Task-001", "message": "创建任务: 阶段1测试任务", "data": {"priority": "high"}}
+{"timestamp": "2026-06-14T07:00:17.317389+00:00", "eventType": "task_dispatched", "taskId": "Task-001", "message": "任务已派发至 agent-exec-01", "data": {"assignee": "agent-exec-01", "dispatchFile": "logs\\runs\\Task-001_dispatch.md"}}
+{"timestamp": "2026-06-14T07:00:24.682627+00:00", "eventType": "task_blocked", "taskId": "Task-001", "message": "任务标记为 blocked。摘要: 测试阻塞流程", "data": {"summary": "测试阻塞流程", "output": "logs/runs/Task-001_report.md"}}
+{"timestamp": "2026-06-14T07:00:27.937405+00:00", "eventType": "task_created", "taskId": "Task-002", "message": "创建任务: 阶段1测试任务2", "data": {"priority": "medium"}}
+{"timestamp": "2026-06-14T07:00:30.734466+00:00", "eventType": "task_dispatched", "taskId": "Task-002", "message": "任务已派发至 agent-exec-01", "data": {"assignee": "agent-exec-01", "dispatchFile": "logs\\runs\\Task-002_dispatch.md"}}
+{"timestamp": "2026-06-14T07:00:33.560960+00:00", "eventType": "task_completed", "taskId": "Task-002", "message": "任务标记为 done。摘要: 测试完成流程，一切正常", "data": {"summary": "测试完成流程，一切正常", "output": null}}
+{"timestamp": "2026-06-14T07:00:37.105072+00:00", "eventType": "test", "taskId": "TEST-PHASE1", "message": "阶段1最小测试完成"}
+{"timestamp": "2026-06-14T07:02:20.553454+00:00", "eventType": "task_created", "taskId": "Task-001", "message": "创建任务: 验收阶段1闭环", "data": {"priority": "high"}}
+{"timestamp": "2026-06-14T07:02:23.955536+00:00", "eventType": "task_dispatched", "taskId": "Task-001", "message": "任务已派发至 agent-exec-01", "data": {"assignee": "agent-exec-01", "dispatchFile": "logs\\runs\\Task-001_dispatch.md"}}
+{"timestamp": "2026-06-14T07:02:30.244072+00:00", "eventType": "task_completed", "taskId": "Task-001", "message": "任务标记为 done。摘要: 阶段1闭环验收通过", "data": {"summary": "阶段1闭环验收通过", "output": "logs/runs/Task-001_dispatch.md"}}
+{"timestamp": "2026-06-14T07:53:38.378580+00:00", "eventType": "task_created", "taskId": "Task-001", "message": "创建任务: hotfix pending direct complete should fail", "data": {"priority": "high"}}
+{"timestamp": "2026-06-14T07:53:45.251268+00:00", "eventType": "task_dispatched", "taskId": "Task-001", "message": "任务已派发至 agent-exec-01", "data": {"assignee": "agent-exec-01", "dispatchFile": "logs\\runs\\Task-001_dispatch.md"}}
+{"timestamp": "2026-06-14T07:53:49.259061+00:00", "eventType": "task_completed", "taskId": "Task-001", "message": "任务标记为 done。摘要: hotfix normal flow passed", "data": {"previousStatus": "in_progress", "newStatus": "done", "summary": "hotfix normal flow passed", "output": null, "force": false}}
+{"timestamp": "2026-06-14T07:53:53.052062+00:00", "eventType": "task_created", "taskId": "Task-002", "message": "创建任务: hotfix force audit test", "data": {"priority": "low"}}
+{"timestamp": "2026-06-14T07:53:56.717681+00:00", "eventType": "task_blocked", "taskId": "Task-002", "message": "任务标记为 blocked。摘要: force override test", "data": {"previousStatus": "pending", "newStatus": "blocked", "summary": "force override test", "output": null, "force": true}}
+{"timestamp": "2026-06-14T08:51:57.333881+00:00", "eventType": "task_created", "taskId": "Task-001", "message": "创建任务: valid assignee dispatch test", "data": {"priority": "high"}}
+{"timestamp": "2026-06-14T08:51:59.315509+00:00", "eventType": "task_dispatched", "taskId": "Task-001", "message": "任务已派发至 agent-exec-01", "data": {"assignee": "agent-exec-01", "dispatchFile": "logs\\runs\\Task-001_dispatch.md"}}
+{"timestamp": "2026-06-14T08:52:04.434325+00:00", "eventType": "task_created", "taskId": "Task-001", "message": "创建任务: invalid assignee dispatch test", "data": {"priority": "high"}}
+{"timestamp": "2026-06-14T08:53:42.102750+00:00", "eventType": "task_created", "taskId": "Task-001", "message": "创建任务: manager validation legal dispatch", "data": {"priority": "high"}}
+{"timestamp": "2026-06-14T08:53:45.774931+00:00", "eventType": "task_dispatched", "taskId": "Task-001", "message": "任务已派发至 agent-exec-01", "data": {"assignee": "agent-exec-01", "dispatchFile": "logs\\runs\\Task-001_dispatch.md"}}
+{"timestamp": "2026-06-14T08:53:53.275759+00:00", "eventType": "task_created", "taskId": "Task-001", "message": "创建任务: manager validation bad assignee", "data": {"priority": "medium"}}
+{"timestamp": "2026-06-14T09:57:18.109245+00:00", "eventType": "task_created", "taskId": "Task-001", "message": "创建任务: 测试任务A_环境检查", "data": {"priority": "high"}}
+{"timestamp": "2026-06-14T09:57:21.781631+00:00", "eventType": "task_created", "taskId": "Task-002", "message": "创建任务: test_B_docs", "data": {"priority": "medium"}}
+{"timestamp": "2026-06-14T09:57:22.238225+00:00", "eventType": "task_created", "taskId": "Task-003", "message": "创建任务: test_C_verify", "data": {"priority": "low"}}
+{"timestamp": "2026-06-14T09:57:29.582157+00:00", "eventType": "task_dispatched", "taskId": "Task-001", "message": "任务已派发至 agent-exec-01", "data": {"assignee": "agent-exec-01", "dispatchFile": "logs\\runs\\Task-001_dispatch.md"}}
+{"timestamp": "2026-06-14T09:57:30.040352+00:00", "eventType": "task_completed", "taskId": "Task-002", "message": "任务标记为 done。摘要: test force complete from pending to done", "data": {"previousStatus": "pending", "newStatus": "done", "summary": "test force complete from pending to done", "output": null, "force": true}}

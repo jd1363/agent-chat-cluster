@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "nextId": 3,
+  "tasks": [
+    {
+      "id": "Task-001",
+      "title": "测试 policies 读取",
+      "status": "in_progress",
+      "priority": "high",
+      "assignee": "agent-exec-01",
+      "createdAt": "2026-06-17T06:39:16.112564+00:00",
+      "updatedAt": "2026-06-17T06:53:14.594705+00:00",
+      "output": null,
+      "notes": ""
+    },
+    {
+      "id": "Task-002",
+      "title": "Code Review: dispatch_task.py + audit_log.py + policies.json (Block3)",
+      "status": "pending",
+      "priority": "high",
+      "assignee": null,
+      "createdAt": "2026-06-17T06:46:40.074689+00:00",
+      "updatedAt": "2026-06-17T06:46:40.074689+00:00",
+      "output": null,
+      "notes": ""
+    }
+  ]
+}
