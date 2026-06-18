@@ -81,6 +81,20 @@ python scripts/review_command.py --agent-id agent-ext-01 --command "pip install 
 python scripts/benchmark_pipeline.py
 python scripts/benchmark_pipeline.py --mode lifecycle
 python scripts/benchmark_pipeline.py --mode agent --json
+
+# 消息总线（阶段 2，轻量级主控→Agent 消息传递）
+python scripts/send_message.py --to agent-ext-01 --message "check config"
+python scripts/send_message.py --to agent-ext-01 --message "task dispatched" --json
+
+# 接收消息（获取最新未读消息）
+python scripts/receive_message.py --agent-id agent-ext-01
+python scripts/receive_message.py --agent-id agent-ext-01 --mark-read --json
+
+# 查看消息历史（支持按收件人/发送者/状态/日期过滤）
+python scripts/list_messages.py
+python scripts/list_messages.py --to agent-ext-01
+python scripts/list_messages.py --status sent --since 2026-06-18
+python scripts/list_messages.py --json
 ```
 
 ## 项目结构
@@ -108,6 +122,9 @@ python scripts/benchmark_pipeline.py --mode agent --json
 | `scripts/suggest_assignee.py` | 任务分配策略引擎：round-robin / load / specialist | 阶段 2 扩容，只读不写 |
 | `scripts/review_command.py` | 命令风险审批：REJECTED/NEEDS_REVIEW/APPROVED | 阶段 2 安全闸，只读不写 |
 | `scripts/benchmark_pipeline.py` | 性能基线报告：状态分布/流水线瓶颈/Agent 负载 | 阶段 2 基线，只读不写 |
+| `scripts/send_message.py` | 主控向已启用 Agent 发送消息，写入每日 JSONL 日志 | 阶段 2 消息总线，只写 |
+| `scripts/receive_message.py` | Agent 获取最新未读消息，支持标记为已读 | 阶段 2 消息总线，只读 |
+| `scripts/list_messages.py` | 查询消息历史，支持按收件人/发送者/状态/日期过滤 | 阶段 2 消息总线，只读 |
 
 ## 注意事项
 

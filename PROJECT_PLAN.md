@@ -83,7 +83,7 @@
 ### 待实现
 
 - [x] 引入任务分配策略（轮询 / 负载 / 专岗）— `scripts/suggest_assignee.py` 已验收（CodeWhale，2026-06-18）
-- [ ] 评估是否引入轻量级"消息总线"（非群聊，仅主控转发）
+- [x] 评估是否引入轻量级"消息总线"（非群聊，仅主控转发）— ✅ 已完成（2026-06-18）
 - [x] 人工审批节点 — `scripts/review_command.py` 已验收（Codex，2026-06-18）
 - [x] 性能基线 — `scripts/benchmark_pipeline.py` 已验收（Codex，2026-06-18）
 

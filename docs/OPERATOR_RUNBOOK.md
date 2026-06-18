@@ -19,9 +19,10 @@
 7. [完成任务](#7-完成任务)
 8. [查看审计日志](#8-查看审计日志)
 9. [性能基线](#9-性能基线)
-10. [force 覆盖规则](#10-force-覆盖规则)
+10. [force 覆盖规则](#11-force-覆盖规则)
 11. [禁止事项](#11-禁止事项)
-12. [何时可以进入真实 ACP 执行](#12-何时可以进入真实-acp-执行)
+12. [消息总线操作](#12-消息总线操作)
+13. [何时可以进入真实 ACP 执行](#13-何时可以进入真实-acp-执行)
 
 ---
 
@@ -293,7 +294,7 @@ python scripts/benchmark_pipeline.py --json
 
 ---
 
-## 10. 禁止事项
+## 11. 禁止事项
 
 以下行为**在任何阶段均禁止**：
 
@@ -321,7 +322,73 @@ python scripts/benchmark_pipeline.py --json
 
 ---
 
-## 11. 何时可以进入真实 ACP 执行
+## 12. 消息总线操作
+
+消息总线是主控向 Agent 发送指令的轻量通道（非群聊，仅点对点）。消息存储于 `logs/messages/YYYY-MM-DD.jsonl`，每条消息以 `MSG-XXXX` 格式自动编号，审计日志记录 `message_sent` 事件。
+
+### 发送消息
+
+```bash
+# 主控向 Agent 发送消息
+python scripts/send_message.py --to agent-ext-01 --message "check config"
+
+# JSON 输出（供脚本消费）
+python scripts/send_message.py --to agent-ext-01 --message "task dispatched" --json
+```
+
+**约束**：
+- 收件人必须在 `config/agents.json` 中存在且 `enabled=true`。
+- 消息写入当日 JSONL 文件，自动递增消息编号。
+- 审计日志自动记录（`message_sent` 事件）。
+
+### 接收消息
+
+```bash
+# Agent 获取最新未读消息
+python scripts/receive_message.py --agent-id agent-ext-01
+
+# 接收并标记为已读
+python scripts/receive_message.py --agent-id agent-ext-01 --mark-read
+
+# JSON 输出
+python scripts/receive_message.py --agent-id agent-ext-01 --json
+```
+
+说明：
+- 扫描所有历史消息文件，返回该 Agent 最新一条 `status!=read` 的消息。
+- `--mark-read` 会在日志末尾追加一条 `status=read` 的记录，不会修改原始发送记录。
+- 无未读消息时输出 `[INFO] No new messages`，不报错。
+
+### 查看消息历史
+
+```bash
+# 查看最近 20 条消息
+python scripts/list_messages.py
+
+# 按收件人过滤
+python scripts/list_messages.py --to agent-ext-01
+
+# 按发送者过滤
+python scripts/list_messages.py --from master
+
+# 按状态过滤
+python scripts/list_messages.py --status sent
+
+# 按日期下限过滤
+python scripts/list_messages.py --since 2026-06-18
+
+# 组合过滤 + JSON 输出
+python scripts/list_messages.py --to agent-ext-01 --status sent --json
+```
+
+说明：
+- 只读操作，扫描所有历史 JSONL 文件，按时间倒序返回。
+- 默认最多返回 20 条，使用 `--limit N` 可调整。
+- 过滤条件可任意组合。
+
+---
+
+## 13. 何时可以进入真实 ACP 执行
 
 在以下条件**全部满足**后，可考虑进入真实 ACP agent 执行：
 

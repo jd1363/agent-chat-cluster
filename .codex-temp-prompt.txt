@@ -1,0 +1,64 @@
+Create three new Python scripts for a lightweight message bus.
+
+Context:
+- Project at G:\agent-chat-cluster
+- config/agents.json has agents with id, enabled, riskLevel
+- scripts/audit_log.py is the audit logger
+- All existing scripts: stdlib-only, argparse, auto-locate project root, UTF-8
+
+Script 1: scripts/send_message.py — Master sends message to Agent
+
+Usage:
+  python scripts/send_message.py --to agent-ext-01 --message "check config"
+  python scripts/send_message.py --to agent-ext-01 --message "task dispatched" --json
+
+Behavior:
+- Validate --to agent exists and enabled=true in agents.json
+- Generate message ID: MSG-NNNN, persist nextMsgId in logs/messages/.state
+- Write message to logs/messages/YYYY-MM-DD.jsonl:
+  {"id":"MSG-0001","from":"master","to":"agent-ext-01","content":"...","timestamp":"...","status":"sent"}
+- Auto-call audit_log.py with event-type="message_sent"
+- Output human-readable or JSON
+
+Script 2: scripts/receive_message.py — Agent receives message
+
+Usage:
+  python scripts/receive_message.py --agent-id agent-ext-01
+  python scripts/receive_message.py --agent-id agent-ext-01 --mark-read
+  python scripts/receive_message.py --agent-id agent-ext-01 --json
+
+Behavior:
+- Find latest message to this agent with status != "read"
+- If --mark-read, update status to "read" by appending new line with updated status
+- Output the message or "[INFO] No new messages"
+
+Script 3: scripts/list_messages.py — Message history query
+
+Usage:
+  python scripts/list_messages.py
+  python scripts/list_messages.py --to agent-ext-01
+  python scripts/list_messages.py --from master
+  python scripts/list_messages.py --status sent
+  python scripts/list_messages.py --since 2026-06-18 --json
+
+Behavior:
+- Read all logs/messages/*.jsonl
+- Filter by --to, --from, --status, --since (YYYY-MM-DD)
+- Sort by timestamp desc, default limit 20 (--limit N)
+- Output human table or JSON
+
+Constraints for ALL three:
+- Python stdlib only
+- Auto-locate project root
+- argparse CLI
+- UTF-8, sys.exit(1) on errors
+- Create logs/messages/ on first use
+- Reference existing scripts for style
+
+After writing, verify:
+1. python scripts/send_message.py --help
+2. python scripts/receive_message.py --help
+3. python scripts/list_messages.py --help
+4. python scripts/send_message.py --to agent-ext-01 --message "test msg" --json
+5. python scripts/receive_message.py --agent-id agent-ext-01 --json
+6. python scripts/list_messages.py --json

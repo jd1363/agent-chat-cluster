@@ -1,1 +1,3 @@
 {"id": "MSG-0001", "from": "master", "to": "agent-ext-01", "content": "test msg", "timestamp": "2026-06-18T03:48:39.911127+00:00", "status": "sent"}
+{"id": "MSG-0002", "from": "master", "to": "agent-ext-01", "content": "【巡检任务】请确认当前工作目录状态，执行后回报。", "timestamp": "2026-06-18T11:05:55.039582+00:00", "status": "sent"}
+{"id": "MSG-0002", "from": "master", "to": "agent-ext-01", "content": "【巡检任务】请确认当前工作目录状态，执行后回报。", "timestamp": "2026-06-18T11:06:06.013853+00:00", "status": "read"}
