@@ -76,11 +76,13 @@
 
 - [x] `scripts/test_isolation.py` — Agent 环境隔离校验。检查 cwd 目录存在性、cwd 在项目根目录内、cwd 之间互不重叠、allowedPaths 越界风险、模拟路径边界检查（内部/跨 Agent/逃逸）。由 CodeWhale 实现，胖小验收。修复 `agents/resident/exec01` 缺失目录。
 
+### 启用第二个 Agent（已验收，2026-06-18）
+
+- [x] `agent-ext-01` 启用：`config/agents.json` enabled=true。由 CodeWhale 执行，`test_isolation.py` 验证两台 Agent 隔离全部通过。
+
 ### 待实现
 
-- [ ] 根据需求启用第二个 Agent（仍保持 ext 席位多数 disabled）
 - [ ] 引入任务分配策略（轮询 / 负载 / 专岗）
-- [ ] 验证 Agent 间文件隔离与 cwd 约束
 - [ ] 评估是否引入轻量级"消息总线"（非群聊，仅主控转发）
 - [ ] 人工审批节点：高危险命令需主控确认
 - [ ] 性能基线：在最大并发 1 的条件下评估瓶颈
