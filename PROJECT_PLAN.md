@@ -54,23 +54,12 @@
 - [x] `scripts/validate_task.py` — 校验台账完整性、ID 格式（Task-三位数字）、status/priority 合法性、assignee 是否存在于 `config/agents.json` 且 `enabled=true`。失败 exit 1，作为所有任务操作的前置安全闸。
 - [x] `scripts/dispatch_task.py` assignee 校验 — 在任何任务状态修改、派工文件写入、审计日志写入之前，校验 `--assignee` 参数对应的 Agent 是否存在于 `config/agents.json` 且 `enabled=true`。拒绝未启用或未注册的 assignee，任务保持 pending 状态不变。
 
-### 前置安全闸第二块（已验收）
+### 前置安全闸第二块（已实现，待验收）
 
 - [x] `scripts/list_tasks.py` — 只读查看任务台账。支持 `--status` `--assignee` `--json`，按 id 排序。不修改任何文件。
 - [x] `scripts/show_audit.py` — 只读查看审计日志。支持 `--date` `--task-id` `--event-type` `--limit` `--json`。不修改任何文件。
 - [x] `docs/OPERATOR_RUNBOOK.md` — 人工操作手册：环境自检、创建/查看/校验/派发/完成任务、查看审计、force 覆盖规则、禁止事项、进入真实 ACP 执行的条件。
 - [x] 更新 `README.md` 与 `PROJECT_PLAN.md` 加入新脚本说明。
-
-### 前置安全闸第三块（已验收，2026-06-17）
-
-- [x] `scripts/dispatch_task.py` preflight — 完整派工前校验（validate_task → agent 校验 → policies 加载）
-- [x] `config/policies.json` 新增约束字段（maxRuntimeMinutes / maxOutputKB / allowedPaths）
-- [x] `scripts/audit_log.py` environment 字段支持 — 区分测试/正式环境
-- [x] 4 处 code review 修复（main 顺序、中文编码、硬编码序号、sys.path 清理）
-
-### 历史任务查询（已完成，2026-06-18）
-
-- [x] `scripts/show_history.py` — 历史任务查询与统计报表。支持按状态/assignee/日期/优先级过滤，支持 `--report` 报表模式与 `--json` 输出。仅标准库，只读不写。
 
 ### 待实现
 
