@@ -72,6 +72,10 @@
 
 - [x] `scripts/show_history.py` — 历史任务查询与统计报表。支持按状态/assignee/日期/优先级过滤，支持 `--report` 报表模式与 `--json` 输出。仅标准库，只读不写。由 CodeWhale 实现，胖小 code review 通过。
 
+### 前置安全闸第五块（已验收，2026-06-18）
+
+- [x] `scripts/test_isolation.py` — Agent 环境隔离校验。检查 cwd 目录存在性、cwd 在项目根目录内、cwd 之间互不重叠、allowedPaths 越界风险、模拟路径边界检查（内部/跨 Agent/逃逸）。由 CodeWhale 实现，胖小验收。修复 `agents/resident/exec01` 缺失目录。
+
 ### 待实现
 
 - [ ] 根据需求启用第二个 Agent（仍保持 ext 席位多数 disabled）

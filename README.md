@@ -61,6 +61,10 @@ python scripts/show_history.py --history
 python scripts/show_history.py --status done,failed --since 2026-06-01
 python scripts/show_history.py --report
 python scripts/show_history.py --json --assignee agent-exec-01
+
+# Agent 环境隔离校验
+python scripts/test_isolation.py
+python scripts/test_isolation.py --json
 ```
 
 ## 项目结构
@@ -84,6 +88,7 @@ python scripts/show_history.py --json --assignee agent-exec-01
 | `scripts/list_tasks.py` | 只读查看任务列表，支持按 status/assignee 过滤，支持 JSON 输出 | 阶段 2 前置安全闸，只读不写 |
 | `scripts/show_audit.py` | 只读查看审计日志，支持按日期/任务/事件类型过滤，支持 JSON 输出 | 阶段 2 前置安全闸，只读不写 |
 | `scripts/show_history.py` | 历史任务查询与统计报表，支持按状态/assignee/日期/优先级过滤，支持 JSON 与报表模式 | 阶段 2 前置安全闸，只读不写 |
+| `scripts/test_isolation.py` | Agent 环境隔离校验：cwd 存在性/重叠/allowedPaths 越界/模拟路径边界检查 | 阶段 2 前置安全闸，只读不写 |
 
 ## 注意事项
 
