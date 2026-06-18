@@ -18,9 +18,10 @@
 6. [命令审批](#6-命令审批)
 7. [完成任务](#7-完成任务)
 8. [查看审计日志](#8-查看审计日志)
-9. [force 覆盖规则](#9-force-覆盖规则)
-10. [禁止事项](#10-禁止事项)
-11. [何时可以进入真实 ACP 执行](#11-何时可以进入真实-acp-执行)
+9. [性能基线](#9-性能基线)
+10. [force 覆盖规则](#10-force-覆盖规则)
+11. [禁止事项](#11-禁止事项)
+12. [何时可以进入真实 ACP 执行](#12-何时可以进入真实-acp-执行)
 
 ---
 
@@ -244,7 +245,34 @@ python scripts/show_audit.py --json
 
 ---
 
-## 9. force 覆盖规则
+## 9. 性能基线
+
+随时查看当前系统性能状况：
+
+```bash
+# 完整性能报告（默认）
+python scripts/benchmark_pipeline.py
+
+# 只看流水线瓶颈分析
+python scripts/benchmark_pipeline.py --mode lifecycle
+
+# 只看 Agent 负载
+python scripts/benchmark_pipeline.py --mode agent
+
+# JSON 输出（供脚本消费）
+python scripts/benchmark_pipeline.py --json
+```
+
+报告内容：
+- **状态分布**：各状态任务数及百分比、平均停留时间
+- **流水线瓶颈**：单任务预估耗时（265ms）、瓶颈阶段（dispatch=60ms）
+- **Agent 负载**：in_progress 数、理论吞吐量（约 13.6 任务/小时/Agent）、过载/空闲状态
+
+说明：只读分析，不修改任何文件。适合在派发任务前评估系统容量。
+
+---
+
+## 10. force 覆盖规则
 
 `--force` 是管理员人工覆盖状态机限制的机制，仅用于以下场景：
 

@@ -2,19 +2,21 @@
 
 本项目旨在构建一个受控的多智能体协作平台，由 OpenClaw 主会话/项目经理作为主控/管理员负责决策，OpenCode/ACP Agent 作为执行工程师负责执行，逐步验证安全策略、任务调度与命令管控。
 
+> **阶段 2 已完成**：双 Agent 启用、任务分配策略、命令审批节点、性能基线全部验收通过。
+
 ## MVP 范围（当前阶段）
 
-- **主控节点**：负责任务下发、状态跟踪、策略校验。
-- **单执行 Agent**：仅启用一个示例执行 Agent，验证主控→Agent 的单向命令通道。
+- **主控节点**：负责任务下发、状态跟踪、策略校验、命令审批。
+- **双 Agent 架构**：`agent-exec-01`（resident/low）+ `agent-ext-01`（ext/medium）。
 - **本地文件级任务台账**：`tasks/tasks.json` 记录任务生命周期。
 - **环境自检脚本**：`scripts/check_env.py` 快速验证目录、配置与基础命令可用性。
 - **任务协议与审计**：`docs/TASK_PROTOCOL.md` 定义派工与回报格式；`scripts/audit_log.py` 记录不可篡改审计日志。
-- **明确禁止的功能（阶段 0）**：
+- **明确禁止的功能（阶段 0-2）**：
   - 全局群聊 / 广播
   - 自动外发网络请求
   - 自动自愈（self-heal）
   - 高危险命令自动执行
-  - 多 Agent 并发
+  - 多 Agent 并发（当前最大并发 1）
 
 ## 快速开始
 
@@ -65,6 +67,20 @@ python scripts/show_history.py --json --assignee agent-exec-01
 # Agent 环境隔离校验
 python scripts/test_isolation.py
 python scripts/test_isolation.py --json
+
+# 任务分配策略（阶段 2）
+python scripts/suggest_assignee.py --title "测试 policies 读取"
+python scripts/suggest_assignee.py --task-id Task-001 --strategy load
+python scripts/suggest_assignee.py --title "Code Review" --json
+
+# 命令风险审批（阶段 2）
+python scripts/review_command.py --agent-id agent-exec-01 --command "python scripts/list_tasks.py"
+python scripts/review_command.py --agent-id agent-ext-01 --command "pip install numpy" --json
+
+# 性能基线（阶段 2）
+python scripts/benchmark_pipeline.py
+python scripts/benchmark_pipeline.py --mode lifecycle
+python scripts/benchmark_pipeline.py --mode agent --json
 ```
 
 ## 项目结构
@@ -89,6 +105,9 @@ python scripts/test_isolation.py --json
 | `scripts/show_audit.py` | 只读查看审计日志，支持按日期/任务/事件类型过滤，支持 JSON 输出 | 阶段 2 前置安全闸，只读不写 |
 | `scripts/show_history.py` | 历史任务查询与统计报表，支持按状态/assignee/日期/优先级过滤，支持 JSON 与报表模式 | 阶段 2 前置安全闸，只读不写 |
 | `scripts/test_isolation.py` | Agent 环境隔离校验：cwd 存在性/重叠/allowedPaths 越界/模拟路径边界检查 | 阶段 2 前置安全闸，只读不写 |
+| `scripts/suggest_assignee.py` | 任务分配策略引擎：round-robin / load / specialist | 阶段 2 扩容，只读不写 |
+| `scripts/review_command.py` | 命令风险审批：REJECTED/NEEDS_REVIEW/APPROVED | 阶段 2 安全闸，只读不写 |
+| `scripts/benchmark_pipeline.py` | 性能基线报告：状态分布/流水线瓶颈/Agent 负载 | 阶段 2 基线，只读不写 |
 
 ## 注意事项
 
