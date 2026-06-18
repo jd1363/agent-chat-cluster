@@ -106,6 +106,17 @@ def is_retry_candidate(record: dict) -> bool:
     return isinstance(record.get("id"), str)
 
 
+def acked_message_ids(records: list[dict]) -> set[str]:
+    acked: set[str] = set()
+    for record in records:
+        if record.get("from") != "system" or record.get("to") != "master":
+            continue
+        ack_for = record.get("ackFor")
+        if isinstance(ack_for, str) and ack_for:
+            acked.add(ack_for)
+    return acked
+
+
 def retry_or_fail(record: dict, now: datetime, dry_run: bool = False) -> dict | None:
     """Process one candidate record: retry (append a new sent) or mark failed.
 
@@ -163,8 +174,12 @@ def resend_unacked(timeout_minutes: int, dry_run: bool = False) -> list[dict]:
     now = datetime.now(timezone.utc)
     cutoff = now - timedelta(minutes=timeout_minutes)
     updated_records: list[dict] = []
-    for record in current_messages(load_message_records()):
+    records = load_message_records()
+    acked_ids = acked_message_ids(records)
+    for record in current_messages(records):
         if not is_retry_candidate(record):
+            continue
+        if record.get("id") in acked_ids:
             continue
         timestamp = parse_timestamp(record.get("timestamp"))
         if timestamp is None or timestamp > cutoff:
