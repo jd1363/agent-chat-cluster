@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 3,
+  "nextId": 4,
   "tasks": [
     {
       "id": "Task-001",
@@ -23,6 +23,17 @@
       "updatedAt": "2026-06-17T06:46:40.074689+00:00",
       "output": null,
       "notes": ""
+    },
+    {
+      "id": "Task-003",
+      "title": "阶段3验证：执行只读任务 list_tasks.py",
+      "status": "done",
+      "priority": "medium",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-18T11:33:07.782436+00:00",
+      "updatedAt": "2026-06-18T11:34:13.244237+00:00",
+      "output": null,
+      "notes": "阶段3验证成功：subagent真实执行list_tasks.py --json，返回全部3个任务，台账链路通畅"
     }
   ]
 }
