@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 4,
+  "nextId": 9,
   "tasks": [
     {
       "id": "Task-001",
@@ -34,6 +34,61 @@
       "updatedAt": "2026-06-18T11:34:13.244237+00:00",
       "output": null,
       "notes": "阶段3验证成功：subagent真实执行list_tasks.py --json，返回全部3个任务，台账链路通畅"
+    },
+    {
+      "id": "Task-004",
+      "title": "阶段3：执行环境自检 check_env.py",
+      "status": "done",
+      "priority": "medium",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-18T11:43:20.909079+00:00",
+      "updatedAt": "2026-06-18T11:44:32.757167+00:00",
+      "output": null,
+      "notes": "环境自检全部通过：目录/配置/Gateway均正常"
+    },
+    {
+      "id": "Task-005",
+      "title": "阶段3：查看审计日志 show_audit.py",
+      "status": "failed",
+      "priority": "low",
+      "assignee": "agent-exec-01",
+      "createdAt": "2026-06-18T11:43:20.996274+00:00",
+      "updatedAt": "2026-06-18T11:45:03.471114+00:00",
+      "output": null,
+      "notes": "SIGKILL：agent-exec-01子Agent被强制终止，换agent-ext-01重试"
+    },
+    {
+      "id": "Task-006",
+      "title": "阶段3重试：查看审计日志 show_audit.py",
+      "status": "done",
+      "priority": "low",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-18T11:45:09.278199+00:00",
+      "updatedAt": "2026-06-18T11:46:43.383888+00:00",
+      "output": null,
+      "notes": "show_audit.py成功返回5条记录，审计链路正常"
+    },
+    {
+      "id": "Task-007",
+      "title": "阶段3：code review scripts/resend_unacked.py",
+      "status": "in_progress",
+      "priority": "medium",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-18T11:51:25.955172+00:00",
+      "updatedAt": "2026-06-18T11:51:30.876447+00:00",
+      "output": null,
+      "notes": ""
+    },
+    {
+      "id": "Task-008",
+      "title": "阶段3：code review scripts/resend_unacked.py (重试)",
+      "status": "in_progress",
+      "priority": "medium",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-18T11:53:24.443686+00:00",
+      "updatedAt": "2026-06-18T11:53:29.659191+00:00",
+      "output": null,
+      "notes": ""
     }
   ]
 }
