@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+"""
+receive_message.py - Agent receives its latest unread message.
+
+Usage:
+    python scripts/receive_message.py --agent-id agent-ext-01
+    python scripts/receive_message.py --agent-id agent-ext-01 --mark-read
+    python scripts/receive_message.py --agent-id agent-ext-01 --json
+
+Uses only Python standard library modules.
+"""
+
+import argparse
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+MESSAGES_DIR = PROJECT_ROOT / "logs" / "messages"
+
+
+def fail(message: str) -> None:
+    print(f"[FAIL] {message}", file=sys.stderr)
+    sys.exit(1)
+
+
+def ensure_messages_dir() -> None:
+    try:
+        MESSAGES_DIR.mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        fail(f"Unable to create messages directory: {e}")
+
+
+def load_message_records() -> list[dict]:
+    ensure_messages_dir()
+    records: list[dict] = []
+    for path in sorted(MESSAGES_DIR.glob("*.jsonl")):
+        try:
+            with open(path, "r", encoding="utf-8") as fh:
+                for line in fh:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        record = json.loads(line)
+                    except json.JSONDecodeError as e:
+                        fail(f"JSON parse error in {path.name}: {e}")
+                    if isinstance(record, dict):
+                        records.append(record)
+        except OSError as e:
+            fail(f"Unable to read message log {path.name}: {e}")
+    return records
+
+
+def current_messages(records: list[dict]) -> list[dict]:
+    by_id: dict[str, dict] = {}
+    for record in records:
+        message_id = record.get("id")
+        if isinstance(message_id, str):
+            by_id[message_id] = record
+    return list(by_id.values())
+
+
+def timestamp_key(record: dict) -> str:
+    value = record.get("timestamp")
+    return value if isinstance(value, str) else ""
+
+
+def append_message(record: dict) -> None:
+    ensure_messages_dir()
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    path = MESSAGES_DIR / f"{today}.jsonl"
+    try:
+        with open(path, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+    except OSError as e:
+        fail(f"Unable to write message log: {e}")
+
+
+def latest_unread_for(agent_id: str) -> dict | None:
+    messages = [
+        record
+        for record in current_messages(load_message_records())
+        if record.get("to") == agent_id and record.get("status") != "read"
+    ]
+    messages.sort(key=timestamp_key, reverse=True)
+    return messages[0] if messages else None
+
+
+def mark_read(record: dict) -> dict:
+    updated = dict(record)
+    updated["status"] = "read"
+    updated["timestamp"] = datetime.now(timezone.utc).isoformat()
+    append_message(updated)
+    return updated
+
+
+def format_message(record: dict) -> str:
+    return (
+        f"ID: {record.get('id', '')}\n"
+        f"From: {record.get('from', '')}\n"
+        f"To: {record.get('to', '')}\n"
+        f"Timestamp: {record.get('timestamp', '')}\n"
+        f"Status: {record.get('status', '')}\n"
+        f"Content: {record.get('content', '')}"
+    )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Receive the latest unread message for an Agent")
+    parser.add_argument("--agent-id", required=True, help="Receiving Agent ID")
+    parser.add_argument("--mark-read", action="store_true", help="Append an updated read-status record")
+    parser.add_argument("--json", action="store_true", dest="json_output", help="Output JSON")
+    args = parser.parse_args()
+
+    record = latest_unread_for(args.agent_id)
+    if record is None:
+        if args.json_output:
+            print(json.dumps({"ok": True, "message": None}, ensure_ascii=False, indent=2))
+        else:
+            print("[INFO] No new messages")
+        return
+
+    output_record = mark_read(record) if args.mark_read else record
+    if args.json_output:
+        print(json.dumps({"ok": True, "message": output_record}, ensure_ascii=False, indent=2))
+    else:
+        print(format_message(output_record))
+
+
+if __name__ == "__main__":
+    main()
