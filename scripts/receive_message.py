@@ -5,6 +5,7 @@ receive_message.py - Agent receives its latest unread message.
 Usage:
     python scripts/receive_message.py --agent-id agent-ext-01
     python scripts/receive_message.py --agent-id agent-ext-01 --mark-read
+    python scripts/receive_message.py --agent-id agent-ext-01 --ack
     python scripts/receive_message.py --agent-id agent-ext-01 --json
 
 Uses only Python standard library modules.
@@ -78,6 +79,25 @@ def append_message(record: dict) -> None:
         fail(f"Unable to write message log: {e}")
 
 
+def append_ack(record: dict, agent_id: str) -> dict:
+    message_id = record.get("id")
+    if not isinstance(message_id, str) or not message_id:
+        fail("Cannot ACK a message without a valid id")
+
+    ack = {
+        "id": f"{message_id}-ACK-{agent_id}",
+        "from": "system",
+        "to": "master",
+        "content": f"ACK: {message_id} received by {agent_id}",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "status": "sent",
+        "type": "system",
+        "ackFor": message_id,
+    }
+    append_message(ack)
+    return ack
+
+
 def latest_unread_for(agent_id: str) -> dict | None:
     messages = [
         record
@@ -111,6 +131,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Receive the latest unread message for an Agent")
     parser.add_argument("--agent-id", required=True, help="Receiving Agent ID")
     parser.add_argument("--mark-read", action="store_true", help="Append an updated read-status record")
+    parser.add_argument("--ack", action="store_true", help="Append a system ACK message to master")
     parser.add_argument("--json", action="store_true", dest="json_output", help="Output JSON")
     args = parser.parse_args()
 
@@ -123,10 +144,13 @@ def main() -> None:
         return
 
     output_record = mark_read(record) if args.mark_read else record
+    ack_record = append_ack(record, args.agent_id) if args.ack else None
     if args.json_output:
-        print(json.dumps({"ok": True, "message": output_record}, ensure_ascii=False, indent=2))
+        print(json.dumps({"ok": True, "message": output_record, "ack": ack_record}, ensure_ascii=False, indent=2))
     else:
         print(format_message(output_record))
+        if ack_record is not None:
+            print(f"\n[OK] ACK sent to master for {record.get('id', '')}")
 
 
 if __name__ == "__main__":

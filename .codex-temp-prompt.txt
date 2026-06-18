@@ -1,64 +1,36 @@
-Create three new Python scripts for a lightweight message bus.
+任务：为 G:\agent-chat-cluster 的消息总线扩展两个功能。
 
-Context:
-- Project at G:\agent-chat-cluster
-- config/agents.json has agents with id, enabled, riskLevel
-- scripts/audit_log.py is the audit logger
-- All existing scripts: stdlib-only, argparse, auto-locate project root, UTF-8
+**项目路径：G:\agent-chat-cluster**
 
-Script 1: scripts/send_message.py — Master sends message to Agent
+## 功能 1：消息确认（ACK）+ 超时重试
 
-Usage:
-  python scripts/send_message.py --to agent-ext-01 --message "check config"
-  python scripts/send_message.py --to agent-ext-01 --message "task dispatched" --json
+修改 `scripts/receive_message.py`：
+- 新增 `--ack` 参数，收到消息后向 master 发送确认 ACK
+- 确认写入 `logs/messages/YYYY-MM-DD.jsonl`，类型为系统消息（from="system"，to="master"，content="ACK: MSG-XXXX received by agent-ext-01"）
+- 新增 `scripts/resend_unacked.py`：扫描所有 "sent" 状态消息，超过 N 分钟未变为 "read" 则重新发送（默认 N=5分钟，可配置）
+- resend_unacked.py 用法：`python scripts/resend_unacked.py [--timeout-minutes 5]`
+- 最多重试 3 次，超过则标记 "failed"，写审计日志
 
-Behavior:
-- Validate --to agent exists and enabled=true in agents.json
-- Generate message ID: MSG-NNNN, persist nextMsgId in logs/messages/.state
-- Write message to logs/messages/YYYY-MM-DD.jsonl:
-  {"id":"MSG-0001","from":"master","to":"agent-ext-01","content":"...","timestamp":"...","status":"sent"}
-- Auto-call audit_log.py with event-type="message_sent"
-- Output human-readable or JSON
+## 功能 2：多播（multicast）
 
-Script 2: scripts/receive_message.py — Agent receives message
+修改 `scripts/send_message.py`：
+- 新增 `--to all` 参数，把消息发给 config/agents.json 中所有 enabled=true 的 Agent
+- 多播消息只写一条主记录（id=MSG-XXXX），同时为每个收件人写一条子记录（parentId=MSG-XXXX）
+- 新增 `scripts/broadcast.py`：封装多播逻辑，用法：`python scripts/broadcast.py --message "停机维护通知"`
+- audit_log 记录类型为 "broadcast_sent"
 
-Usage:
-  python scripts/receive_message.py --agent-id agent-ext-01
-  python scripts/receive_message.py --agent-id agent-ext-01 --mark-read
-  python scripts/receive_message.py --agent-id agent-ext-01 --json
+## 技术要求
 
-Behavior:
-- Find latest message to this agent with status != "read"
-- If --mark-read, update status to "read" by appending new line with updated status
-- Output the message or "[INFO] No new messages"
+- 仅 Python 标准库（argparse, json, datetime, pathlib）
+- 自动定位项目根路径（从 scripts/ 向上两级）
+- UTF-8 编码，sys.exit(1) 错误处理
+- 不修改已有的 send_message.py / receive_message.py 主逻辑，只新增参数和函数
+- 新增脚本：resend_unacked.py（已有 receive_message.py 的目录下）、broadcast.py
+- 完成后：git add + git commit，message: "feat: message bus — ACK confirmation + multicast broadcast"
 
-Script 3: scripts/list_messages.py — Message history query
+## 验收标准（胖小 review）
 
-Usage:
-  python scripts/list_messages.py
-  python scripts/list_messages.py --to agent-ext-01
-  python scripts/list_messages.py --from master
-  python scripts/list_messages.py --status sent
-  python scripts/list_messages.py --since 2026-06-18 --json
-
-Behavior:
-- Read all logs/messages/*.jsonl
-- Filter by --to, --from, --status, --since (YYYY-MM-DD)
-- Sort by timestamp desc, default limit 20 (--limit N)
-- Output human table or JSON
-
-Constraints for ALL three:
-- Python stdlib only
-- Auto-locate project root
-- argparse CLI
-- UTF-8, sys.exit(1) on errors
-- Create logs/messages/ on first use
-- Reference existing scripts for style
-
-After writing, verify:
-1. python scripts/send_message.py --help
-2. python scripts/receive_message.py --help
-3. python scripts/list_messages.py --help
-4. python scripts/send_message.py --to agent-ext-01 --message "test msg" --json
-5. python scripts/receive_message.py --agent-id agent-ext-01 --json
-6. python scripts/list_messages.py --json
+1. `python scripts/send_message.py --to all --message "test"` → 发给所有 enabled Agent
+2. `python scripts/receive_message.py --agent-id agent-ext-01 --ack` → 写一条 system ACK 消息到 logs/messages/
+3. `python scripts/list_messages.py --json` → 能看到 parentId 和 system 消息
+4. `python scripts/resend_unacked.py --timeout-minutes 0` → 把所有 sent 消息标为 failed 或重发

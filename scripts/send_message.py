@@ -4,6 +4,7 @@ send_message.py - Master sends a message to an enabled Agent.
 
 Usage:
     python scripts/send_message.py --to agent-ext-01 --message "check config"
+    python scripts/send_message.py --to all --message "maintenance notice"
     python scripts/send_message.py --to agent-ext-01 --message "task dispatched" --json
 
 Uses only Python standard library modules.
@@ -66,6 +67,15 @@ def validate_recipient(agent_id: str) -> None:
         fail(f"Agent '{agent_id}' is disabled (enabled=false)")
 
 
+def enabled_agent_ids() -> list[str]:
+    agents = load_agents()
+    return sorted(
+        agent_id
+        for agent_id, agent in agents.items()
+        if agent.get("enabled", False)
+    )
+
+
 def load_next_msg_number() -> int:
     ensure_messages_dir()
     if not STATE_FILE.is_file():
@@ -102,12 +112,17 @@ def append_message(record: dict) -> None:
         fail(f"Unable to write message log: {e}")
 
 
-def send_message(to_agent: str, content: str) -> dict:
-    validate_recipient(to_agent)
-
+def allocate_message_id() -> str:
     next_number = load_next_msg_number()
     message_id = f"MSG-{next_number:04d}"
     save_next_msg_number(next_number + 1)
+    return message_id
+
+
+def send_message(to_agent: str, content: str) -> dict:
+    validate_recipient(to_agent)
+
+    message_id = allocate_message_id()
 
     record = {
         "id": message_id,
@@ -127,12 +142,62 @@ def send_message(to_agent: str, content: str) -> dict:
     return record
 
 
+def send_broadcast(content: str) -> dict:
+    recipients = enabled_agent_ids()
+    if not recipients:
+        fail("No enabled agents found in config/agents.json")
+
+    parent_id = allocate_message_id()
+    timestamp = datetime.now(timezone.utc).isoformat()
+    parent_record = {
+        "id": parent_id,
+        "from": "master",
+        "to": "all",
+        "content": content,
+        "timestamp": timestamp,
+        "status": "sent",
+        "type": "broadcast",
+        "recipientCount": len(recipients),
+    }
+    append_message(parent_record)
+
+    child_records = []
+    for index, agent_id in enumerate(recipients, start=1):
+        child = {
+            "id": f"{parent_id}-{index:02d}",
+            "parentId": parent_id,
+            "from": "master",
+            "to": agent_id,
+            "content": content,
+            "timestamp": timestamp,
+            "status": "sent",
+            "type": "broadcast_recipient",
+        }
+        append_message(child)
+        child_records.append(child)
+
+    append_audit(
+        event_type="broadcast_sent",
+        message=f"Broadcast {parent_id} sent to {len(recipients)} agents",
+        data={"messageId": parent_id, "to": recipients, "recipientCount": len(recipients)},
+    )
+    return {"parent": parent_record, "children": child_records}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Send a message from master to an enabled Agent")
-    parser.add_argument("--to", required=True, help="Recipient Agent ID")
+    parser.add_argument("--to", required=True, help="Recipient Agent ID, or 'all' for enabled agents")
     parser.add_argument("--message", required=True, help="Message content")
     parser.add_argument("--json", action="store_true", dest="json_output", help="Output JSON")
     args = parser.parse_args()
+
+    if args.to == "all":
+        result = send_broadcast(args.message)
+        if args.json_output:
+            print(json.dumps({"ok": True, "broadcast": result}, ensure_ascii=False, indent=2))
+        else:
+            print(f"[OK] {result['parent']['id']} broadcast to {len(result['children'])} agents")
+        return
 
     record = send_message(args.to, args.message)
     if args.json_output:
