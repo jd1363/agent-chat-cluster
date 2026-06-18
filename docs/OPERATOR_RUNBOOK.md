@@ -15,11 +15,12 @@
 3. [查看任务](#3-查看任务)
 4. [校验任务](#4-校验任务)
 5. [派发任务](#5-派发任务)
-6. [完成任务](#6-完成任务)
-7. [查看审计日志](#7-查看审计日志)
-8. [force 覆盖规则](#8-force-覆盖规则)
-9. [禁止事项](#9-禁止事项)
-10. [何时可以进入真实 ACP 执行](#10-何时可以进入真实-acp-执行)
+6. [命令审批](#6-命令审批)
+7. [完成任务](#7-完成任务)
+8. [查看审计日志](#8-查看审计日志)
+9. [force 覆盖规则](#9-force-覆盖规则)
+10. [禁止事项](#10-禁止事项)
+11. [何时可以进入真实 ACP 执行](#11-何时可以进入真实-acp-执行)
 
 ---
 
@@ -136,7 +137,47 @@ python scripts/dispatch_task.py --id Task-001 --assignee agent-exec-01
 
 ---
 
-## 6. 完成任务
+## 6. 命令审批
+
+在 Agent 执行命令前，先运行风险预审：
+
+```bash
+# 审查 agent-exec-01 要执行的命令
+python scripts/review_command.py --agent-id agent-exec-01 --command "python scripts/list_tasks.py"
+
+# 审查高风险命令（会被拒绝）
+python scripts/review_command.py --agent-id agent-exec-01 --command "rm -rf /"
+
+# JSON 输出（供脚本消费）
+python scripts/review_command.py --agent-id agent-ext-01 --command "pip install numpy" --json
+
+# 不写入审计日志（纯预览）
+python scripts/review_command.py --agent-id agent-exec-01 --command "git status" --no-write-audit
+```
+
+审批结果三种状态：
+
+| 状态 | 含义 | 操作 |
+|:---|:---|:---|
+| **APPROVED** | 安全，可直接执行 | 继续执行 |
+| **NEEDS_REVIEW** | 有风险，需人工确认 | 人工判断后再执行 |
+| **REJECTED** | 破坏性命令，禁止执行 | 拒绝，重写命令 |
+
+触发 NEEDS_REVIEW 的典型场景：
+- 命令含 `pip install` / `npm install` / `git push` / `curl` 等网络/安装关键词
+- MEDIUM 风险 Agent 的写入/修改命令（`mkdir` / `copy` / `delete` 等）
+- HIGH 风险 Agent 的任何非只读命令
+
+触发 REJECTED 的典型场景：
+- `rm -rf` / `del /f /s` / `format` / `shutdown` / `dd if=` 等系统破坏命令
+- `curl \| bash` / `wget \| sh` 等管道执行远程脚本
+- 任何风险等级的 Agent 均禁止
+
+审计：默认自动写入审计日志（`review` 事件类型）。
+
+---
+
+## 7. 完成任务
 
 ```bash
 # 正常完成（任务必须是 in_progress 状态）
@@ -163,7 +204,7 @@ python scripts/complete_task.py --id Task-001 --status done --summary "管理员
 
 ---
 
-## 7. 查看审计日志
+## 8. 查看审计日志
 
 ```bash
 # 查看今天的审计记录（最近 20 条）
@@ -203,7 +244,7 @@ python scripts/show_audit.py --json
 
 ---
 
-## 8. force 覆盖规则
+## 9. force 覆盖规则
 
 `--force` 是管理员人工覆盖状态机限制的机制，仅用于以下场景：
 
@@ -224,7 +265,7 @@ python scripts/show_audit.py --json
 
 ---
 
-## 9. 禁止事项
+## 10. 禁止事项
 
 以下行为**在任何阶段均禁止**：
 
@@ -252,7 +293,7 @@ python scripts/show_audit.py --json
 
 ---
 
-## 10. 何时可以进入真实 ACP 执行
+## 11. 何时可以进入真实 ACP 执行
 
 在以下条件**全部满足**后，可考虑进入真实 ACP agent 执行：
 
