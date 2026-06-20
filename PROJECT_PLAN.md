@@ -238,6 +238,24 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
 
 ---
 
+## Milestone B：State Builder（基础骨架已实现，2026-06-20）
+
+目标：从现有文件重建统一系统状态，为 Scheduler Tick 提供统一事实源。
+
+- [x] 新增 `scripts/build_state.py` — 标准库 only 统一状态构建模块
+  - 读取 tasks/tasks.json、config/agents.json、config/policies.json
+  - 读取 logs/messages/*.jsonl、logs/audit/*.jsonl、logs/events/*.jsonl
+  - 输出 state/system_state.json（统一状态事实源）
+  - 支持 snapshot：state/snapshots/YYYY-MM-DDTHH-mm-ssZ.json
+  - CLI：默认 / `--json` / `--output PATH` / `--snapshot` / `--dry-run`
+  - 不修改原始业务文件
+- [x] 新增 `state/` 与 `state/snapshots/` 目录
+- [x] 更新 README.md 与 PROJECT_PLAN.md
+- [ ] 后续：引入 Scheduler Tick 调度器骨架
+- [ ] 后续：稳定后迁移 SQLite / 接入事件流
+
+---
+
 ## 长期愿景（暂不实施）
 
 - 动态 Agent 注册与发现

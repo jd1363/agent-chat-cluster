@@ -120,6 +120,13 @@ python scripts/event_log.py list --date 2026-06-20 --event-type task.created --l
 python scripts/event_log.py list --correlation-id Task-001 --json
 python scripts/event_log.py replay --dry-run
 python scripts/event_log.py replay --date 2026-06-20 --dry-run --json
+
+# 统一状态构建（Milestone B：State Builder）
+python scripts/build_state.py
+python scripts/build_state.py --json
+python scripts/build_state.py --dry-run
+python scripts/build_state.py --snapshot
+python scripts/build_state.py --output state/system_state.json
 ```
 
 ## 项目结构
@@ -153,6 +160,7 @@ python scripts/event_log.py replay --date 2026-06-20 --dry-run --json
 | `scripts/list_messages.py` | 查询消息历史，支持按收件人/发送者/状态/日期过滤 | 阶段 2 消息总线，只读 |
 | `scripts/resend_unacked.py` | 对未 ACK 的 sent 消息执行 dry-run / 重发 / 标记失败 | 阶段 2 消息总线，默认会追加审计 |
 | `scripts/event_log.py` | 事件日志骨架：append/list/replay，按天 JSONL，跨进程并发安全 | Milestone A，读写，仅标准库 |
+| `scripts/build_state.py` | 从 tasks/config/messages/audit/events 重建统一系统状态，输出 state/system_state.json | Milestone B，只读不写业务文件 |
 
 ## 注意事项
 
