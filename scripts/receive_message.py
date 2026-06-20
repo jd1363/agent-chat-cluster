@@ -16,9 +16,11 @@ import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Dict, List, Optional
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MESSAGES_DIR = PROJECT_ROOT / "logs" / "messages"
+MAX_MESSAGE_LOG_BYTES = 5 * 1024 * 1024
 
 
 def fail(message: str) -> None:
@@ -26,18 +28,24 @@ def fail(message: str) -> None:
     sys.exit(1)
 
 
+def safe_os_error(error: OSError) -> str:
+    return error.strerror or error.__class__.__name__
+
+
 def ensure_messages_dir() -> None:
     try:
         MESSAGES_DIR.mkdir(parents=True, exist_ok=True)
     except OSError as e:
-        fail(f"Unable to create messages directory: {e}")
+        fail(f"Unable to create messages directory: {safe_os_error(e)}")
 
 
-def load_message_records() -> list[dict]:
+def load_message_records() -> List[Dict]:
     ensure_messages_dir()
-    records: list[dict] = []
+    records: List[Dict] = []
     for path in sorted(MESSAGES_DIR.glob("*.jsonl")):
         try:
+            if path.stat().st_size > MAX_MESSAGE_LOG_BYTES:
+                fail(f"Message log {path.name} exceeds {MAX_MESSAGE_LOG_BYTES // 1024} KB limit")
             with open(path, "r", encoding="utf-8") as fh:
                 for line in fh:
                     line = line.strip()
@@ -50,12 +58,12 @@ def load_message_records() -> list[dict]:
                     if isinstance(record, dict):
                         records.append(record)
         except OSError as e:
-            fail(f"Unable to read message log {path.name}: {e}")
+            fail(f"Unable to read message log {path.name}: {safe_os_error(e)}")
     return records
 
 
-def current_messages(records: list[dict]) -> list[dict]:
-    by_id: dict[str, dict] = {}
+def current_messages(records: List[Dict]) -> List[Dict]:
+    by_id: Dict[str, Dict] = {}
     for record in records:
         message_id = record.get("id")
         if isinstance(message_id, str):
@@ -63,12 +71,12 @@ def current_messages(records: list[dict]) -> list[dict]:
     return list(by_id.values())
 
 
-def timestamp_key(record: dict) -> str:
+def timestamp_key(record: Dict) -> str:
     value = record.get("timestamp")
     return value if isinstance(value, str) else ""
 
 
-def append_message(record: dict) -> None:
+def append_message(record: Dict) -> None:
     ensure_messages_dir()
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     path = MESSAGES_DIR / f"{today}.jsonl"
@@ -76,10 +84,10 @@ def append_message(record: dict) -> None:
         with open(path, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
     except OSError as e:
-        fail(f"Unable to write message log: {e}")
+        fail(f"Unable to write message log: {safe_os_error(e)}")
 
 
-def append_ack(record: dict, agent_id: str) -> dict:
+def append_ack(record: Dict, agent_id: str) -> Dict:
     message_id = record.get("id")
     if not isinstance(message_id, str) or not message_id:
         fail("Cannot ACK a message without a valid id")
@@ -98,7 +106,7 @@ def append_ack(record: dict, agent_id: str) -> dict:
     return ack
 
 
-def latest_unread_for(agent_id: str) -> dict | None:
+def latest_unread_for(agent_id: str) -> Optional[Dict]:
     messages = [
         record
         for record in current_messages(load_message_records())
@@ -108,15 +116,15 @@ def latest_unread_for(agent_id: str) -> dict | None:
     return messages[0] if messages else None
 
 
-def mark_read(record: dict) -> dict:
+def mark_read(record: Dict) -> Dict:
     updated = dict(record)
     updated["status"] = "read"
-    updated["timestamp"] = datetime.now(timezone.utc).isoformat()
+    updated["readAt"] = datetime.now(timezone.utc).isoformat()
     append_message(updated)
     return updated
 
 
-def format_message(record: dict) -> str:
+def format_message(record: Dict) -> str:
     return (
         f"ID: {record.get('id', '')}\n"
         f"From: {record.get('from', '')}\n"
@@ -155,3 +163,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
