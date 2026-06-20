@@ -238,7 +238,7 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
 
 ---
 
-## Milestone B：State Builder（基础骨架已实现，2026-06-20）
+## Milestone B：State Builder（已完成，2026-06-20）
 
 目标：从现有文件重建统一系统状态，为 Scheduler Tick 提供统一事实源。
 
@@ -251,8 +251,31 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
   - 不修改原始业务文件
 - [x] 新增 `state/` 与 `state/snapshots/` 目录
 - [x] 更新 README.md 与 PROJECT_PLAN.md
-- [ ] 后续：引入 Scheduler Tick 调度器骨架
 - [ ] 后续：稳定后迁移 SQLite / 接入事件流
+
+---
+
+## Milestone C：Scheduler Tick（进行中：第一版 dry-run 已实现，2026-06-20）
+
+目标：引入可控调度循环，但不自动执行真实 Agent。第一版只做 dry-run 调度决策。
+
+- [x] 新增 `scripts/scheduler_tick.py` — 标准库 only 调度器 dry-run
+  - 读取 `state/system_state.json` 统一状态
+  - 支持 `--dry-run` 必选（不传则 exit 1，拒绝真实派工）
+  - 支持 `--json` 输出机器可解析 JSON
+  - 支持 `--write-event --dry-run` 写入 `scheduler.tick.evaluated` 事件
+  - 调度逻辑：maxConcurrency 检查 / Agent 可用性 / 负载均衡选择
+  - 任务选择按 priority（high > medium > low）→ createdAt 排序
+  - Agent 选择按负载最低 → id 排序
+  - disabled Agent 绝不被选中
+- [x] 验证：临时 state 文件测试 4 个场景全部 PASS
+  - pending task + enabled agent → `suggest_dispatch`
+  - inProgress >= maxConcurrency → `blocked`
+  - no enabled agent → `blocked`
+  - disabled agent 不被选中
+- [x] 更新 README.md 与 PROJECT_PLAN.md
+- [ ] 后续：支持 retry limit / backpressure 事件通知
+- [ ] 后续：从 dry-run 过渡到真实派工（需审批流程）
 
 ---
 

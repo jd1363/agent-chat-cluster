@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-20T09:13:04Z",
+  "generatedAt": "2026-06-20T09:22:01Z",
   "sourceFiles": [
     "tasks\\tasks.json",
     "config\\agents.json",
@@ -249,16 +249,17 @@
     "latestTimestamp": "2026-06-20T04:02:52.882095+00:00"
   },
   "events": {
-    "total": 6,
+    "total": 7,
     "byEventType": {
       "task.created": 4,
       "review.test": 1,
-      "fix.test": 1
+      "fix.test": 1,
+      "scheduler.tick.evaluated": 1
     },
     "byStatus": {
-      "pending": 6
+      "pending": 7
     },
-    "latestTimestamp": "2026-06-20T07:28:06Z"
+    "latestTimestamp": "2026-06-20T09:20:57Z"
   },
   "policy": {
     "maxConcurrency": 1,

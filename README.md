@@ -127,6 +127,12 @@ python scripts/build_state.py --json
 python scripts/build_state.py --dry-run
 python scripts/build_state.py --snapshot
 python scripts/build_state.py --output state/system_state.json
+
+# 调度器 dry-run（Milestone C：Scheduler Tick）
+python scripts/scheduler_tick.py --dry-run
+python scripts/scheduler_tick.py --dry-run --json
+python scripts/scheduler_tick.py --state state/system_state.json --dry-run
+python scripts/scheduler_tick.py --write-event --dry-run
 ```
 
 ## 项目结构
@@ -161,6 +167,7 @@ python scripts/build_state.py --output state/system_state.json
 | `scripts/resend_unacked.py` | 对未 ACK 的 sent 消息执行 dry-run / 重发 / 标记失败 | 阶段 2 消息总线，默认会追加审计 |
 | `scripts/event_log.py` | 事件日志骨架：append/list/replay，按天 JSONL，跨进程并发安全 | Milestone A，读写，仅标准库 |
 | `scripts/build_state.py` | 从 tasks/config/messages/audit/events 重建统一系统状态，输出 state/system_state.json | Milestone B，只读不写业务文件 |
+| `scripts/scheduler_tick.py` | 调度器 dry-run：读取统一状态，执行 maxConcurrency/Agent 可用性判断，输出推荐或阻塞原因 | Milestone C，只读不写（除 --write-event） |
 
 ## 注意事项
 
