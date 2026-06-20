@@ -36,6 +36,7 @@ REQUIRED_FILES = [
 
 COMMAND_PROBE = ["openclaw", "gateway", "status"]
 TIMEOUT_SECONDS = 10
+SKIP_EXTERNAL = False  # controlled via --skip-external CLI flag
 
 
 def check_directories():
@@ -111,6 +112,9 @@ def check_command():
 
 
 def main():
+    global SKIP_EXTERNAL
+    SKIP_EXTERNAL = "--skip-external" in sys.argv
+
     print("=" * 50)
     print("Agent Chat Cluster — 环境自检")
     print("=" * 50)
@@ -123,7 +127,10 @@ def main():
     ok = check_json_files() and ok
 
     print("\n[3/3] 检查外部命令...")
-    ok = check_command() and ok
+    if SKIP_EXTERNAL:
+        print("[SKIP] 跳过外部命令检查 (--skip-external)")
+    else:
+        ok = check_command() and ok
 
     print("\n" + "=" * 50)
     if ok:

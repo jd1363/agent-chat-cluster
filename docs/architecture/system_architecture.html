@@ -1,0 +1,217 @@
+<!doctype html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agent Chat Cluster System Architecture</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f8fafc;
+    --fg: #172033;
+    --muted: #5b6475;
+    --line: #64748b;
+    --neutral: #e2e8f0;
+    --input: #bfdbfe;
+    --process: #c7d2fe;
+    --storage: #99f6e4;
+    --external: #fde68a;
+    --risk: #fecaca;
+    --ok: #bbf7d0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f172a;
+      --fg: #e5e7eb;
+      --muted: #a3adbd;
+      --line: #94a3b8;
+      --neutral: #334155;
+      --input: #1d4ed8;
+      --process: #4338ca;
+      --storage: #0f766e;
+      --external: #92400e;
+      --risk: #991b1b;
+      --ok: #166534;
+    }
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 14px/1.4 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  main {
+    max-width: 1180px;
+    margin: 28px auto;
+    padding: 0 20px 32px;
+  }
+  svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .title { font-size: 22px; font-weight: 750; fill: var(--fg); }
+  .subtitle { font-size: 13px; fill: var(--muted); }
+  .label { font-size: 14px; font-weight: 700; fill: var(--fg); }
+  .small { font-size: 11px; fill: var(--muted); }
+  .tiny { font-size: 10px; fill: var(--muted); }
+  .node { stroke: var(--line); stroke-width: 1.2; rx: 14; }
+  .neutral { fill: var(--neutral); }
+  .input { fill: var(--input); }
+  .process { fill: var(--process); }
+  .storage { fill: var(--storage); }
+  .external { fill: var(--external); }
+  .risk { fill: var(--risk); }
+  .ok { fill: var(--ok); }
+  .edge { stroke: var(--line); stroke-width: 1.8; fill: none; }
+  .edge-soft { stroke: var(--line); stroke-width: 1.3; fill: none; stroke-dasharray: 5 5; opacity: 0.85; }
+  .zone { fill: none; stroke: var(--line); stroke-width: 1.1; stroke-dasharray: 7 6; opacity: 0.75; rx: 18; }
+  .zone-label { font-size: 13px; font-weight: 700; fill: var(--muted); }
+  .badge { fill: var(--bg); stroke: var(--line); stroke-width: 1; rx: 8; }
+</style>
+<main>
+<svg viewBox="0 0 1160 780" role="img" aria-labelledby="title desc" xmlns="http://www.w3.org/2000/svg">
+  <title id="title">Agent Chat Cluster System Architecture</title>
+  <desc id="desc">System architecture showing control plane, event bus, scheduler, unified state store, policy audit plane, and agent workers.</desc>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="var(--line)" />
+    </marker>
+  </defs>
+
+  <text x="32" y="38" class="title">Agent Chat Cluster：从 MVP 到系统级 Agent 架构</text>
+  <text x="32" y="62" class="subtitle">核心升级：script-driven → event-driven；manual dispatch → scheduler-controlled；scattered files → unified state source</text>
+
+  <!-- Trust zones -->
+  <rect x="24" y="88" width="1112" height="178" class="zone" />
+  <text x="42" y="112" class="zone-label">Control / Policy Plane（受控主控层）</text>
+
+  <rect x="24" y="292" width="1112" height="190" class="zone" />
+  <text x="42" y="316" class="zone-label">Event + State Backbone（事件与状态骨干）</text>
+
+  <rect x="24" y="510" width="1112" height="210" class="zone" />
+  <text x="42" y="534" class="zone-label">Execution Plane（Agent 执行层，默认最小权限）</text>
+
+  <!-- Top row -->
+  <rect x="54" y="138" width="150" height="78" class="node external" />
+  <text x="84" y="165" class="label">Human / Operator</text>
+  <text x="82" y="186" class="small">提出任务 / 审批</text>
+  <text x="88" y="202" class="small">人工接管入口</text>
+
+  <rect x="260" y="126" width="190" height="102" class="node input" />
+  <text x="302" y="153" class="label">Control Plane</text>
+  <text x="286" y="176" class="small">OpenClaw 主控 / 胖小</text>
+  <text x="286" y="193" class="small">create / update / dispatch</text>
+  <text x="286" y="210" class="small">对用户汇报进度</text>
+
+  <rect x="512" y="126" width="188" height="102" class="node risk" />
+  <text x="552" y="153" class="label">Policy Gate</text>
+  <text x="538" y="176" class="small">policies.json</text>
+  <text x="538" y="193" class="small">review_command</text>
+  <text x="538" y="210" class="small">路径 / 并发 / 风险</text>
+
+  <rect x="760" y="126" width="190" height="102" class="node neutral" />
+  <text x="810" y="153" class="label">Audit Plane</text>
+  <text x="786" y="176" class="small">audit_log.py</text>
+  <text x="786" y="193" class="small">show_audit.py</text>
+  <text x="786" y="210" class="small">eventId 关联审计</text>
+
+  <!-- Middle row -->
+  <rect x="72" y="344" width="202" height="96" class="node process" />
+  <text x="126" y="371" class="label">Event Bus</text>
+  <text x="100" y="394" class="small">logs/events/*.jsonl</text>
+  <text x="100" y="411" class="small">append / list / replay</text>
+  <text x="100" y="428" class="small">correlationId 串联</text>
+
+  <rect x="332" y="344" width="202" height="96" class="node process" />
+  <text x="378" y="371" class="label">Scheduler</text>
+  <text x="358" y="394" class="small">priority / load / risk</text>
+  <text x="358" y="411" class="small">maxConcurrency</text>
+  <text x="358" y="428" class="small">retry / backpressure</text>
+
+  <rect x="592" y="344" width="218" height="96" class="node storage" />
+  <text x="640" y="371" class="label">Unified State Store</text>
+  <text x="622" y="394" class="small">task / agent / message</text>
+  <text x="622" y="411" class="small">cost / scheduler / policy</text>
+  <text x="622" y="428" class="small">state/system_state.json</text>
+
+  <rect x="874" y="344" width="202" height="96" class="node risk" />
+  <text x="919" y="371" class="label">Dead Letter</text>
+  <text x="906" y="394" class="small">failed events</text>
+  <text x="906" y="411" class="small">manual recovery</text>
+  <text x="906" y="428" class="small">replay dry-run</text>
+
+  <!-- Bottom row -->
+  <rect x="72" y="562" width="210" height="102" class="node ok" />
+  <text x="118" y="589" class="label">Agent Worker A</text>
+  <text x="104" y="612" class="small">agent-exec-01</text>
+  <text x="104" y="629" class="small">resident / low risk</text>
+  <text x="104" y="646" class="small">cwd: agents/resident/exec01</text>
+
+  <rect x="342" y="562" width="210" height="102" class="node external" />
+  <text x="388" y="589" class="label">Agent Worker B</text>
+  <text x="374" y="612" class="small">agent-ext-01</text>
+  <text x="374" y="629" class="small">extension / medium risk</text>
+  <text x="374" y="646" class="small">cwd: agents/ext/ext01</text>
+
+  <rect x="612" y="562" width="210" height="102" class="node neutral" />
+  <text x="660" y="589" class="label">Reserved Agents</text>
+  <text x="646" y="612" class="small">agent-ext-02 ~ 06</text>
+  <text x="646" y="629" class="small">disabled by default</text>
+  <text x="646" y="646" class="small">启用前需隔离校验</text>
+
+  <rect x="882" y="562" width="210" height="102" class="node storage" />
+  <text x="932" y="589" class="label">Message Bus</text>
+  <text x="916" y="612" class="small">logs/messages/*.jsonl</text>
+  <text x="916" y="629" class="small">send / receive / ack</text>
+  <text x="916" y="646" class="small">controlled multicast only</text>
+
+  <!-- Edges top -->
+  <path d="M204 177 H260" class="edge" marker-end="url(#arrow)" />
+  <path d="M450 177 H512" class="edge" marker-end="url(#arrow)" />
+  <path d="M700 177 H760" class="edge" marker-end="url(#arrow)" />
+
+  <!-- Control to event -->
+  <path d="M355 228 C355 270 173 292 173 344" class="edge" marker-end="url(#arrow)" />
+  <text x="204" y="286" class="tiny">write task.created / command.review_requested</text>
+
+  <!-- Policy to scheduler and audit -->
+  <path d="M606 228 C606 282 433 292 433 344" class="edge-soft" marker-end="url(#arrow)" />
+  <path d="M855 228 C855 292 975 294 975 344" class="edge-soft" marker-end="url(#arrow)" />
+
+  <!-- Middle edges -->
+  <path d="M274 392 H332" class="edge" marker-end="url(#arrow)" />
+  <path d="M534 392 H592" class="edge" marker-end="url(#arrow)" />
+  <path d="M810 392 H874" class="edge-soft" marker-end="url(#arrow)" />
+  <path d="M592 422 C500 488 316 492 177 562" class="edge-soft" marker-end="url(#arrow)" />
+  <path d="M701 440 V562" class="edge-soft" marker-end="url(#arrow)" />
+
+  <!-- Scheduler dispatch to message bus and agents -->
+  <path d="M433 440 C445 500 860 502 987 562" class="edge" marker-end="url(#arrow)" />
+  <text x="572" y="511" class="tiny">task.dispatched → message.sent</text>
+  <path d="M882 613 H552" class="edge" marker-end="url(#arrow)" />
+  <path d="M882 628 C700 690 470 706 282 642" class="edge-soft" marker-end="url(#arrow)" />
+
+  <!-- Agent result back to event/state -->
+  <path d="M177 562 C174 500 138 492 138 440" class="edge" marker-end="url(#arrow)" />
+  <path d="M447 562 C440 505 230 498 210 440" class="edge" marker-end="url(#arrow)" />
+  <text x="250" y="492" class="tiny">result / heartbeat / ack events</text>
+
+  <!-- Audit connection -->
+  <path d="M760 202 C690 284 735 308 760 344" class="edge-soft" marker-end="url(#arrow)" />
+  <path d="M760 202 C660 286 686 314 701 344" class="edge-soft" marker-end="url(#arrow)" />
+
+  <!-- Legend -->
+  <rect x="38" y="734" width="1086" height="30" class="badge" />
+  <rect x="58" y="743" width="16" height="12" class="input node" />
+  <text x="82" y="754" class="tiny">Control</text>
+  <rect x="152" y="743" width="16" height="12" class="process node" />
+  <text x="176" y="754" class="tiny">Process/Event</text>
+  <rect x="278" y="743" width="16" height="12" class="storage node" />
+  <text x="302" y="754" class="tiny">State/Storage</text>
+  <rect x="412" y="743" width="16" height="12" class="external node" />
+  <text x="436" y="754" class="tiny">External/Extension</text>
+  <rect x="572" y="743" width="16" height="12" class="risk node" />
+  <text x="596" y="754" class="tiny">Risk Gate/Recovery</text>
+  <text x="768" y="754" class="tiny">红线：不自动外发、不自动自愈、不绕过 policies、不越权访问路径</text>
+</svg>
+</main>

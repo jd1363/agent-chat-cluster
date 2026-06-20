@@ -3,6 +3,8 @@
 本项目旨在构建一个受控的多智能体协作平台，由 OpenClaw 主会话/项目经理作为主控/管理员负责决策，OpenCode/ACP Agent 作为执行工程师负责执行，逐步验证安全策略、任务调度与命令管控。
 
 > **阶段 2 已完成**：双 Agent 启用、任务分配策略、命令审批节点、性能基线全部验收通过。
+>
+> **系统级架构升级已启动**：详见 [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md)，架构图见 [`docs/architecture/system_architecture.html`](docs/architecture/system_architecture.html)。
 
 ## MVP 范围（当前阶段）
 
@@ -26,6 +28,16 @@
 # 环境自检
 python scripts/check_env.py
 
+# 仅检查目录与配置 JSON，跳过 openclaw 外部命令探测
+python scripts/check_env.py --skip-external
+```
+
+```powershell
+# Windows PowerShell: 编译检查全部脚本
+python -c "import pathlib, py_compile; [py_compile.compile(str(p), doraise=True) for p in pathlib.Path('scripts').glob('*.py')]"
+```
+
+```bash
 # 查看当前策略
 cat config/policies.json
 
@@ -105,7 +117,7 @@ python scripts/list_messages.py --json
 
 ```
 ├── config/           # 策略与 Agent 注册表
-├── docs/             # 可用命令说明、安全备忘、任务协议
+├── docs/             # 可用命令说明、安全备忘、任务协议、系统架构设计
 ├── scripts/          # 运维与任务管理脚本
 ├── tasks/            # 任务台账
 └── README.md         # 本文件

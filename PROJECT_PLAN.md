@@ -94,6 +94,132 @@
 
 ---
 
+## 从 MVP 到系统级架构升级（下一关键路线，2026-06-20 新增）
+
+### 核心判断
+
+当前项目已经不是“写着玩的 Agent 框架”，而是一个**可运行的受控多智能体系统原型**。
+
+但它目前仍处在：
+
+```text
+工程化 MVP 完成 → 系统化架构缺失
+```
+
+也就是说：
+
+- 已经能跑；
+- 已经有任务、审计、安全闸和消息机制；
+- 但距离“真正自治的 AI Agent Cluster”还差一层系统级架构：**事件驱动 + 调度器 + 全局状态一致性**。
+
+### 当前缺口
+
+#### 1. 缺少真正的 Scheduler
+
+当前仍偏向 script-driven execution 和人工指挥流水线。
+
+后续需要补：
+
+- 优先级调度算法；
+- 资源分配策略；
+- 并发控制模型；
+- backpressure 机制；
+- 自动选 agent、自动分配 task、自动重试、自动负载均衡。
+
+#### 2. 缺少 Event Bus / Event Layer
+
+当前链路主要是：
+
+```text
+command → script → result
+```
+
+真正系统应升级为：
+
+```text
+event → queue → handler → state update
+```
+
+后续需要抽象：
+
+- event store；
+- event replay；
+- async dispatch；
+- task update / message send / audit write / cost update 的统一事件模型。
+
+#### 3. Agent 仍然非自治
+
+当前 Agent 更像 worker：
+
+- 不自主决策；
+- 不自主规划；
+- 不自选工具；
+- 主要执行主控派发的任务。
+
+后续若进入自治 Agent Cluster，需要逐步引入受控的规划、工具选择和自我汇报机制。
+
+#### 4. 缺少统一 State Store
+
+当前已有：
+
+- `tasks.json`
+- `logs/audit/*.jsonl`
+- `logs/messages/*.jsonl`
+- message bus state
+
+但还没有统一的 control plane state / source of truth。
+
+后续需要统一：
+
+- task state；
+- agent state；
+- cost state；
+- message state；
+- scheduler state。
+
+可先实现本地 stdlib 版本，再评估是否迁移到 SQLite / Redis / etcd 等状态后端。
+
+#### 5. 缺少系统级容错模型
+
+当前容错主要是：
+
+- retry；
+- manual fix；
+- kill + reassign。
+
+后续需要补：
+
+- distributed retry policy；
+- idempotency guarantee；
+- recovery orchestration；
+- dead letter queue；
+- 失败恢复与审计回放机制。
+
+### 下一阶段优先级
+
+如果从 MVP 继续升级为真正 Agent 系统，优先做三件事：
+
+1. **抽象 Event Layer**：把 task update、message send、audit write、cost update 全部变成 event-driven model。
+2. **引入 Scheduler**：替代手动 dispatch，支持自动选 Agent、自动分配任务、自动重试策略和负载均衡。
+3. **统一 State Store**：统一 task / agent / cost / message / scheduler 状态，形成唯一事实源。
+
+### 架构图任务
+
+已将现有系统重构为可论文、可工程实现的系统级架构说明与架构图，核心包含：
+
+```text
+Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
+```
+
+交付物：
+
+- [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md) — 系统级架构设计说明
+- [`docs/architecture/system_architecture.html`](docs/architecture/system_architecture.html) — 可打开查看的系统架构图
+
+这是项目从“MVP”跨到“系统级设计”的关键一步。
+
+---
+
 ## 长期愿景（暂不实施）
 
 - 动态 Agent 注册与发现
