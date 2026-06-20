@@ -94,32 +94,7 @@
 
 ---
 
-## 旧方案管理模块落地（当前主线，2026-06-20 切回）
-
-目标：优先补齐原始方案中的管理能力，但全部替换为当前项目真实可运行的 Python 脚本 / 文件台账 / OpenClaw 工具能力，不直接照搬未验证 slash 命令。
-
-### 已完成 / 进行中
-
-- [x] 管理员操作审计：`scripts/audit_log.py` + `scripts/show_audit.py`
-- [x] 任务全生命周期管理：`create_task.py` / `dispatch_task.py` / `complete_task.py` / `update_task.py` / `list_tasks.py` / `show_history.py`
-- [x] 主控点对点消息与受控多播：`send_message.py` / `receive_message.py` / `list_messages.py` / `broadcast.py` / `resend_unacked.py`
-- [x] 配置快照 / 备份恢复：`scripts/snapshot_config.py`，支持 `save` / `list` / `show` / `restore --yes`，恢复前自动创建 pre-restore 备份并写入审计
-
-### 下一步优先级
-
-1. 本地成本/Token 估算台账：替代旧方案不可确认的 `/usage` 命令，先做手动/估算记录、日报汇总、预算阈值提示，不承诺精确美元级自动暂停。
-2. 旧方案命令映射器：把 `/task`、`/audit`、`/snapshot`、`/usage`、`/acp spawn` 等伪命令映射到当前真实脚本或标记为 forbidden/pending。
-3. 多维度告警雏形：先做本地状态/日志告警，不做自动自愈，不做无限重启。
-
-### 暂缓项
-
-- 真实全局自由群聊：继续默认禁止，只允许主控受控多播。
-- 自动自愈：继续禁用，避免无限重试/无限烧钱。
-- 真实 ACP 常驻四 Agent：必须先确认 OpenClaw 当前真实 ACP/session 创建方式，再小步接入。
-
----
-
-## 从 MVP 到系统级架构升级（后续增强线，2026-06-20 新增）
+## 从 MVP 到系统级架构升级（下一关键路线，2026-06-20 新增）
 
 ### 核心判断
 

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.0",
+  "agents": [
+    {
+      "id": "agent-exec-01",
+      "role": "executor",
+      "type": "execution",
+      "enabled": true,
+      "cwd": "agents/resident/exec01",
+      "riskLevel": "low",
+      "notes": "MVP 阶段唯一启用的示例执行 Agent，仅验证主控→Agent 命令通道。禁止执行危险命令，禁止自动外发。"
+    },
+    {
+      "id": "agent-ext-01",
+      "role": "external",
+      "type": "extension",
+      "enabled": true,
+      "cwd": "agents/ext/ext01",
+      "riskLevel": "medium",
+      "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
+    },
+    {
+      "id": "agent-ext-02",
+      "role": "external",
+      "type": "extension",
+      "enabled": false,
+      "cwd": "agents/ext/ext02",
+      "riskLevel": "medium",
+      "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
+    },
+    {
+      "id": "agent-ext-03",
+      "role": "external",
+      "type": "extension",
+      "enabled": false,
+      "cwd": "agents/ext/ext03",
+      "riskLevel": "medium",
+      "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
+    },
+    {
+      "id": "agent-ext-04",
+      "role": "external",
+      "type": "extension",
+      "enabled": false,
+      "cwd": "agents/ext/ext04",
+      "riskLevel": "medium",
+      "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
+    },
+    {
+      "id": "agent-ext-05",
+      "role": "external",
+      "type": "extension",
+      "enabled": false,
+      "cwd": "agents/ext/ext05",
+      "riskLevel": "medium",
+      "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
+    },
+    {
+      "id": "agent-ext-06",
+      "role": "external",
+      "type": "extension",
+      "enabled": false,
+      "cwd": "agents/ext/ext06",
+      "riskLevel": "medium",
+      "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
+    }
+  ]
+}

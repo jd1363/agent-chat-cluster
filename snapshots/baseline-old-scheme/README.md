@@ -5,8 +5,6 @@
 > **阶段 2 已完成**：双 Agent 启用、任务分配策略、命令审批节点、性能基线全部验收通过。
 >
 > **系统级架构升级已启动**：详见 [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md)，架构图见 [`docs/architecture/system_architecture.html`](docs/architecture/system_architecture.html)。
->
-> **当前主线已切回旧方案落地**：优先补齐原始方案中的管理能力（审计、配置快照、告警、批量管理、标签/权限等），系统级 Event/Scheduler/State 升级线暂作为后续增强保留。
 
 ## MVP 范围（当前阶段）
 
@@ -96,12 +94,6 @@ python scripts/benchmark_pipeline.py
 python scripts/benchmark_pipeline.py --mode lifecycle
 python scripts/benchmark_pipeline.py --mode agent --json
 
-# 配置快照（旧方案管理模块：配置备份/恢复）
-python scripts/snapshot_config.py save --name before-change --reason "before config change"
-python scripts/snapshot_config.py list
-python scripts/snapshot_config.py show --name before-change
-python scripts/snapshot_config.py restore --name before-change --yes
-
 # 消息总线（阶段 2，轻量级主控→Agent 消息传递）
 python scripts/send_message.py --to agent-ext-01 --message "check config"
 python scripts/send_message.py --to agent-ext-01 --message "task dispatched" --json
@@ -150,7 +142,6 @@ python scripts/scheduler_tick.py --write-event --dry-run
 ├── config/           # 策略与 Agent 注册表
 ├── docs/             # 可用命令说明、安全备忘、任务协议、系统架构设计
 ├── scripts/          # 运维与任务管理脚本
-├── snapshots/        # 配置快照（按需生成）
 ├── tasks/            # 任务台账
 └── README.md         # 本文件
 ```
@@ -170,7 +161,6 @@ python scripts/scheduler_tick.py --write-event --dry-run
 | `scripts/suggest_assignee.py` | 任务分配策略引擎：round-robin / load / specialist | 阶段 2 扩容，只读不写 |
 | `scripts/review_command.py` | 命令风险审批：REJECTED/NEEDS_REVIEW/APPROVED | 阶段 2 安全闸，只读不写 |
 | `scripts/benchmark_pipeline.py` | 性能基线报告：状态分布/流水线瓶颈/Agent 负载 | 阶段 2 基线，只读不写 |
-| `scripts/snapshot_config.py` | 配置快照 / 列表 / 恢复，备份 config/tasks/state/关键文档 | 旧方案管理模块；恢复前自动创建 pre-restore 备份；写入审计 |
 | `scripts/send_message.py` | 主控向已启用 Agent 发送消息；`--to all` 需 `--manual-approval` | 阶段 2 消息总线，只写 |
 | `scripts/broadcast.py` | 受控主控多播包装脚本；遵守 `globalBroadcast` 策略门禁 | 阶段 2 消息总线，只写 |
 | `scripts/receive_message.py` | Agent 获取最新未读消息，支持标记为已读 / ACK | 阶段 2 消息总线，读+追加状态 |

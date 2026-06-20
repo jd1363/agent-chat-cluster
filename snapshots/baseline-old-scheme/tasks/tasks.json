@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "1.0",
+  "nextId": 11,
+  "tasks": [
+    {
+      "id": "Task-001",
+      "title": "测试 policies 读取",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-exec-01",
+      "createdAt": "2026-06-17T06:39:16.112564+00:00",
+      "updatedAt": "2026-06-20T03:56:42.754209+00:00",
+      "output": "ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md",
+      "notes": "阶段2第三块 policies 读取验证已完成：dispatch_task.py 已从 config/policies.json 读取执行约束并通过 preflight；详见 ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md"
+    },
+    {
+      "id": "Task-002",
+      "title": "Code Review: dispatch_task.py + audit_log.py + policies.json (Block3)",
+      "status": "done",
+      "priority": "high",
+      "assignee": null,
+      "createdAt": "2026-06-17T06:46:40.074689+00:00",
+      "updatedAt": "2026-06-20T03:56:47.642305+00:00",
+      "output": "ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md",
+      "notes": "Block3 code review 已完成并记录在 ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md：main顺序、中文编码、禁止项序号、sys.path清理均已修复；load_policies字段类型校验暂留后续增强"
+    },
+    {
+      "id": "Task-003",
+      "title": "阶段3验证：执行只读任务 list_tasks.py",
+      "status": "done",
+      "priority": "medium",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-18T11:33:07.782436+00:00",
+      "updatedAt": "2026-06-18T11:34:13.244237+00:00",
+      "output": null,
+      "notes": "阶段3验证成功：subagent真实执行list_tasks.py --json，返回全部3个任务，台账链路通畅"
+    },
+    {
+      "id": "Task-004",
+      "title": "阶段3：执行环境自检 check_env.py",
+      "status": "done",
+      "priority": "medium",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-18T11:43:20.909079+00:00",
+      "updatedAt": "2026-06-18T11:44:32.757167+00:00",
+      "output": null,
+      "notes": "环境自检全部通过：目录/配置/Gateway均正常"
+    },
+    {
+      "id": "Task-005",
+      "title": "阶段3：查看审计日志 show_audit.py",
+      "status": "failed",
+      "priority": "low",
+      "assignee": "agent-exec-01",
+      "createdAt": "2026-06-18T11:43:20.996274+00:00",
+      "updatedAt": "2026-06-18T11:45:03.471114+00:00",
+      "output": null,
+      "notes": "SIGKILL：agent-exec-01子Agent被强制终止，换agent-ext-01重试"
+    },
+    {
+      "id": "Task-006",
+      "title": "阶段3重试：查看审计日志 show_audit.py",
+      "status": "done",
+      "priority": "low",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-18T11:45:09.278199+00:00",
+      "updatedAt": "2026-06-18T11:46:43.383888+00:00",
+      "output": null,
+      "notes": "show_audit.py成功返回5条记录，审计链路正常"
+    },
+    {
+      "id": "Task-007",
+      "title": "阶段3：code review scripts/resend_unacked.py",
+      "status": "failed",
+      "priority": "medium",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-18T11:51:25.955172+00:00",
+      "updatedAt": "2026-06-18T11:56:25.775887+00:00",
+      "output": null,
+      "notes": "SIGKILL：任务对subagent过大（需要读+写+G:\\盘），实测沙箱无G:\\写入权限"
+    },
+    {
+      "id": "Task-008",
+      "title": "阶段3：code review scripts/resend_unacked.py (重试)",
+      "status": "done",
+      "priority": "medium",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-18T11:53:24.443686+00:00",
+      "updatedAt": "2026-06-18T11:56:19.869467+00:00",
+      "output": null,
+      "notes": "code review完成：总评良好，无Bug无安全问题，ACK格式为推测性需留意，dry-run设计优雅"
+    },
+    {
+      "id": "Task-009",
+      "title": "阶段3：MimoCode code review receive_message.py",
+      "status": "done",
+      "priority": "medium",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-18T12:28:24.096879+00:00",
+      "updatedAt": "2026-06-20T03:41:12.727224+00:00",
+      "output": null,
+      "notes": "MimoCode review问题已修复：mark_read保留timestamp改写readAt；消息日志5MB上限；OSError脱敏；类型标注兼容Python3.8/3.9。回归：py_compile/check_env/validate_task/receive_message通过"
+    },
+    {
+      "id": "Task-010",
+      "title": "阶段3收口：消息总线策略门禁与ID锁",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-20T04:02:41.383187+00:00",
+      "updatedAt": "2026-06-20T04:02:52.881280+00:00",
+      "output": null,
+      "notes": "阶段3消息总线收口完成：--to all/broadcast.py 读取 globalBroadcast 策略并要求 --manual-approval；broadcast_sent 记录 manualApproval；消息ID分配增加 .state.lock 跨进程锁；README/RUNBOOK/SECURITY_NOTES 已同步；回归 py_compile/check_env/validate_task/resend dry-run/list_tasks 通过"
+    }
+  ]
+}

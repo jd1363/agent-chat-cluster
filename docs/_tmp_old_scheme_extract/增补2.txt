@@ -1,0 +1,90 @@
+
+第十一章：任务编译层（Task Compiler）与规划执行闭环系统
+11.1 模块设计背景（关键补丁）
+当前系统已实现：
+OpenClaw 中枢调度 
+多 Agent 执行集群 
+扩展席位机制 
+成本与权限控制 
+但存在核心缺口：
+❗自然语言任务 → 未标准化为可执行任务图（DAG）
+因此新增：
+🧠 Task Compiler（任务编译层）
+用于实现：
+“规划 → 编译 → 调度 → 执行 → 回流”的闭环系统
+
+11.2 Task Compiler 核心职责
+Task Compiler 位于 ChatGPT 与 OpenClaw 之间，作用如下：
+✔ 1. 任务结构化
+将自然语言拆解为标准 Task Schema：
+Task ID 
+子任务列表 
+Agent 映射 
+执行顺序 
+依赖关系 
+
+✔ 2. Agent自动路由
+根据任务类型自动匹配执行者：
+任务类型
+默认 Agent
+代码生成
+CodeWhale / CodexCLI
+文档整理
+MiMo
+测试调试
+CodexCLI
+运维脚本
+OpenCode
+
+✔ 3. DAG执行图生成
+将任务转换为：
+Task-001 ├── Step1 → codex ├── Step2 → whale ├── Step3 → opencode
+
+✔ 4. 执行约束生成
+输入格式约束 
+输出格式约束 
+成功判定条件 
+重试策略 
+
+11.3 标准任务协议（核心新增）
+定义统一 Task Schema：
+{  "task_id": "Task-001",  "goal": "构建API服务模块",  "type": "development",  "priority": "high",  "steps": [    {      "agent": "codex",      "action": "generate_code",      "input": "user login API",      "output_format": "python"    },    {      "agent": "whale",      "action": "optimize",      "input_ref": "step1.output"    }  ],  "success_criteria": [    "可运行",    "无报错",    "通过测试"  ]}
+
+11.4 Task Compiler 工作流程
+用户需求   ↓ChatGPT（战略规划）   ↓Task Compiler（结构化编译）   ↓OpenClaw（调度执行）   ↓Worker Agents（执行）   ↓结果回流 Task Compiler（校验）   ↓OpenClaw（是否重试/重排）
+
+11.5 新增运行命令集
+✔ 手动编译任务
+/task compile Task-001
+
+✔ 查看执行DAG
+/task graph Task-001
+
+✔ 强制重新编译
+/task recompile Task-001 --strict
+
+✔ 任务执行回流
+/task feedback Task-001
+
+11.6 闭环执行机制（核心升级）
+新增三种状态：
+SUCCESS 
+FAILED 
+NEED_REPLAN 
+规则：
+FAILED → 自动重试当前 step 
+NEED_REPLAN → 回到 Task Compiler 
+SUCCESS → 写入成本与日志系统 
+
+11.7 与现有系统兼容性说明
+完全兼容：
+OpenClaw 中枢层（无需修改） 
+ACP通信协议 
+ext01~ext06 扩展层 
+cost / usage 系统 
+安全模块（脱敏 + 加密） 
+
+11.8 架构升级总结
+升级后系统变为：
+ChatGPT（战略层）        ↓Task Compiler（新增核心）        ↓OpenClaw（调度中枢）        ↓Worker Agents（执行层）        ↓结果回流闭环
+

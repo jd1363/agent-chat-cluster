@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "name": "baseline-old-scheme",
+  "createdAt": "2026-06-20T10:38:07.809364+00:00",
+  "reason": "旧方案优先：补配置快照模块后的基线",
+  "copied": [
+    "config/agents.json",
+    "config/policies.json",
+    "config/.round_robin_state",
+    "tasks/tasks.json",
+    "README.md",
+    "PROJECT_PLAN.md",
+    "docs/OPERATOR_RUNBOOK.md",
+    "docs/SECURITY_NOTES.md",
+    "docs/TASK_PROTOCOL.md"
+  ],
+  "missing": [],
+  "restorePaths": [
+    "config/agents.json",
+    "config/policies.json",
+    "config/.round_robin_state",
+    "tasks/tasks.json"
+  ]
+}
