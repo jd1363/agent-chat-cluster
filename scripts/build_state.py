@@ -274,9 +274,11 @@ def build_policy_state(policies_data: Dict[str, Any]) -> Dict[str, Any]:
     auto_out = comm.get("autoOutbound", {})
     dangerous = exec_cfg.get("dangerousCommands", {})
     max_conc = exec_cfg.get("maxConcurrency", {})
+    max_retries = exec_cfg.get("maxRetries", {})
 
     return {
         "maxConcurrency": max_conc.get("value", 1) if isinstance(max_conc, dict) else 1,
+        "maxRetries": max_retries.get("value", 1) if isinstance(max_retries, dict) else 1,
         "globalBroadcastAllowed": global_bc.get("allowed", False) if isinstance(global_bc, dict) else False,
         "autoOutboundAllowed": auto_out.get("allowed", False) if isinstance(auto_out, dict) else False,
         "dangerousCommandsAllowed": dangerous.get("allowed", False) if isinstance(dangerous, dict) else False,
@@ -401,7 +403,7 @@ def print_summary(state: Dict[str, Any]) -> None:
     print(f"消息:   total={messages['total']}  byStatus={messages['byStatus']}  byRecipient={messages['byRecipient']}")
     print(f"审计:   total={audit['total']}  byEventType={audit['byEventType']}")
     print(f"事件:   total={events['total']}  byEventType={events['byEventType']}  byStatus={events['byStatus']}")
-    print(f"策略:   maxConcurrency={policy['maxConcurrency']}  globalBroadcast={policy['globalBroadcastAllowed']}  autoOutbound={policy['autoOutboundAllowed']}  dangerous={policy['dangerousCommandsAllowed']}")
+    print(f"策略:   maxConcurrency={policy['maxConcurrency']}  maxRetries={policy.get('maxRetries', 1)}  globalBroadcast={policy['globalBroadcastAllowed']}  autoOutbound={policy['autoOutboundAllowed']}  dangerous={policy['dangerousCommandsAllowed']}")
     print(f"调度器: pending={scheduler['pendingTasks']}  inProgress={scheduler['inProgressTasks']}  available={scheduler['availableAgents']}  backpressure={scheduler['backpressure']}")
     if scheduler["reasons"]:
         for reason in scheduler["reasons"]:

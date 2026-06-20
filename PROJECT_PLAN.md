@@ -265,8 +265,9 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
   - 支持 `--json` 输出机器可解析 JSON
   - 支持 `--write-event --dry-run` 写入 `scheduler.tick.evaluated` 事件
   - 调度逻辑：maxConcurrency 检查 / Agent 可用性 / 负载均衡选择
+  - 调度逻辑增强：maxRetries 检查 / backpressure 警告 / dead-letter 候选识别
   - 任务选择按 priority（high > medium > low）→ createdAt 排序
-  - Agent 选择按负载最低 → id 排序
+  - Agent 选择按 in_progress 负载最低 → id 排序
   - disabled Agent 绝不被选中
 - [x] 验证：临时 state 文件测试 4 个场景全部 PASS
   - pending task + enabled agent → `suggest_dispatch`
@@ -274,7 +275,8 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
   - no enabled agent → `blocked`
   - disabled agent 不被选中
 - [x] 更新 README.md 与 PROJECT_PLAN.md
-- [ ] 后续：支持 retry limit / backpressure 事件通知
+- [x] 支持 retry limit / backpressure / dead-letter 候选 dry-run 判断
+- [ ] 后续：backpressure 事件通知与 recovery orchestration
 - [ ] 后续：从 dry-run 过渡到真实派工（需审批流程）
 
 ---

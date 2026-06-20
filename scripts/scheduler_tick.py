@@ -3,7 +3,7 @@
 scheduler_tick.py — Scheduler Tick dry-run (Milestone C)
 
 从统一系统状态读取任务/Agent/策略，执行保守调度判断，
-输出推荐或阻塞原因。第一版只做 dry-run，不真实派工。
+输出推荐或阻塞原因。当前版本只做 dry-run，不真实派工。
 
 用法:
     python scripts/scheduler_tick.py --dry-run
@@ -107,6 +107,36 @@ def get_enabled_agents(
     return enabled
 
 
+def get_retry_count(task: Dict[str, Any]) -> int:
+    """读取任务重试次数，兼容未来可能出现的字段名。
+
+    当前 tasks.json 尚未正式引入 retry 字段，因此缺省为 0。
+    """
+    for key in ("retryCount", "retries", "attempts"):
+        value = task.get(key)
+        if isinstance(value, int):
+            return value
+    return 0
+
+
+def count_in_progress_by_agent(tasks_state: Dict[str, Any]) -> Dict[str, int]:
+    """只统计 in_progress 任务负载，避免 done/failed 历史任务污染调度。"""
+    counts: Dict[str, int] = {}
+    items: List[Dict[str, Any]] = tasks_state.get("items", [])
+    if not isinstance(items, list):
+        return counts
+    for task in items:
+        if not isinstance(task, dict):
+            continue
+        if task.get("status") != "in_progress":
+            continue
+        assignee = task.get("assignee")
+        if assignee:
+            agent_id = str(assignee)
+            counts[agent_id] = counts.get(agent_id, 0) + 1
+    return counts
+
+
 def select_agent(
     enabled_agents: List[Dict[str, Any]],
     by_assignee: Dict[str, int],
@@ -150,17 +180,38 @@ def run_tick(state: Dict[str, Any]) -> Dict[str, Any]:
     # 提取关键数据
     pending_tasks = get_pending_tasks(tasks_state)
     enabled_agents = get_enabled_agents(agents_state)
-    by_assignee: Dict[str, int] = tasks_state.get("byAssignee", {})
+    by_assignee: Dict[str, int] = count_in_progress_by_agent(tasks_state)
 
     max_concurrency: int = policy_state.get("maxConcurrency", 1)
+    max_retries: int = policy_state.get("maxRetries", 1)
     in_progress: int = scheduler_state.get("inProgressTasks", 0)
     pending_count: int = len(pending_tasks)
     available_count: int = len(enabled_agents)
+    capacity: int = max_concurrency
+
+    retry_exhausted_tasks: List[Dict[str, Any]] = [
+        t for t in pending_tasks if get_retry_count(t) > max_retries
+    ]
+    schedulable_tasks: List[Dict[str, Any]] = [
+        t for t in pending_tasks if get_retry_count(t) <= max_retries
+    ]
 
     reasons: List[str] = []
+    warnings: List[str] = []
     decision: str
     selected_task: Optional[Dict[str, Any]] = None
     selected_agent: Optional[Dict[str, Any]] = None
+
+    if pending_count > available_count * max_concurrency and pending_count > 0:
+        warnings.append(
+            "backpressure: pending tasks exceed available scheduling capacity "
+            f"({pending_count} > {available_count} agents × {max_concurrency})"
+        )
+    if retry_exhausted_tasks:
+        warnings.append(
+            f"{len(retry_exhausted_tasks)} pending task(s) exceed maxRetries={max_retries}; "
+            "candidate for dead-letter handling"
+        )
 
     # 步骤 1: 检查是否有 pending task
     if pending_count == 0:
@@ -176,10 +227,14 @@ def run_tick(state: Dict[str, Any]) -> Dict[str, Any]:
     elif available_count == 0:
         decision = "blocked"
         reasons.append("no enabled agents available")
-    # 步骤 4: 可以调度
+    # 步骤 4: retry 策略过滤
+    elif not schedulable_tasks:
+        decision = "blocked"
+        reasons.append("all pending tasks exceed retry policy; dead-letter handling required")
+    # 步骤 5: 可以调度
     else:
         decision = "suggest_dispatch"
-        selected_task = pending_tasks[0]
+        selected_task = schedulable_tasks[0]
         selected_agent = select_agent(enabled_agents, by_assignee)
         if selected_agent is None:
             decision = "blocked"
@@ -193,9 +248,12 @@ def run_tick(state: Dict[str, Any]) -> Dict[str, Any]:
 
     constraints = {
         "maxConcurrency": max_concurrency,
+        "maxRetries": max_retries,
         "inProgressTasks": in_progress,
         "pendingTasks": pending_count,
         "availableAgents": available_count,
+        "capacity": capacity,
+        "backpressure": bool(warnings),
     }
 
     result: Dict[str, Any] = {
@@ -206,6 +264,8 @@ def run_tick(state: Dict[str, Any]) -> Dict[str, Any]:
         "selectedTask": selected_task["id"] if selected_task else None,
         "selectedAgent": selected_agent["id"] if selected_agent else None,
         "reasons": reasons,
+        "warnings": warnings,
+        "deadLetterCandidates": [t.get("id") for t in retry_exhausted_tasks],
         "constraints": constraints,
         "wouldWriteEvent": False,
         "eventId": None,
@@ -229,6 +289,8 @@ def write_scheduler_event(decision_result: Dict[str, Any]) -> str:
         "selectedAgent": decision_result["selectedAgent"],
         "reasons": decision_result["reasons"],
         "constraints": decision_result["constraints"],
+        "warnings": decision_result.get("warnings", []),
+        "deadLetterCandidates": decision_result.get("deadLetterCandidates", []),
     }
 
     script = str(PROJECT_ROOT / "scripts" / "event_log.py")
@@ -291,6 +353,12 @@ def print_summary(result: Dict[str, Any]) -> None:
     if result["reasons"]:
         for r in result["reasons"]:
             print(f"  → {r}")
+    if result.get("warnings"):
+        print("警告:")
+        for w in result["warnings"]:
+            print(f"  ! {w}")
+    if result.get("deadLetterCandidates"):
+        print(f"Dead-letter 候选: {', '.join(result['deadLetterCandidates'])}")
     if result["selectedTask"]:
         print(f"推荐任务: {result['selectedTask']}")
     if result["selectedAgent"]:
