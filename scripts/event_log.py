@@ -135,17 +135,27 @@ def save_state(state: dict) -> None:
 
 
 def allocate_event_id() -> str:
-    """线程安全地分配当天唯一 eventId。"""
+    """线程安全地分配当天唯一 eventId（跨天自动重置计数）。"""
     lock_fd = acquire_state_lock()
     try:
         state = load_state()
-        next_number = state.get("nextEventNumber", 1)
-        if not isinstance(next_number, int) or next_number < 1:
-            fail("事件状态 nextEventNumber 必须是正整数")
+        current_date = datetime.now(timezone.utc).strftime("%Y%m%d")
+        stored_date = state.get("date")
 
-        date_part = today_str().replace("-", "")
-        event_id = f"EVT-{date_part}-{next_number:06d}"
+        # 跨天重置：state date 与当前 UTC 日期不一致时，计数归 1
+        # 兼容旧 state：date 缺失时保留 nextEventNumber 并补上当前日期
+        if stored_date is None:
+            next_number = state.get("nextEventNumber", 1)
+            state["date"] = current_date
+        elif stored_date != current_date:
+            next_number = 1
+            state["date"] = current_date
+        else:
+            next_number = state.get("nextEventNumber", 1)
+            if not isinstance(next_number, int) or next_number < 1:
+                fail("事件状态 nextEventNumber 必须是正整数")
 
+        event_id = f"EVT-{current_date}-{next_number:06d}"
         state["nextEventNumber"] = next_number + 1
         save_state(state)
         return event_id
