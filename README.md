@@ -10,6 +10,26 @@
 >
 > **系统级架构升级已启动但暂缓继续开发**：Milestone A/B/C（Event Layer / State Builder / Scheduler Tick）保留为 MVP v2 / Control Plane Prototype 预研；先完成旧方案 MVP v1 收口，不继续推进 Milestone D。详见 [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md) 与 [`docs/architecture/system_architecture.html`](docs/architecture/system_architecture.html)。
 
+## 交付入口
+
+- **最终交付报告**：[`MVP_DELIVERY_REPORT.md`](MVP_DELIVERY_REPORT.md)
+- **演示手册**：[`DEMO_RUNBOOK.md`](DEMO_RUNBOOK.md)
+- **项目状态总表**：[`PROJECT_STATUS.md`](PROJECT_STATUS.md)
+- **阶段 2 总验收**：[`ACCEPTANCE_STAGE2.md`](ACCEPTANCE_STAGE2.md)
+- **阶段 3 总验收**：[`ACCEPTANCE_STAGE3.md`](ACCEPTANCE_STAGE3.md)
+
+### 5 分钟演示路径
+
+```powershell
+python scripts\check_env.py --skip-external
+python scripts\validate_task.py
+python scripts\show_history.py --report
+python scripts\suggest_assignee.py --title "demo task" --strategy load
+python scripts\review_command.py --agent-id agent-ext-01 --command "rm -rf /"
+```
+
+详细流程见 [`DEMO_RUNBOOK.md`](DEMO_RUNBOOK.md)。
+
 ## MVP 范围（当前阶段）
 
 - **主控节点**：负责任务下发、状态跟踪、策略校验、命令审批。
