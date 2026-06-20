@@ -5,3 +5,8 @@ __pycache__/
 
 # Local temporary files
 .tmp_*.py
+docs/_tmp_old_scheme_extract/
+
+# Runtime snapshots and cost logs
+snapshots/
+logs/cost/

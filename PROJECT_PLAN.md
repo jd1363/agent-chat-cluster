@@ -107,9 +107,9 @@
 
 ### 下一步优先级
 
-1. 本地成本/Token 估算台账：替代旧方案不可确认的 `/usage` 命令，先做手动/估算记录、日报汇总、预算阈值提示，不承诺精确美元级自动暂停。
-2. 旧方案命令映射器：把 `/task`、`/audit`、`/snapshot`、`/usage`、`/acp spawn` 等伪命令映射到当前真实脚本或标记为 forbidden/pending。
-3. 多维度告警雏形：先做本地状态/日志告警，不做自动自愈，不做无限重启。
+1. [x] 本地成本/Token 估算台账：`scripts/record_cost.py` + `scripts/show_cost.py`，替代旧方案不可确认的 `/usage` 命令第一版，先做手动/估算记录、汇总、预算阈值提示，不承诺精确美元级自动暂停。
+2. [x] 旧方案命令映射器：`scripts/command_map.py`，把 `/task`、`/audit`、`/snapshot`、`/usage`、`/acp spawn` 等伪命令映射到当前真实脚本或标记为 forbidden/pending。
+3. [ ] 多维度告警雏形：先做本地状态/日志告警，不做自动自愈，不做无限重启。
 
 ### 暂缓项
 
