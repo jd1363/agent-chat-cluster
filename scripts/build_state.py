@@ -108,14 +108,13 @@ def read_jsonl_dir(dir_path: Path, dir_label: str) -> List[Dict[str, Any]]:
                     try:
                         record = json.loads(stripped)
                     except json.JSONDecodeError as e:
-                        fail(
-                            f"{dir_label} JSONL 解析失败: {path.name} "
-                            f"第 {line_no} 行 — {e}"
-                        )
+                        rel = str(path.relative_to(PROJECT_ROOT))
+                        fail(f"JSONL 解析失败: {rel}:{line_no} — {e}")
                     if isinstance(record, dict):
                         records.append(record)
         except OSError as e:
-            fail(f"无法读取 {dir_label} 日志: {path.name} — {e}")
+            rel = str(path.relative_to(PROJECT_ROOT))
+            fail(f"无法读取日志: {rel} — {e}")
 
     return records
 
@@ -459,15 +458,19 @@ def main() -> None:
     # 构建状态
     state = build_state()
 
-    # 打印摘要
-    print_summary(state)
+    # 摘要仅在非 --json 模式下输出
+    if not args.json_output:
+        print_summary(state)
 
-    # 输出
+    # JSON 输出
     if args.json_output:
-        print(json.dumps(state, ensure_ascii=False, indent=2))
+        # stdout 使用 ensure_ascii=True 保证跨平台 UTF-8 稳定性
+        # 文件写入（write_state）仍使用 ensure_ascii=False 保持中文可读
+        print(json.dumps(state, ensure_ascii=True, indent=2))
 
     if args.dry_run:
-        print("\n[Dry-run] 未写入文件。")
+        if not args.json_output:
+            print("\n[Dry-run] 未写入文件。")
         return
 
     # 写主输出（除非只用了 --json）
@@ -477,14 +480,16 @@ def main() -> None:
 
     output_path = Path(args.output) if args.output else DEFAULT_OUTPUT
     write_state(state, output_path)
-    print(f"\n[OK] 状态已写入: {output_path}")
+    if not args.json_output:
+        print(f"\n[OK] 状态已写入: {output_path}")
 
     # 快照
     if args.snapshot:
         snapshot_name = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ") + ".json"
         snapshot_path = SNAPSHOTS_DIR / snapshot_name
         write_state(state, snapshot_path)
-        print(f"[OK] 快照已写入: {snapshot_path}")
+        if not args.json_output:
+            print(f"[OK] 快照已写入: {snapshot_path}")
 
 
 if __name__ == "__main__":
