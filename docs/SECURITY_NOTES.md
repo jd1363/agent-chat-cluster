@@ -27,14 +27,15 @@
 
 ---
 
-## 3. 全局广播（Global Broadcast）
+## 3. 全局广播 / 受控主控多播（Global Broadcast）
 
 **风险**：未经授权的全局消息广播可能导致信息交叉污染、权限扩散或拒绝服务。
 
 **缓解**：
-- 策略 `globalBroadcast` 默认关闭，MVP 阶段仅支持主控→单 Agent 点对点通信。
-- 任何广播能力的开启需双重人工审批 + 审计记录。
-- 禁止 Agent 直接向其他 Agent 发送消息，所有通信须经主控路由。
+- 策略 `globalBroadcast` 默认关闭。脚本层面读取 `config/policies.json`，未显式 `--manual-approval` 时拒绝 `--to all`。
+- 当前允许的只是“主控受控多播到所有已启用 Agent”，不是 Agent 群聊；Agent 仍禁止直接向其他 Agent 发送消息。
+- 多播审计事件 `broadcast_sent` 必须记录 `recipientCount`、收件人列表和 `manualApproval` 字段。
+- 优先使用点对点消息；多播只用于维护通知、巡检等低风险场景。
 
 ---
 
@@ -72,4 +73,4 @@
 
 ---
 
-*文档版本：MVP-v1.0*
+*文档版本：Phase3-v1.1*

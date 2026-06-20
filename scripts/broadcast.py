@@ -23,9 +23,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Broadcast a message to all enabled Agents")
     parser.add_argument("--message", required=True, help="Message content")
     parser.add_argument("--json", action="store_true", dest="json_output", help="Output JSON")
+    parser.add_argument(
+        "--manual-approval",
+        action="store_true",
+        help="Confirm human approval when globalBroadcast is disabled by policy",
+    )
     args = parser.parse_args()
 
-    result = send_broadcast(args.message)
+    result = send_broadcast(args.message, manual_approval=args.manual_approval)
     if args.json_output:
         print(json.dumps({"ok": True, "broadcast": result}, ensure_ascii=False, indent=2))
     else:

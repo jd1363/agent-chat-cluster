@@ -12,7 +12,7 @@
 - **环境自检脚本**：`scripts/check_env.py` 快速验证目录、配置与基础命令可用性。
 - **任务协议与审计**：`docs/TASK_PROTOCOL.md` 定义派工与回报格式；`scripts/audit_log.py` 记录不可篡改审计日志。
 - **明确禁止的功能（阶段 0-2）**：
-  - 全局群聊 / 广播
+  - 未审批的全局群聊 / 广播（受控主控多播必须显式人工确认）
   - 自动外发网络请求
   - 自动自愈（self-heal）
   - 高危险命令自动执行
@@ -86,6 +86,10 @@ python scripts/benchmark_pipeline.py --mode agent --json
 python scripts/send_message.py --to agent-ext-01 --message "check config"
 python scripts/send_message.py --to agent-ext-01 --message "task dispatched" --json
 
+# 受控主控多播（globalBroadcast 默认关闭；必须显式人工确认）
+python scripts/send_message.py --to all --message "maintenance notice" --manual-approval
+python scripts/broadcast.py --message "maintenance notice" --manual-approval --json
+
 # 接收消息（获取最新未读消息）
 python scripts/receive_message.py --agent-id agent-ext-01
 python scripts/receive_message.py --agent-id agent-ext-01 --mark-read --json
@@ -122,9 +126,11 @@ python scripts/list_messages.py --json
 | `scripts/suggest_assignee.py` | 任务分配策略引擎：round-robin / load / specialist | 阶段 2 扩容，只读不写 |
 | `scripts/review_command.py` | 命令风险审批：REJECTED/NEEDS_REVIEW/APPROVED | 阶段 2 安全闸，只读不写 |
 | `scripts/benchmark_pipeline.py` | 性能基线报告：状态分布/流水线瓶颈/Agent 负载 | 阶段 2 基线，只读不写 |
-| `scripts/send_message.py` | 主控向已启用 Agent 发送消息，写入每日 JSONL 日志 | 阶段 2 消息总线，只写 |
-| `scripts/receive_message.py` | Agent 获取最新未读消息，支持标记为已读 | 阶段 2 消息总线，只读 |
+| `scripts/send_message.py` | 主控向已启用 Agent 发送消息；`--to all` 需 `--manual-approval` | 阶段 2 消息总线，只写 |
+| `scripts/broadcast.py` | 受控主控多播包装脚本；遵守 `globalBroadcast` 策略门禁 | 阶段 2 消息总线，只写 |
+| `scripts/receive_message.py` | Agent 获取最新未读消息，支持标记为已读 / ACK | 阶段 2 消息总线，读+追加状态 |
 | `scripts/list_messages.py` | 查询消息历史，支持按收件人/发送者/状态/日期过滤 | 阶段 2 消息总线，只读 |
+| `scripts/resend_unacked.py` | 对未 ACK 的 sent 消息执行 dry-run / 重发 / 标记失败 | 阶段 2 消息总线，默认会追加审计 |
 
 ## 注意事项
 

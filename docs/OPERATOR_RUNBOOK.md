@@ -1,8 +1,8 @@
 # 人工操作手册 (Operator Runbook)
 
 > **适用角色**：项目经理 / 主控管理员 / 执行工程师
-> **当前版本**：阶段 2 前置安全闸
-> **上次更新**：2026-06-14
+> **当前版本**：阶段 3 消息总线收口
+> **上次更新**：2026-06-20
 
 本文档描述 Agent Chat Cluster 日常运维的完整人工操作流程。所有操作通过 Python 脚本完成，**不依赖 ACP agent 运行**。
 
@@ -309,7 +309,7 @@ python scripts/benchmark_pipeline.py --json
 | `dd` 直接磁盘写入 | 数据破坏风险 |
 | 自动外发网络请求 | 数据泄漏风险 |
 | 自动启动 ACP agent | 未经人工审批 |
-| 全局广播/群聊 | 信息交叉污染 |
+| 未审批全局广播/群聊 | 信息交叉污染；受控主控多播必须显式 `--manual-approval` 并记录审计 |
 | 自动自愈 (self-heal) | 未经验证的自动修复 |
 | 修改文件/目录权限 | 安全策略绕过 |
 | 安装额外依赖 | 环境不可控 |
@@ -325,7 +325,9 @@ python scripts/benchmark_pipeline.py --json
 
 ## 12. 消息总线操作
 
-消息总线是主控向 Agent 发送指令的轻量通道（非群聊，仅点对点）。消息存储于 `logs/messages/YYYY-MM-DD.jsonl`，每条消息以 `MSG-XXXX` 格式自动编号，审计日志记录 `message_sent` 事件。
+消息总线是主控向 Agent 发送指令的轻量通道。默认模式是点对点；`--to all` 只代表“主控受控多播到所有已启用 Agent”，不是 Agent 群聊。消息存储于 `logs/messages/YYYY-MM-DD.jsonl`，每条消息以 `MSG-XXXX` 格式自动编号，审计日志记录 `message_sent` / `broadcast_sent` 等事件。
+
+策略门禁：`config/policies.json` 中 `communication.globalBroadcast.allowed=false` 时，任何多播必须显式传入 `--manual-approval`，否则脚本拒绝执行。
 
 ### 发送消息
 
@@ -335,12 +337,17 @@ python scripts/send_message.py --to agent-ext-01 --message "check config"
 
 # JSON 输出（供脚本消费）
 python scripts/send_message.py --to agent-ext-01 --message "task dispatched" --json
+
+# 受控主控多播：必须有人工确认
+python scripts/send_message.py --to all --message "maintenance notice" --manual-approval
+python scripts/broadcast.py --message "maintenance notice" --manual-approval --json
 ```
 
 **约束**：
-- 收件人必须在 `config/agents.json` 中存在且 `enabled=true`。
+- 单播收件人必须在 `config/agents.json` 中存在且 `enabled=true`。
+- 多播只发送给所有 `enabled=true` 的 Agent；当策略 `globalBroadcast.allowed=false` 时，必须显式 `--manual-approval`。
 - 消息写入当日 JSONL 文件，自动递增消息编号。
-- 审计日志自动记录（`message_sent` 事件）。
+- 审计日志自动记录（单播 `message_sent`，多播 `broadcast_sent`，并记录 `manualApproval` 字段）。
 
 ### 接收消息
 
@@ -351,13 +358,18 @@ python scripts/receive_message.py --agent-id agent-ext-01
 # 接收并标记为已读
 python scripts/receive_message.py --agent-id agent-ext-01 --mark-read
 
+# 接收并发送 ACK 给 master
+python scripts/receive_message.py --agent-id agent-ext-01 --ack
+
 # JSON 输出
 python scripts/receive_message.py --agent-id agent-ext-01 --json
 ```
 
 说明：
 - 扫描所有历史消息文件，返回该 Agent 最新一条 `status!=read` 的消息。
-- `--mark-read` 会在日志末尾追加一条 `status=read` 的记录，不会修改原始发送记录。
+- `--mark-read` 会在日志末尾追加一条 `status=read` 的记录，不会修改原始发送记录；读取时间写入 `readAt`，保留原始 `timestamp`。
+- `--ack` 会追加一条系统 ACK 消息，字段 `ackFor` 指向原消息 ID。
+- 单个消息日志文件超过 5MB 时，`receive_message.py` 拒绝读取，防止日志膨胀拖垮脚本。
 - 无未读消息时输出 `[INFO] No new messages`，不报错。
 
 ### 查看消息历史
@@ -386,6 +398,25 @@ python scripts/list_messages.py --to agent-ext-01 --status sent --json
 - 只读操作，扫描所有历史 JSONL 文件，按时间倒序返回。
 - 默认最多返回 20 条，使用 `--limit N` 可调整。
 - 过滤条件可任意组合。
+
+### 未 ACK 消息重发 / 失败处理
+
+```bash
+# 只预览，不写文件
+python scripts/resend_unacked.py --timeout-minutes 5 --dry-run
+
+# JSON 预览
+python scripts/resend_unacked.py --timeout-minutes 5 --dry-run --json
+
+# 实际执行：未 ACK 且超过 timeout 的 sent 消息会重发；超过最大重试次数会标记 failed
+python scripts/resend_unacked.py --timeout-minutes 5
+```
+
+说明：
+- 默认最大重试次数为 3。
+- 有 `ackFor` 的系统 ACK 消息会让对应消息跳过重发。
+- 实际执行会追加消息状态记录，并写入 `message_resent` / `message_failed` 审计事件。
+- 优先使用 `--dry-run` 预览，避免把测试消息误重发成垃圾堆。
 
 ---
 
@@ -428,7 +459,7 @@ python scripts/list_messages.py --to agent-ext-01 --status sent --json
 
 ---
 
-*文档版本：Phase2-v1.1（新增第14节：任务拆分原则）*
+*文档版本：Phase3-v1.2（消息总线策略门禁 + ACK/重发说明）*
 
 ---
 
