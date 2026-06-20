@@ -111,6 +111,15 @@ python scripts/list_messages.py
 python scripts/list_messages.py --to agent-ext-01
 python scripts/list_messages.py --status sent --since 2026-06-18
 python scripts/list_messages.py --json
+
+# 事件日志（Milestone A：Event Layer 骨架）
+python scripts/event_log.py append --event-type task.created --source test --correlation-id Task-001 --payload '{"title":"demo"}'
+python scripts/event_log.py append --event-type task.created --json
+python scripts/event_log.py list
+python scripts/event_log.py list --date 2026-06-20 --event-type task.created --limit 10
+python scripts/event_log.py list --correlation-id Task-001 --json
+python scripts/event_log.py replay --dry-run
+python scripts/event_log.py replay --date 2026-06-20 --dry-run --json
 ```
 
 ## 项目结构
@@ -143,6 +152,7 @@ python scripts/list_messages.py --json
 | `scripts/receive_message.py` | Agent 获取最新未读消息，支持标记为已读 / ACK | 阶段 2 消息总线，读+追加状态 |
 | `scripts/list_messages.py` | 查询消息历史，支持按收件人/发送者/状态/日期过滤 | 阶段 2 消息总线，只读 |
 | `scripts/resend_unacked.py` | 对未 ACK 的 sent 消息执行 dry-run / 重发 / 标记失败 | 阶段 2 消息总线，默认会追加审计 |
+| `scripts/event_log.py` | 事件日志骨架：append/list/replay，按天 JSONL，跨进程并发安全 | Milestone A，读写，仅标准库 |
 
 ## 注意事项
 

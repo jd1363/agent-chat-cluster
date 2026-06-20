@@ -220,6 +220,24 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
 
 ---
 
+---
+
+## Milestone A：Event Layer 骨架（进行中，2026-06-20）
+
+目标：新增事件日志能力，为后续 Scheduler / State Store 做基础。先不改造现有业务脚本，只新增事件日志模块。
+
+- [x] 新增 `scripts/event_log.py` — 标准库 only 本地事件日志模块
+  - 按天 JSONL 存储：`logs/events/YYYY-MM-DD.jsonl`
+  - 死信队列预留：`logs/dead_letter/YYYY-MM-DD.jsonl`
+  - 事件结构：eventId / eventType / timestamp / source / correlationId / causationId / payload / policySnapshot / status
+  - CLI 子命令：`append` / `list` / `replay --dry-run`
+  - 跨进程并发安全：基于 `.state` + `.state.lock` 文件锁
+- [ ] 后续：将现有业务脚本逐步接入事件日志
+- [ ] 后续：引入 Scheduler 调度器骨架
+- [ ] 后续：统一 State Store
+
+---
+
 ## 长期愿景（暂不实施）
 
 - 动态 Agent 注册与发现
