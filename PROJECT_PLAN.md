@@ -8,6 +8,15 @@
 
 ---
 
+
+## 当前总状态（2026-06-20）
+
+- **MVP v1 主线**：Phase 0-3，已完成并进入收口；详见 `ACCEPTANCE_STAGE0.md`、`ACCEPTANCE_STAGE1.md`、`ACCEPTANCE_STAGE2.md`、`ACCEPTANCE_STAGE3.md`。
+- **MVP v2 / Control Plane Prototype 预研线**：Milestone A/B/C（Event Layer / State Builder / Scheduler Tick）已启动并有骨架产物，但当前暂缓继续开发，不替代旧方案验收。
+- **当前下一步**：先完成 MVP v1 文档、验收与项目状态收口；不要继续开发 Milestone D 或新增系统化功能。
+
+---
+
 ## 阶段 0：基础骨架（已验收）
 
 目标：建立最小可运行环境，确保主控与一个示例 Agent 能协同工作。
@@ -23,7 +32,7 @@
 
 ---
 
-## 阶段 1：主控-单 Agent 闭环验证（当前）
+## 阶段 1：主控-单 Agent 闭环验证（已验收）
 
 目标：建立协议与审计层，验证主控→Agent 的派工提示生成与任务状态闭环，但**仍不启动 ACP agent**。
 
@@ -45,7 +54,7 @@
 
 ---
 
-## 阶段 2：可控扩展至多 Agent
+## 阶段 2：可控扩展至多 Agent（已验收，MVP v1）
 
 目标：在阶段 1 验证通过的前提下，谨慎扩展至多 Agent 场景。
 
@@ -54,7 +63,7 @@
 - [x] `scripts/validate_task.py` — 校验台账完整性、ID 格式（Task-三位数字）、status/priority 合法性、assignee 是否存在于 `config/agents.json` 且 `enabled=true`。失败 exit 1，作为所有任务操作的前置安全闸。
 - [x] `scripts/dispatch_task.py` assignee 校验 — 在任何任务状态修改、派工文件写入、审计日志写入之前，校验 `--assignee` 参数对应的 Agent 是否存在于 `config/agents.json` 且 `enabled=true`。拒绝未启用或未注册的 assignee，任务保持 pending 状态不变。
 
-### 前置安全闸第二块（已实现，待验收）
+### 前置安全闸第二块（已验收）
 
 - [x] `scripts/list_tasks.py` — 只读查看任务台账。支持 `--status` `--assignee` `--json`，按 id 排序。不修改任何文件。
 - [x] `scripts/show_audit.py` — 只读查看审计日志。支持 `--date` `--task-id` `--event-type` `--limit` `--json`。不修改任何文件。
@@ -80,7 +89,7 @@
 
 - [x] `agent-ext-01` 启用：`config/agents.json` enabled=true。由 CodeWhale 执行，`test_isolation.py` 验证两台 Agent 隔离全部通过。
 
-### 待实现
+### 扩展能力（已验收）
 
 - [x] 引入任务分配策略（轮询 / 负载 / 专岗）— `scripts/suggest_assignee.py` 已验收（CodeWhale，2026-06-18）
 - [x] 评估是否引入轻量级"消息总线"（非群聊，仅主控转发）— ✅ 已完成（2026-06-18）
@@ -94,7 +103,7 @@
 
 ---
 
-## 旧方案管理模块落地（当前主线，2026-06-20 切回）
+## 旧方案管理模块落地（MVP v1 收口项，2026-06-20 切回）
 
 目标：优先补齐原始方案中的管理能力，但全部替换为当前项目真实可运行的 Python 脚本 / 文件台账 / OpenClaw 工具能力，不直接照搬未验证 slash 命令。
 
@@ -119,7 +128,7 @@
 
 ---
 
-## 从 MVP 到系统级架构升级（后续增强线，2026-06-20 新增）
+## 从 MVP 到系统级架构升级（MVP v2 / Control Plane Prototype 预研，暂缓继续开发）
 
 ### 核心判断
 
@@ -243,13 +252,13 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
 
 这是项目从“MVP”跨到“系统级设计”的关键一步。
 
----
+> 当前口径：上述内容保留为 MVP v2 / Control Plane Prototype 的预研路线。旧方案 MVP v1 的验收仍以 Phase 0-3 为准；在 MVP v1 收口前，不继续推进 Milestone D，不新增系统化功能。
 
 ---
 
-## Milestone A：Event Layer 骨架（进行中，2026-06-20）
+## Milestone A：Event Layer 骨架（MVP v2 预研；骨架已完成，暂缓继续扩展）
 
-目标：新增事件日志能力，为后续 Scheduler / State Store 做基础。先不改造现有业务脚本，只新增事件日志模块。
+目标：新增事件日志能力，为后续 Scheduler / State Store 做基础。先不改造现有业务脚本，只新增事件日志模块。当前定位为系统化升级预研产物，不替代 MVP v1 Phase 0-3 验收。
 
 - [x] 新增 `scripts/event_log.py` — 标准库 only 本地事件日志模块
   - 按天 JSONL 存储：`logs/events/YYYY-MM-DD.jsonl`
@@ -257,15 +266,15 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
   - 事件结构：eventId / eventType / timestamp / source / correlationId / causationId / payload / policySnapshot / status
   - CLI 子命令：`append` / `list` / `replay --dry-run`
   - 跨进程并发安全：基于 `.state` + `.state.lock` 文件锁
-- [ ] 后续：将现有业务脚本逐步接入事件日志
-- [ ] 后续：引入 Scheduler 调度器骨架
-- [ ] 后续：统一 State Store
+- [ ] 后续暂缓：将现有业务脚本逐步接入事件日志
+- [ ] 后续暂缓：引入 Scheduler 调度器骨架
+- [ ] 后续暂缓：统一 State Store
 
 ---
 
-## Milestone B：State Builder（已完成，2026-06-20）
+## Milestone B：State Builder（MVP v2 预研；已完成，暂缓继续扩展）
 
-目标：从现有文件重建统一系统状态，为 Scheduler Tick 提供统一事实源。
+目标：从现有文件重建统一系统状态，为 Scheduler Tick 提供统一事实源。当前定位为系统化升级预研产物，不替代 MVP v1 Phase 0-3 验收。
 
 - [x] 新增 `scripts/build_state.py` — 标准库 only 统一状态构建模块
   - 读取 tasks/tasks.json、config/agents.json、config/policies.json
@@ -276,13 +285,13 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
   - 不修改原始业务文件
 - [x] 新增 `state/` 与 `state/snapshots/` 目录
 - [x] 更新 README.md 与 PROJECT_PLAN.md
-- [ ] 后续：稳定后迁移 SQLite / 接入事件流
+- [ ] 后续暂缓：稳定后迁移 SQLite / 接入事件流
 
 ---
 
-## Milestone C：Scheduler Tick（进行中：第一版 dry-run 已实现，2026-06-20）
+## Milestone C：Scheduler Tick（MVP v2 预研；dry-run 已实现，暂缓继续扩展）
 
-目标：引入可控调度循环，但不自动执行真实 Agent。第一版只做 dry-run 调度决策。
+目标：引入可控调度循环，但不自动执行真实 Agent。第一版只做 dry-run 调度决策。当前定位为系统化升级预研产物，不替代旧方案派工/验收链路。
 
 - [x] 新增 `scripts/scheduler_tick.py` — 标准库 only 调度器 dry-run
   - 读取 `state/system_state.json` 统一状态
@@ -301,8 +310,8 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
   - disabled agent 不被选中
 - [x] 更新 README.md 与 PROJECT_PLAN.md
 - [x] 支持 retry limit / backpressure / dead-letter 候选 dry-run 判断
-- [ ] 后续：backpressure 事件通知与 recovery orchestration
-- [ ] 后续：从 dry-run 过渡到真实派工（需审批流程）
+- [ ] 后续暂缓：backpressure 事件通知与 recovery orchestration
+- [ ] 后续暂缓：从 dry-run 过渡到真实派工（需审批流程）
 
 ---
 

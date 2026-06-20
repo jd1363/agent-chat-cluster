@@ -2,11 +2,13 @@
 
 本项目旨在构建一个受控的多智能体协作平台，由 OpenClaw 主会话/项目经理作为主控/管理员负责决策，OpenCode/ACP Agent 作为执行工程师负责执行，逐步验证安全策略、任务调度与命令管控。
 
-> **阶段 2 已完成**：双 Agent 启用、任务分配策略、命令审批节点、性能基线全部验收通过。
+> **当前状态：MVP v1 收口中**。旧方案 Phase 0-3 是当前主线，阶段 2 已完成并验收，阶段 3 已完成并验收；详见 `ACCEPTANCE_STAGE2.md`、`ACCEPTANCE_STAGE3.md` 与 `PROJECT_STATUS.md`。
 >
-> **系统级架构升级已启动**：详见 [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md)，架构图见 [`docs/architecture/system_architecture.html`](docs/architecture/system_architecture.html)。
+> **阶段 2 已完成 / 已验收**：双 Agent 启用、任务分配策略、命令审批节点、性能基线、轻量消息总线基础全部通过。
 >
-> **当前主线已切回旧方案落地**：优先补齐原始方案中的管理能力（审计、配置快照、告警、批量管理、标签/权限等），系统级 Event/Scheduler/State 升级线暂作为后续增强保留。
+> **阶段 3 已完成 / 已验收**：真实 subagent 验证、list_tasks/check_env/show_audit 验证、receive_message 修复、ACK/重发、broadcast 策略门禁、消息 ID 锁全部收口。
+>
+> **系统级架构升级已启动但暂缓继续开发**：Milestone A/B/C（Event Layer / State Builder / Scheduler Tick）保留为 MVP v2 / Control Plane Prototype 预研；先完成旧方案 MVP v1 收口，不继续推进 Milestone D。详见 [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md) 与 [`docs/architecture/system_architecture.html`](docs/architecture/system_architecture.html)。
 
 ## MVP 范围（当前阶段）
 
@@ -15,7 +17,7 @@
 - **本地文件级任务台账**：`tasks/tasks.json` 记录任务生命周期。
 - **环境自检脚本**：`scripts/check_env.py` 快速验证目录、配置与基础命令可用性。
 - **任务协议与审计**：`docs/TASK_PROTOCOL.md` 定义派工与回报格式；`scripts/audit_log.py` 记录不可篡改审计日志。
-- **明确禁止的功能（阶段 0-2）**：
+- **明确禁止的功能（MVP v1 / Phase 0-3）**：
   - 未审批的全局群聊 / 广播（受控主控多播必须显式人工确认）
   - 自动外发网络请求
   - 自动自愈（self-heal）
