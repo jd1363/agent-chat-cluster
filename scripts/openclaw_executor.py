@@ -39,6 +39,10 @@ from pathlib import Path
 from shutil import which
 from typing import Any, Dict, Optional
 
+# 导入文件锁
+sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+from file_lock import file_lock  # type: ignore
+
 # ── 路径常量 ──────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TASKS_FILE = PROJECT_ROOT / "tasks" / "tasks.json"
@@ -230,8 +234,15 @@ def main() -> int:
                         help="超时秒数（--direct 模式，默认从 policies.json 读取）")
     args = parser.parse_args()
 
-    tasks_data = load_json(TASKS_FILE)
-    task = find_task(tasks_data, args.task_id)
+    # ── 读取任务（加共享锁） ──
+    try:
+        with file_lock(str(TASKS_FILE), mode='shared'):
+            tasks_data = load_json(TASKS_FILE)
+            task = find_task(tasks_data, args.task_id)
+    except TimeoutError as e:
+        _utf8_print(f"[ERROR] 获取文件锁超时: {e}")
+        return 1
+
     if not task:
         _utf8_print(f"[ERROR] 任务 {args.task_id} 不存在")
         return 1
@@ -246,10 +257,23 @@ def main() -> int:
 
         # 判断成功/失败
         is_success = not result_text.startswith("[EXECUTION FAILED]")
-        task["output"] = result_text[:1024 * 1024]
-        task["status"] = "done" if is_success else "failed"
-        task["updatedAt"] = _now_iso()
-        save_json(TASKS_FILE, tasks_data)
+
+        # read-modify-write 原子操作，加排他锁
+        try:
+            with file_lock(str(TASKS_FILE), mode='exclusive'):
+                # 重新加载最新数据
+                tasks_data = load_json(TASKS_FILE)
+                task = find_task(tasks_data, args.task_id)
+                if not task:
+                    _utf8_print(f"[ERROR] 任务 {args.task_id} 不存在（重载后）")
+                    return 1
+                task["output"] = result_text[:1024 * 1024]
+                task["status"] = "done" if is_success else "failed"
+                task["updatedAt"] = _now_iso()
+                save_json(TASKS_FILE, tasks_data)
+        except TimeoutError as e:
+            _utf8_print(f"[ERROR] 获取文件锁超时: {e}")
+            return 1
 
         event = "openclaw_executor_success" if is_success else "openclaw_executor_failed"
         write_audit(event, args.task_id, f"collect, output={len(result_text)}字符")
@@ -302,12 +326,23 @@ def main() -> int:
 
         if result["success"]:
             _utf8_print(f"[OK] 执行完成 ({elapsed:.1f}s)")
-            task["output"] = result["output"]
-            task["status"] = "done"
-            task["updatedAt"] = _now_iso()
-            task["notes"] = (task.get("notes", "") +
-                             f"\n[OpenClaw Executor] direct 执行成功 ({elapsed:.1f}s)").strip()
-            save_json(TASKS_FILE, tasks_data)
+            # read-modify-write 原子操作，加排他锁
+            try:
+                with file_lock(str(TASKS_FILE), mode='exclusive'):
+                    tasks_data = load_json(TASKS_FILE)
+                    task = find_task(tasks_data, args.task_id)
+                    if not task:
+                        _utf8_print(f"[ERROR] 任务 {args.task_id} 不存在（重载后）")
+                        return 1
+                    task["output"] = result["output"]
+                    task["status"] = "done"
+                    task["updatedAt"] = _now_iso()
+                    task["notes"] = (task.get("notes", "") +
+                                     f"\n[OpenClaw Executor] direct 执行成功 ({elapsed:.1f}s)").strip()
+                    save_json(TASKS_FILE, tasks_data)
+            except TimeoutError as e:
+                _utf8_print(f"[ERROR] 获取文件锁超时: {e}")
+                return 1
             write_audit("openclaw_executor_success", args.task_id,
                         f"direct, 耗时={elapsed:.1f}s, 输出={len(result['output'])}字符")
             _utf8_print("[OK] 任务已标记 done")
@@ -318,11 +353,22 @@ def main() -> int:
             return 0
         else:
             _utf8_print(f"[FAIL] 执行失败 ({elapsed:.1f}s): {result['error']}")
-            task["status"] = "failed"
-            task["updatedAt"] = _now_iso()
-            task["notes"] = (task.get("notes", "") +
-                             f"\n[OpenClaw Executor] direct 执行失败: {result['error']}").strip()
-            save_json(TASKS_FILE, tasks_data)
+            # read-modify-write 原子操作，加排他锁
+            try:
+                with file_lock(str(TASKS_FILE), mode='exclusive'):
+                    tasks_data = load_json(TASKS_FILE)
+                    task = find_task(tasks_data, args.task_id)
+                    if not task:
+                        _utf8_print(f"[ERROR] 任务 {args.task_id} 不存在（重载后）")
+                        return 1
+                    task["status"] = "failed"
+                    task["updatedAt"] = _now_iso()
+                    task["notes"] = (task.get("notes", "") +
+                                     f"\n[OpenClaw Executor] direct 执行失败: {result['error']}").strip()
+                    save_json(TASKS_FILE, tasks_data)
+            except TimeoutError as e:
+                _utf8_print(f"[ERROR] 获取文件锁超时: {e}")
+                return 1
             write_audit("openclaw_executor_failed", args.task_id,
                         f"direct, 耗时={elapsed:.1f}s, 错误={result['error'][:200]}")
             return 1
@@ -331,9 +377,20 @@ def main() -> int:
     _utf8_print(f"[INFO] 生成执行 prompt 文件...")
     prompt_file = write_prompt_file(args.task_id, prompt)
 
-    task["status"] = "in_progress"
-    task["updatedAt"] = _now_iso()
-    save_json(TASKS_FILE, tasks_data)
+    # read-modify-write 原子操作，加排他锁
+    try:
+        with file_lock(str(TASKS_FILE), mode='exclusive'):
+            tasks_data = load_json(TASKS_FILE)
+            task = find_task(tasks_data, args.task_id)
+            if not task:
+                _utf8_print(f"[ERROR] 任务 {args.task_id} 不存在（重载后）")
+                return 1
+            task["status"] = "in_progress"
+            task["updatedAt"] = _now_iso()
+            save_json(TASKS_FILE, tasks_data)
+    except TimeoutError as e:
+        _utf8_print(f"[ERROR] 获取文件锁超时: {e}")
+        return 1
 
     write_audit("openclaw_executor_start", args.task_id,
                 f"dispatch mode, prompt_file={prompt_file.name}")

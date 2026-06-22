@@ -21,6 +21,7 @@ TASKS_FILE = PROJECT_ROOT / "tasks" / "tasks.json"
 # 导入审计日志模块
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from audit_log import append_audit  # type: ignore
+from file_lock import file_lock  # type: ignore
 
 
 def load_tasks():
@@ -63,27 +64,33 @@ def main():
     )
     args = parser.parse_args()
 
-    data = load_tasks()
-    task_id, current_next = generate_task_id(data)
+    # 整个 read-modify-write 在排他锁内，确保原子性
+    try:
+        with file_lock(str(TASKS_FILE), mode="exclusive"):
+            data = load_tasks()
+            task_id, current_next = generate_task_id(data)
 
-    now = datetime.now(timezone.utc).isoformat()
+            now = datetime.now(timezone.utc).isoformat()
 
-    task = {
-        "id": task_id,
-        "title": args.title,
-        "status": "pending",
-        "priority": args.priority,
-        "assignee": None,
-        "createdAt": now,
-        "updatedAt": now,
-        "output": None,
-        "notes": "",
-    }
+            task = {
+                "id": task_id,
+                "title": args.title,
+                "status": "pending",
+                "priority": args.priority,
+                "assignee": None,
+                "createdAt": now,
+                "updatedAt": now,
+                "output": None,
+                "notes": "",
+            }
 
-    data.setdefault("tasks", []).append(task)
-    data["nextId"] = current_next + 1
+            data.setdefault("tasks", []).append(task)
+            data["nextId"] = current_next + 1
 
-    save_tasks(data)
+            save_tasks(data)
+    except TimeoutError as e:
+        print(f"[FAIL] 获取文件锁超时: {e}")
+        sys.exit(1)
 
     # 写审计日志
     append_audit(

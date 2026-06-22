@@ -34,6 +34,7 @@ VALIDATE_SCRIPT = PROJECT_ROOT / "scripts" / "validate_task.py"
 # 导入审计日志模块
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from audit_log import append_audit  # type: ignore
+from file_lock import file_lock  # type: ignore
 
 VALID_STATUSES = {"pending", "in_progress", "done", "failed", "blocked", "cancelled"}
 
@@ -243,37 +244,43 @@ def main():
     # === 阶段 2 前置安全闸第三块：完整 preflight ===
     policies = preflight(args.id, args.assignee)
 
-    data = load_tasks()
-    tasks = data.get("tasks", [])
+    # read-modify-write 原子操作，加排他锁
+    try:
+        with file_lock(str(TASKS_FILE), mode='exclusive'):
+            data = load_tasks()
+            tasks = data.get("tasks", [])
 
-    target = None
-    if args.id:
-        for t in tasks:
-            if t.get("id") == args.id:
-                target = t
-                break
-        if target is None:
-            print(f"[FAIL] 找不到任务: {args.id}")
-            sys.exit(1)
-        if target.get("status") != "pending":
-            print(f"[FAIL] 任务 {args.id} 状态不是 pending（当前: {target.get('status')}）")
-            sys.exit(1)
-    else:
-        for t in tasks:
-            if t.get("status") == "pending":
-                target = t
-                break
-        if target is None:
-            print("[FAIL] 当前没有 pending 任务可派发")
-            sys.exit(1)
+            target = None
+            if args.id:
+                for t in tasks:
+                    if t.get("id") == args.id:
+                        target = t
+                        break
+                if target is None:
+                    print(f"[FAIL] 找不到任务: {args.id}")
+                    sys.exit(1)
+                if target.get("status") != "pending":
+                    print(f"[FAIL] 任务 {args.id} 状态不是 pending（当前: {target.get('status')}）")
+                    sys.exit(1)
+            else:
+                for t in tasks:
+                    if t.get("status") == "pending":
+                        target = t
+                        break
+                if target is None:
+                    print("[FAIL] 当前没有 pending 任务可派发")
+                    sys.exit(1)
 
-    task_id = target["id"]
+            task_id = target["id"]
 
-    # 更新任务状态
-    target["status"] = "in_progress"
-    target["assignee"] = args.assignee
-    target["updatedAt"] = datetime.now(timezone.utc).isoformat()
-    save_tasks(data)
+            # 更新任务状态
+            target["status"] = "in_progress"
+            target["assignee"] = args.assignee
+            target["updatedAt"] = datetime.now(timezone.utc).isoformat()
+            save_tasks(data)
+    except TimeoutError as e:
+        print(f"[FAIL] 获取文件锁超时: {e}")
+        sys.exit(1)
 
     # 生成派工提示文件
     RUNS_DIR.mkdir(parents=True, exist_ok=True)

@@ -25,6 +25,7 @@ TASKS_FILE = PROJECT_ROOT / "tasks" / "tasks.json"
 # 导入审计日志模块
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from audit_log import append_audit  # type: ignore
+from file_lock import file_lock  # type: ignore
 
 VALID_FINAL_STATUSES = {"done", "failed", "blocked"}
 
@@ -66,38 +67,44 @@ def main():
     )
     args = parser.parse_args()
 
-    data = load_tasks()
-    tasks = data.get("tasks", [])
+    # read-modify-write 原子操作，加排他锁
+    try:
+        with file_lock(str(TASKS_FILE), mode='exclusive'):
+            data = load_tasks()
+            tasks = data.get("tasks", [])
 
-    target = None
-    for t in tasks:
-        if t.get("id") == args.id:
-            target = t
-            break
+            target = None
+            for t in tasks:
+                if t.get("id") == args.id:
+                    target = t
+                    break
 
-    if target is None:
-        print(f"[FAIL] 找不到任务: {args.id}")
+            if target is None:
+                print(f"[FAIL] 找不到任务: {args.id}")
+                sys.exit(1)
+
+            previous_status = target.get("status")
+            if previous_status != "in_progress" and not args.force:
+                print(
+                    f"[FAIL] 任务 {args.id} 当前状态不是 in_progress（当前: {previous_status}），"
+                    "如需管理员覆盖请加 --force"
+                )
+                sys.exit(1)
+
+            if previous_status != "in_progress" and args.force:
+                print(f"[WARN] 管理员 force 覆盖状态流转: {previous_status} -> {args.status}")
+
+            # 更新任务字段
+            target["status"] = args.status
+            target["updatedAt"] = datetime.now(timezone.utc).isoformat()
+            target["notes"] = args.summary
+            if args.output is not None:
+                target["output"] = args.output
+
+            save_tasks(data)
+    except TimeoutError as e:
+        print(f"[FAIL] 获取文件锁超时: {e}")
         sys.exit(1)
-
-    previous_status = target.get("status")
-    if previous_status != "in_progress" and not args.force:
-        print(
-            f"[FAIL] 任务 {args.id} 当前状态不是 in_progress（当前: {previous_status}），"
-            "如需管理员覆盖请加 --force"
-        )
-        sys.exit(1)
-
-    if previous_status != "in_progress" and args.force:
-        print(f"[WARN] 管理员 force 覆盖状态流转: {previous_status} -> {args.status}")
-
-    # 更新任务字段
-    target["status"] = args.status
-    target["updatedAt"] = datetime.now(timezone.utc).isoformat()
-    target["notes"] = args.summary
-    if args.output is not None:
-        target["output"] = args.output
-
-    save_tasks(data)
 
     # 审计日志事件类型映射
     event_type_map = {

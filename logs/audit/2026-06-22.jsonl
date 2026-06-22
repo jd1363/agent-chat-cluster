@@ -100,3 +100,5 @@
 {"timestamp": "2026-06-22T04:36:48.079742+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-024", "details": "collect, output=375字符", "environment": "production"}
 {"timestamp": "2026-06-22T04:37:04.876516+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-025", "details": "collect, output=1183字符", "environment": "production"}
 {"timestamp": "2026-06-22T04:37:04.876768+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-024", "details": "collect, output=375字符", "environment": "production"}
+{"timestamp": "2026-06-22T05:00:53.020999+00:00", "eventType": "task_created", "taskId": "Task-029", "message": "创建任务: Lock test A", "environment": "production", "data": {"priority": "low"}}
+{"timestamp": "2026-06-22T05:00:53.096523+00:00", "eventType": "task_created", "taskId": "Task-030", "message": "创建任务: Lock test B", "environment": "production", "data": {"priority": "low"}}

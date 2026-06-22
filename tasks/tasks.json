@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 29,
+  "nextId": 31,
   "tasks": [
     {
       "id": "Task-001",
@@ -309,6 +309,28 @@
       "updatedAt": "2026-06-22T04:37:46.398094+00:00",
       "output": "Task-028 执行结果\n=====================\n任务标题: Stage4 concurrent: list acceptance docs\n执行时间: 2026-06-22 12:35 (GMT+8)\n执行状态: SUCCESS\n\n列出目录: G:\\agent-chat-cluster (根目录)\n验收文档数: 10\n\n文件列表:\n1. ACCEPTANCE_COMMAND_MAP.md\n2. ACCEPTANCE_CONFIG_SNAPSHOT.md\n3. ACCEPTANCE_COST_LEDGER.md\n4. ACCEPTANCE_STAGE0.md\n5. ACCEPTANCE_STAGE1.md\n6. ACCEPTANCE_STAGE2.md\n7. ACCEPTANCE_STAGE2_PRECHECK.md\n8. ACCEPTANCE_STAGE2_PRECHECK_BLOCK2.md\n9. ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md\n10. ACCEPTANCE_STAGE3.md\n\n说明: 验收文档覆盖 Stage 0~3 及预检模块，记录每个阶段的验收结果和测试通过情况。\n",
       "notes": "[Stage4 concurrent test] 执行成功"
+    },
+    {
+      "id": "Task-029",
+      "title": "Lock test A",
+      "status": "pending",
+      "priority": "low",
+      "assignee": null,
+      "createdAt": "2026-06-22T05:00:53.020008+00:00",
+      "updatedAt": "2026-06-22T05:00:53.020008+00:00",
+      "output": null,
+      "notes": ""
+    },
+    {
+      "id": "Task-030",
+      "title": "Lock test B",
+      "status": "pending",
+      "priority": "low",
+      "assignee": null,
+      "createdAt": "2026-06-22T05:00:53.095505+00:00",
+      "updatedAt": "2026-06-22T05:00:53.095505+00:00",
+      "output": null,
+      "notes": ""
     }
   ]
 }

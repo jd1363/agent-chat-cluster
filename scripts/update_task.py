@@ -22,6 +22,7 @@ VALID_STATUSES = {"pending", "in_progress", "done", "failed", "blocked", "cancel
 # 导入审计日志模块
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from audit_log import append_audit  # type: ignore
+from file_lock import file_lock  # type: ignore
 
 
 def load_tasks():
@@ -56,46 +57,53 @@ def main():
     parser.add_argument("--notes", help="追加备注（会覆盖原有备注）")
     args = parser.parse_args()
 
-    data = load_tasks()
-    tasks = data.get("tasks", [])
+    # read-modify-write 原子操作，加排他锁
+    try:
+        with file_lock(str(TASKS_FILE), mode='exclusive'):
+            data = load_tasks()
+            tasks = data.get("tasks", [])
 
-    found = None
-    for t in tasks:
-        if t.get("id") == args.id:
-            found = t
-            break
+            found = None
+            for t in tasks:
+                if t.get("id") == args.id:
+                    found = t
+                    break
 
-    if found is None:
-        print(f"[FAIL] 找不到任务: {args.id}")
+            if found is None:
+                print(f"[FAIL] 找不到任务: {args.id}")
+                sys.exit(1)
+
+            updated = False
+            changes = {}
+
+            if args.status is not None:
+                found["status"] = args.status
+                updated = True
+                changes["status"] = args.status
+                print(f"[OK] 状态更新为: {args.status}")
+
+            if args.assignee is not None:
+                found["assignee"] = args.assignee
+                updated = True
+                changes["assignee"] = args.assignee
+                print(f"[OK] 负责人更新为: {args.assignee}")
+
+            if args.notes is not None:
+                found["notes"] = args.notes
+                updated = True
+                changes["notes"] = args.notes
+                print(f"[OK] 备注已更新")
+
+            if updated:
+                found["updatedAt"] = datetime.now(timezone.utc).isoformat()
+                save_tasks(data)
+                print(f"[OK] {args.id} 更新完成")
+    except TimeoutError as e:
+        print(f"[FAIL] 获取文件锁超时: {e}")
         sys.exit(1)
 
-    updated = False
-    changes = {}
-
-    if args.status is not None:
-        found["status"] = args.status
-        updated = True
-        changes["status"] = args.status
-        print(f"[OK] 状态更新为: {args.status}")
-
-    if args.assignee is not None:
-        found["assignee"] = args.assignee
-        updated = True
-        changes["assignee"] = args.assignee
-        print(f"[OK] 负责人更新为: {args.assignee}")
-
-    if args.notes is not None:
-        found["notes"] = args.notes
-        updated = True
-        changes["notes"] = args.notes
-        print(f"[OK] 备注已更新")
-
+    # 写审计日志（锁外执行，不影响文件操作）
     if updated:
-        found["updatedAt"] = datetime.now(timezone.utc).isoformat()
-        save_tasks(data)
-        print(f"[OK] {args.id} 更新完成")
-
-        # 写审计日志
         append_audit(
             event_type="task_updated",
             message=f"更新任务字段: {', '.join(changes.keys())}",
