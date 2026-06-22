@@ -236,6 +236,8 @@ def main():
     parser = argparse.ArgumentParser(description="派发 pending 任务")
     parser.add_argument("--id", help="指定任务 ID，如 Task-001")
     parser.add_argument("--assignee", default="agent-exec-01", help="指派给哪个 Agent（默认: agent-exec-01）")
+    parser.add_argument("--execute", action="store_true", help="派工后自动调用 openclaw_executor 生成执行 prompt 文件")
+    parser.add_argument("--dry-run", action="store_true", help="只打印提示，不修改任务状态")
     args = parser.parse_args()
 
     # === 阶段 2 前置安全闸第三块：完整 preflight ===
@@ -294,6 +296,36 @@ def main():
 
     print(f"[OK] {task_id} 已派发至 {args.assignee}")
     print(f"[OK] 派工提示: {dispatch_path}")
+
+    # === --execute: 调用 openclaw_executor 生成执行 prompt 文件 ===
+    if args.execute:
+        executor_script = PROJECT_ROOT / "scripts" / "openclaw_executor.py"
+        if not executor_script.is_file():
+            print(f"[WARN] --execute 指定但 openclaw_executor.py 未找到，跳过执行步骤")
+        else:
+            print(f"[INFO] --execute: 调用 openclaw_executor 生成执行 prompt...")
+            exec_cmd = [sys.executable, str(executor_script), "--task-id", task_id]
+            if args.dry_run:
+                exec_cmd.append("--dry-run")
+            try:
+                result = subprocess.run(
+                    exec_cmd,
+                    cwd=PROJECT_ROOT,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                )
+                print(result.stdout, end="")
+                if result.stderr:
+                    print(result.stderr, end="", file=sys.stderr)
+                if result.returncode != 0:
+                    print(f"[WARN] openclaw_executor 退出码 {result.returncode}")
+                else:
+                    print(f"[OK] 执行 prompt 已生成，主控可用 sessions_spawn 派子 Agent 执行")
+                    print(f"[INFO] 执行完成后运行: python scripts/openclaw_executor.py --task-id {task_id} --collect")
+            except Exception as e:
+                print(f"[WARN] 调用 openclaw_executor 异常: {e}")
 
 
 if __name__ == "__main__":

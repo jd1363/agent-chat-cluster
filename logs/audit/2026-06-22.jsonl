@@ -61,3 +61,7 @@
 {"timestamp": "2026-06-22T03:46:39.311155+00:00", "eventType": "task_updated", "taskId": "Task-018", "message": "更新任务字段: status, notes", "environment": "production", "data": {"status": "pending", "notes": "list all files in the scripts directory"}}
 {"timestamp": "2026-06-22T03:46:45.031822+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-018", "details": "dispatch mode, prompt_file=Task-018-prompt.txt", "environment": "production"}
 {"timestamp": "2026-06-22T03:49:47.591144+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-018", "details": "collect, output=3390字符", "environment": "production"}
+{"timestamp": "2026-06-22T04:04:34.079711+00:00", "eventType": "task_created", "taskId": "Task-019", "message": "创建任务: dispatch execute integration test", "environment": "production", "data": {"priority": "low"}}
+{"timestamp": "2026-06-22T04:04:40.363822+00:00", "eventType": "task_dispatched", "taskId": "Task-019", "message": "任务已派发至 agent-ext-01", "environment": "production", "data": {"assignee": "agent-ext-01", "dispatchFile": "logs\\runs\\Task-019_dispatch.md"}}
+{"timestamp": "2026-06-22T04:04:40.429787+00:00", "eventType": "openclaw_executor_dry_run", "taskId": "Task-019", "details": "dry-run, mode=dispatch, prompt=84字符", "environment": "production"}
+{"timestamp": "2026-06-22T04:05:03.540122+00:00", "eventType": "task_updated", "taskId": "Task-019", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}
