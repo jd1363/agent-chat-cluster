@@ -68,14 +68,21 @@
       "id": "agent-hermes-01",
       "role": "executor",
       "type": "hermes",
-      "enabled": true,
+      "enabled": false,
       "cwd": "agents/hermes/hermes01",
       "riskLevel": "medium",
       "notes": "Hermes Agent v0.10.0 真实执行后端。通过 hermes chat --quiet CLI 调用。模型: doubao-seed-2-0-code-preview-260215。",
       "backend": {
         "type": "hermes-cli",
         "command": "hermes",
-        "args": ["chat", "-q", "{prompt}", "--quiet", "--max-turns", "30"],
+        "args": [
+          "chat",
+          "-q",
+          "{prompt}",
+          "--quiet",
+          "--max-turns",
+          "30"
+        ],
         "workDir": "G:\\hermers\\hermes-agent"
       }
     }

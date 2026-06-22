@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-22T03:08:34Z",
+  "generatedAt": "2026-06-22T03:28:24Z",
   "sourceFiles": [
     "tasks\\tasks.json",
     "config\\agents.json",
@@ -224,8 +224,8 @@
   },
   "agents": {
     "total": 8,
-    "enabled": 4,
-    "disabled": 4,
+    "enabled": 3,
+    "disabled": 5,
     "byRiskLevel": {
       "low": 1,
       "medium": 7
@@ -298,7 +298,7 @@
         "id": "agent-hermes-01",
         "role": "executor",
         "type": "hermes",
-        "enabled": true,
+        "enabled": false,
         "cwd": "agents/hermes/hermes01",
         "riskLevel": "medium",
         "notes": "Hermes Agent v0.10.0 真实执行后端。通过 hermes chat --quiet CLI 调用。模型: doubao-seed-2-0-code-preview-260215。",
@@ -380,7 +380,7 @@
   "scheduler": {
     "pendingTasks": 0,
     "inProgressTasks": 0,
-    "availableAgents": 4,
+    "availableAgents": 3,
     "backpressure": false,
     "reasons": []
   }
