@@ -1,0 +1,3 @@
+﻿Task: Task-031
+Result:
+32

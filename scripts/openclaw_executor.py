@@ -39,12 +39,13 @@ from pathlib import Path
 from shutil import which
 from typing import Any, Dict, Optional
 
+# ── 路径常量 ──────────────────────────────────────────────
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
 # 导入文件锁
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from file_lock import file_lock  # type: ignore
 
-# ── 路径常量 ──────────────────────────────────────────────
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
 TASKS_FILE = PROJECT_ROOT / "tasks" / "tasks.json"
 AGENTS_FILE = PROJECT_ROOT / "config" / "agents.json"
 POLICIES_FILE = PROJECT_ROOT / "config" / "policies.json"

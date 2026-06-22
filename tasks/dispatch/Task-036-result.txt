@@ -1,0 +1,3 @@
+﻿Task: Task-036
+Result:
+1

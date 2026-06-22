@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 31,
+  "nextId": 38,
   "tasks": [
     {
       "id": "Task-001",
@@ -330,6 +330,83 @@
       "createdAt": "2026-06-22T05:00:53.095505+00:00",
       "updatedAt": "2026-06-22T05:00:53.095505+00:00",
       "output": null,
+      "notes": ""
+    },
+    {
+      "id": "Task-031",
+      "title": "Lock-retest: count .py files",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-exec-01",
+      "createdAt": "2026-06-22T08:37:03.105827+00:00",
+      "updatedAt": "2026-06-22T08:41:08.792291+00:00",
+      "output": "﻿Task: Task-031\nResult:\n32\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-032",
+      "title": "Lock-retest: count .md files in root",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-22T08:37:11.090114+00:00",
+      "updatedAt": "2026-06-22T08:41:08.907440+00:00",
+      "output": "﻿Task: Task-032\nResult:\n17\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-033",
+      "title": "Lock-retest: list docs files",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-02",
+      "createdAt": "2026-06-22T08:37:31.679465+00:00",
+      "updatedAt": "2026-06-22T08:41:09.024342+00:00",
+      "output": "﻿Task: Task-033\nResult:\narchitecture COMMAND_REFERENCE.md OPERATOR_RUNBOOK.md REAL_COMMANDS.md SECURITY_NOTES.md SYSTEM_ARCHITECTURE.md TASK_PROTOCOL.md\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-034",
+      "title": "Lock-retest: count audit entries today",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-03",
+      "createdAt": "2026-06-22T08:37:38.937247+00:00",
+      "updatedAt": "2026-06-22T08:41:09.139599+00:00",
+      "output": "﻿Task: Task-034\nResult:\n125\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-035",
+      "title": "Lock-retest: list snapshot files",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-04",
+      "createdAt": "2026-06-22T08:37:49.047046+00:00",
+      "updatedAt": "2026-06-22T08:41:09.257610+00:00",
+      "output": "﻿Task: Task-035\nResult:\nG:\\agent-chat-cluster\\snapshots G:\\agent-chat-cluster\\ACCEPTANCE_CONFIG_SNAPSHOT.md G:\\agent-chat-cluster\\scripts\\snapshot_config.py G:\\agent-chat-cluster\\scripts\\__pycache__\\snapshot_config.cpython-313.pyc G:\\agent-chat-cluster\\state\\snapshots\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-036",
+      "title": "Lock-retest: count state snapshots",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-05",
+      "createdAt": "2026-06-22T08:38:00.571707+00:00",
+      "updatedAt": "2026-06-22T08:41:09.361415+00:00",
+      "output": "﻿Task: Task-036\nResult:\n1\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-037",
+      "title": "Lock-retest: list log directories",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-06",
+      "createdAt": "2026-06-22T08:38:05.167862+00:00",
+      "updatedAt": "2026-06-22T08:41:09.462629+00:00",
+      "output": "﻿Task: Task-037\nResult:\naudit cost dead_letter events messages runs\n",
       "notes": ""
     }
   ]

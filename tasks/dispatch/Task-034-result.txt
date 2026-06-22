@@ -1,0 +1,3 @@
+﻿Task: Task-034
+Result:
+125
