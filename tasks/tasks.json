@@ -139,11 +139,11 @@
       "title": "Hermes e2e test: list project files",
       "status": "failed",
       "priority": "medium",
-      "assignee": "agent-hermes-01",
+      "assignee": null,
       "createdAt": "2026-06-22T02:50:55.957587+00:00",
       "updatedAt": "2026-06-22T03:08:11.279706+00:00",
       "output": null,
-      "notes": "Hermes 执行超时 >300s"
+      "notes": "Hermes 执行超时 >300s\n[admin] hermes disabled, assignee cleared"
     },
     {
       "id": "Task-014",
@@ -161,33 +161,33 @@
       "title": "Hermes quick test: say hello",
       "status": "done",
       "priority": "medium",
-      "assignee": "agent-hermes-01",
+      "assignee": null,
       "createdAt": "2026-06-22T02:58:10.524729+00:00",
       "updatedAt": "2026-06-22T02:59:09.936091+00:00",
       "output": "Hello from Hermes! This is a test.\n",
-      "notes": "Hermes 执行成功"
+      "notes": "Hermes 执行成功\n[admin] hermes disabled, assignee cleared"
     },
     {
       "id": "Task-016",
       "title": "Hermes e2e test: list project files",
       "status": "done",
       "priority": "medium",
-      "assignee": "agent-hermes-01",
+      "assignee": null,
       "createdAt": "2026-06-22T02:59:34.125060+00:00",
       "updatedAt": "2026-06-22T03:08:11.287981+00:00",
       "output": "��������Ҫ��2+2�ļ������ǣ�\n\n4\n",
-      "notes": "编码修复前的测试任务，输出有乱码但执行链路成功"
+      "notes": "编码修复前的测试任务，输出有乱码但执行链路成功\n[admin] hermes disabled, assignee cleared"
     },
     {
       "id": "Task-017",
       "title": "Hermes encoding test: Chinese response",
       "status": "done",
       "priority": "low",
-      "assignee": "agent-hermes-01",
+      "assignee": null,
       "createdAt": "2026-06-22T03:06:42.818275+00:00",
       "updatedAt": "2026-06-22T03:07:32.037997+00:00",
       "output": "2加2等于4。\n",
-      "notes": "Hermes 执行成功"
+      "notes": "Hermes 执行成功\n[admin] hermes disabled, assignee cleared"
     }
   ]
 }

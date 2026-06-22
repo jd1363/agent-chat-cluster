@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-22T03:28:24Z",
+  "generatedAt": "2026-06-22T03:37:17Z",
   "sourceFiles": [
     "tasks\\tasks.json",
     "config\\agents.json",
@@ -28,9 +28,8 @@
     },
     "byAssignee": {
       "agent-exec-01": 2,
-      "(unassigned)": 4,
-      "agent-ext-01": 7,
-      "agent-hermes-01": 4
+      "(unassigned)": 8,
+      "agent-ext-01": 7
     },
     "items": [
       {
@@ -170,11 +169,11 @@
         "title": "Hermes e2e test: list project files",
         "status": "failed",
         "priority": "medium",
-        "assignee": "agent-hermes-01",
+        "assignee": null,
         "createdAt": "2026-06-22T02:50:55.957587+00:00",
         "updatedAt": "2026-06-22T03:08:11.279706+00:00",
         "output": null,
-        "notes": "Hermes 执行超时 >300s"
+        "notes": "Hermes 执行超时 >300s\n[admin] hermes disabled, assignee cleared"
       },
       {
         "id": "Task-014",
@@ -192,33 +191,33 @@
         "title": "Hermes quick test: say hello",
         "status": "done",
         "priority": "medium",
-        "assignee": "agent-hermes-01",
+        "assignee": null,
         "createdAt": "2026-06-22T02:58:10.524729+00:00",
         "updatedAt": "2026-06-22T02:59:09.936091+00:00",
         "output": "Hello from Hermes! This is a test.\n",
-        "notes": "Hermes 执行成功"
+        "notes": "Hermes 执行成功\n[admin] hermes disabled, assignee cleared"
       },
       {
         "id": "Task-016",
         "title": "Hermes e2e test: list project files",
         "status": "done",
         "priority": "medium",
-        "assignee": "agent-hermes-01",
+        "assignee": null,
         "createdAt": "2026-06-22T02:59:34.125060+00:00",
         "updatedAt": "2026-06-22T03:08:11.287981+00:00",
         "output": "��������Ҫ��2+2�ļ������ǣ�\n\n4\n",
-        "notes": "编码修复前的测试任务，输出有乱码但执行链路成功"
+        "notes": "编码修复前的测试任务，输出有乱码但执行链路成功\n[admin] hermes disabled, assignee cleared"
       },
       {
         "id": "Task-017",
         "title": "Hermes encoding test: Chinese response",
         "status": "done",
         "priority": "low",
-        "assignee": "agent-hermes-01",
+        "assignee": null,
         "createdAt": "2026-06-22T03:06:42.818275+00:00",
         "updatedAt": "2026-06-22T03:07:32.037997+00:00",
         "output": "2加2等于4。\n",
-        "notes": "Hermes 执行成功"
+        "notes": "Hermes 执行成功\n[admin] hermes disabled, assignee cleared"
       }
     ]
   },
@@ -334,7 +333,7 @@
     "latestTimestamp": "2026-06-20T04:01:35.291783+00:00"
   },
   "audit": {
-    "total": 139,
+    "total": 140,
     "byEventType": {
       "task_created": 29,
       "task_dispatched": 17,
@@ -353,9 +352,10 @@
       "hermes_adapter_dry_run": 2,
       "hermes_adapter_start": 6,
       "hermes_adapter_timeout": 1,
-      "hermes_adapter_success": 5
+      "hermes_adapter_success": 5,
+      "openclaw_executor_dry_run": 1
     },
-    "latestTimestamp": "2026-06-22T03:08:11.289446+00:00"
+    "latestTimestamp": "2026-06-22T03:36:35.295779+00:00"
   },
   "events": {
     "total": 8,
