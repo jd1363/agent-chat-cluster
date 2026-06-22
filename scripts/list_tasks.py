@@ -150,5 +150,14 @@ def main():
         print(format_table(filtered))
 
 
+# ── Windows GBK 编码修复 ──────────────────────────────
+# Windows 默认 stdout 是 GBK，遇到 Unicode 字符会崩溃
+# 强制设为 UTF-8，无法编码的字符用 replacement 替代
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
+
 if __name__ == "__main__":
     main()

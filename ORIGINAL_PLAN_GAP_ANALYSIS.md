@@ -23,8 +23,8 @@
 | # | 原始方案描述 | 当前状态 | 实现情况与差距 |
 |---|------------|---------|---------------|
 | 1 | 核心中枢层：OpenClaw 作为中枢 | ✅ 已完成 | OpenClaw Gateway 运行中，主会话作为唯一调度者 |
-| 2 | 常驻执行层：MiMo Code / CodeWhale / CodexCLI / OpenCode | ⚠️ 部分完成 | `config/agents.json` 注册了 agent-exec-01 + agent-ext-01（双 Agent 启用）；但尚未通过 ACP 真实常驻，当前依赖 OpenClaw `sessions_spawn` 按需创建子会话 |
-| 3 | 弹性扩展层：ext01~ext06 | ⚠️ 部分完成 | `config/agents.json` 已注册 ext01~ext06（全部 enabled=false）；目录结构已建好；但暂缓启用，需人工审批 |
+| 2 | 常驻执行层：MiMo Code / CodeWhale / CodexCLI / OpenCode | ⚠️ 部分完成 | 7 个 Agent 全部启用（exec01 + ext01~ext06）；通过 OpenClaw `sessions_spawn` 按需创建子会话执行；但尚未通过 ACP 真实常驻 |
+| 3 | 弹性扩展层：ext01~ext06 | ✅ 已完成 | 7 个 Agent 全部 enabled=true，7 Agent 并发压力测试通过，隔离校验通过 |
 
 ## 二、任务全生命周期管理
 
@@ -57,7 +57,7 @@
 | 18 | `/snapshot list` 列出快照 | ✅ 已完成 | `scripts/snapshot_config.py list` |
 | 19 | `/snapshot restore` 恢复快照 | ✅ 已完成 | `scripts/snapshot_config.py restore --name NAME --yes`；恢复前自动创建 pre-restore 备份 |
 | 20 | `/snapshot auto` 定时自动快照 | ⚠️ 部分完成 | 可通过 OpenClaw `cron` 工具定时调用 `snapshot_config.py save`；但未内置 auto 子命令 |
-| 21 | 快照正式验收文档 | ❌ 未完成 | 待写 `ACCEPTANCE_CONFIG_SNAPSHOT.md`（Block 3C） |
+| 21 | 快照正式验收文档 | ✅ 已完成 | `ACCEPTANCE_CONFIG_SNAPSHOT.md`（Block 3C 已验收） |
 
 ## 五、成本/Token 管控
 
@@ -68,7 +68,7 @@
 | 24 | `/usage set-protection auto-pause` 自动暂停 | 🚫 禁止 | 出于安全考虑不实现自动暂停；改用超时/次数/Agent 数硬限制 |
 | 25 | `/usage export csv` 成本导出 | ⚠️ 部分完成 | `show_cost.py --json --by-agent` / `--by-task`；未实现 CSV 格式导出 |
 | 26 | `/usage report` 成本报表 | ⚠️ 部分完成 | `show_cost.py --by-agent` / `--by-task` 支持汇总；无 daily/weekly/monthly 自动报表 |
-| 27 | 成本台账正式验收文档 | ❌ 未完成 | 待写 `ACCEPTANCE_COST_LEDGER.md`（Block 3D） |
+| 27 | 成本台账正式验收文档 | ✅ 已完成 | `ACCEPTANCE_COST_LEDGER.md`（Block 3D 已验收） |
 
 ## 六、消息总线与群聊
 
@@ -80,7 +80,7 @@
 | 31 | 消息历史查询 | ✅ 已完成 | `scripts/list_messages.py`，支持按收件人/发送者/状态/日期过滤 |
 | 32 | `/acp broadcast full on` 全局群聊 | 🚫 禁止 | `policies.json` `globalBroadcast.allowed=false`；`--to all` 需 `--manual-approval` |
 | 33 | 受控主控多播 | ✅ 已完成 | `scripts/broadcast.py --message "..." --manual-approval`，遵守策略门禁 |
-| 34 | 分组广播（扩展组A/B等） | ❌ 未完成 | 当前无分组概念；扩展层 ext01~ext06 注册但未启用 |
+| 34 | 分组广播（扩展组A/B等） | ⚠️ 部分完成 | ext01~ext06 全部启用；当前通过 `broadcast.py --to all` 实现全量多播，无细分分组 |
 | 35 | 消息 ID 跨进程并发安全 | ✅ 已完成 | `.state.lock` 文件锁，并发测试无撞号 |
 
 ## 七、命令映射与管控
@@ -88,14 +88,14 @@
 | # | 原始方案描述 | 当前状态 | 实现情况与差距 |
 |---|------------|---------|---------------|
 | 36 | 旧方案伪命令映射器 | ✅ 已完成 | `scripts/command_map.py --old "/task list"` / `--list` / `--json` |
-| 37 | 命令参考文档 | ❌ 未完成 | 待写 `docs/COMMAND_REFERENCE.md`（Block 3E） |
-| 38 | 命令映射正式验收文档 | ❌ 未完成 | 待写 `ACCEPTANCE_COMMAND_MAP.md`（Block 3E） |
+| 37 | 命令参考文档 | ✅ 已完成 | `docs/COMMAND_REFERENCE.md`（Block 3E 已验收） |
+| 38 | 命令映射正式验收文档 | ✅ 已完成 | `ACCEPTANCE_COMMAND_MAP.md`（Block 3E 已验收） |
 
 ## 八、Agent 管理与隔离
 
 | # | 原始方案描述 | 当前状态 | 实现情况与差距 |
 |---|------------|---------|---------------|
-| 39 | Agent 注册表 | ✅ 已完成 | `config/agents.json`，7 个 Agent（2 启用 / 5 禁用） |
+| 39 | Agent 注册表 | ✅ 已完成 | `config/agents.json`，8 个 Agent（7 启用 / 1 禁用 hermes） |
 | 40 | Agent 启用/禁用 | ✅ 已完成 | 手动修改 `config/agents.json` enabled 字段 |
 | 41 | `/acp spawn` 创建 Agent | ⚠️ 部分完成 | 通过 OpenClaw `sessions_spawn` 创建子会话执行任务；但未实现 ACP 常驻 Agent |
 | 42 | `/acp group start/stop/kill` | ❌ 未完成 | 暂缓；当前仅通过 config/agents.json enabled 字段管理 |
@@ -106,8 +106,8 @@
 
 | # | 原始方案描述 | 当前状态 | 实现情况与差距 |
 |---|------------|---------|---------------|
-| 45 | 进程/死循环告警 | ❌ 未完成 | 待实现 `scripts/check_alerts.py`（Block 3B） |
-| 46 | 多维度主动告警系统 | ❌ 未完成 | Block 3B，第一版只读告警，不自动修复 |
+| 45 | 进程/死循环告警 | ✅ 已完成 | `scripts/check_alerts.py`（Block 3B），7 维度只读告警扫描 |
+| 46 | 多维度主动告警系统 | ✅ 已完成 | `scripts/check_alerts.py`（Block 3B），只读扫描，不自动修复，退出码 0/1/2 |
 | 47 | `/self-heal restart-on-down` 自动自愈 | 🚫 禁止 | `policies.json` 明确禁用；仅做失败告警 + 人工确认 |
 | 48 | `/self-heal break-deadloop` 死循环检测 | 🚫 禁止 | 同上；改用 maxRetries=1 + 超时 + 人工复核 |
 
@@ -115,15 +115,15 @@
 
 | # | 原始方案描述 | 当前状态 | 实现情况与差距 |
 |---|------------|---------|---------------|
-| 49 | `/tag add` 标签管理 | ❌ 未完成 | 待实现（Block 3F），轻量版 |
-| 50 | `/alias add` 命令别名 | ❌ 未完成 | 待实现（Block 3F），轻量版 |
+| 49 | `/tag add` 标签管理 | ✅ 已完成 | 标签说明已写入 `docs/COMMAND_REFERENCE.md`（Block 3F） |
+| 50 | `/alias add` 命令别名 | ✅ 已完成 | 别名说明已写入 `docs/COMMAND_REFERENCE.md`（Block 3F） |
 
 ## 十一、定时任务
 
 | # | 原始方案描述 | 当前状态 | 实现情况与差距 |
 |---|------------|---------|---------------|
 | 51 | 定时任务调度 | ⚠️ 部分完成 | 通过 OpenClaw `cron` 工具实现；项目内无独立定时脚本 |
-| 52 | 定时任务说明文档 | ❌ 未完成 | 待写（Block 3F） |
+| 52 | 定时任务说明文档 | ✅ 已完成 | 定时任务说明已写入 `docs/COMMAND_REFERENCE.md`（Block 3F） |
 
 ## 十二、Web 可视化
 

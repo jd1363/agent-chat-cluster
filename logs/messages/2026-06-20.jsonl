@@ -1,8 +1,8 @@
 {"id": "MSG-0007-02", "parentId": "MSG-0007", "from": "master", "to": "agent-ext-01", "content": "全巡检通知", "timestamp": "2026-06-18T11:17:35.392483+00:00", "status": "read", "type": "broadcast_recipient", "readAt": "2026-06-20T03:39:17.236305+00:00"}
-{"id": "MSG-0008", "from": "master", "to": "agent-ext-01", "content": "single gate regression", "timestamp": "2026-06-20T04:00:08.983417+00:00", "status": "sent"}
-{"id": "MSG-0009", "from": "master", "to": "all", "content": "manual approval regression", "timestamp": "2026-06-20T04:00:08.983463+00:00", "status": "sent", "type": "broadcast", "recipientCount": 2}
-{"id": "MSG-0009-01", "parentId": "MSG-0009", "from": "master", "to": "agent-exec-01", "content": "manual approval regression", "timestamp": "2026-06-20T04:00:08.983463+00:00", "status": "sent", "type": "broadcast_recipient"}
-{"id": "MSG-0009-02", "parentId": "MSG-0009", "from": "master", "to": "agent-ext-01", "content": "manual approval regression", "timestamp": "2026-06-20T04:00:08.983463+00:00", "status": "sent", "type": "broadcast_recipient"}
+{"id": "MSG-0008", "from": "master", "to": "agent-ext-01", "content": "single gate regression", "timestamp": "2026-06-20T04:00:08.983417+00:00", "status": "expired", "expiredAt": "2026-06-22T12:04:12.368454+00:00"}
+{"id": "MSG-0009", "from": "master", "to": "all", "content": "manual approval regression", "timestamp": "2026-06-20T04:00:08.983463+00:00", "status": "expired", "type": "broadcast", "recipientCount": 2, "expiredAt": "2026-06-22T12:04:12.368471+00:00"}
+{"id": "MSG-0009-01", "parentId": "MSG-0009", "from": "master", "to": "agent-exec-01", "content": "manual approval regression", "timestamp": "2026-06-20T04:00:08.983463+00:00", "status": "expired", "type": "broadcast_recipient", "expiredAt": "2026-06-22T12:04:12.368480+00:00"}
+{"id": "MSG-0009-02", "parentId": "MSG-0009", "from": "master", "to": "agent-ext-01", "content": "manual approval regression", "timestamp": "2026-06-20T04:00:08.983463+00:00", "status": "expired", "type": "broadcast_recipient", "expiredAt": "2026-06-22T12:04:12.368487+00:00"}
 
-{"id": "MSG-0010", "from": "master", "to": "agent-ext-01", "content": "lock regression B", "timestamp": "2026-06-20T04:01:35.232127+00:00", "status": "sent"}
-{"id": "MSG-0011", "from": "master", "to": "agent-ext-01", "content": "lock regression A", "timestamp": "2026-06-20T04:01:35.291783+00:00", "status": "sent"}
+{"id": "MSG-0010", "from": "master", "to": "agent-ext-01", "content": "lock regression B", "timestamp": "2026-06-20T04:01:35.232127+00:00", "status": "expired", "expiredAt": "2026-06-22T12:04:12.368495+00:00"}
+{"id": "MSG-0011", "from": "master", "to": "agent-ext-01", "content": "lock regression A", "timestamp": "2026-06-20T04:01:35.291783+00:00", "status": "expired", "expiredAt": "2026-06-22T12:04:12.368501+00:00"}
