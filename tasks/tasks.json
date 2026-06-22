@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 22,
+  "nextId": 29,
   "tasks": [
     {
       "id": "Task-001",
@@ -196,9 +196,9 @@
       "priority": "medium",
       "assignee": null,
       "createdAt": "2026-06-22T03:37:43.297384+00:00",
-      "updatedAt": "2026-06-22T03:49:47.590332+00:00",
+      "updatedAt": "2026-06-22T04:37:46.396633+00:00",
       "output": "Task-018 执行结果\n=====================\n任务标题: OpenClaw executor e2e test: list scripts directory\n任务说明: list all files in the scripts directory\n执行时间: 2026-06-22 11:47 (GMT+8)\n执行状态: SUCCESS\n\n执行过程:\n1. 读取任务 prompt 文件 Task-018-prompt.txt，确认任务为列出 scripts 目录下所有文件。\n2. 使用 PowerShell `Get-ChildItem -Recurse` 列出 G:\\agent-chat-cluster\\scripts\\ 目录下的所有文件（含子目录）。\n\n执行结果:\n共找到 28 个 Python 源文件 + 1 个 __pycache__ 目录（含 28 个 .pyc 编译缓存文件）。\n\n=== Python 源文件 (28 个) ===\n\n| # | 文件名                    | 大小(bytes) | 最后修改时间        |\n|---|---------------------------|-------------|---------------------|\n| 1 | audit_log.py              | 2,757       | 2026-06-17 14:38:58 |\n| 2 | benchmark_pipeline.py     | 10,853      | 2026-06-18 11:37:14 |\n| 3 | broadcast.py              | 1,255       | 2026-06-20 11:59:08 |\n| 4 | build_state.py            | 18,109      | 2026-06-20 18:01:14 |\n| 5 | check_alerts.py           | 13,302      | 2026-06-22 09:38:12 |\n| 6 | check_env.py              | 3,625       | 2026-06-20 14:36:06 |\n| 7 | command_map.py            | 8,782       | 2026-06-20 18:43:37 |\n| 8 | complete_task.py          | 3,843       | 2026-06-14 15:53:20 |\n| 9 | create_task.py            | 2,565       | 2026-06-14 14:58:51 |\n| 10| dispatch_task.py          | 9,990       | 2026-06-17 14:56:25 |\n| 11| event_log.py              | 14,588      | 2026-06-20 15:27:54 |\n| 12| hermes_adapter.py         | 15,946      | 2026-06-22 11:06:24 |\n| 13| list_messages.py          | 5,964       | 2026-06-18 11:48:21 |\n| 14| list_tasks.py             | 4,780       | 2026-06-14 17:56:38 |\n| 15| openclaw_executor.py      | 14,327      | 2026-06-22 11:46:14 |\n| 16| receive_message.py        | 5,555       | 2026-06-20 11:38:47 |\n| 17| record_cost.py            | 5,274       | 2026-06-20 18:40:23 |\n| 18| resend_unacked.py         | 7,942       | 2026-06-18 19:19:13 |\n| 19| review_command.py         | 9,484       | 2026-06-18 11:17:40 |\n| 20| scheduler_tick.py         | 15,169      | 2026-06-20 18:01:14 |\n| 21| send_message.py           | 8,880       | 2026-06-20 12:00:53 |\n| 22| show_audit.py             | 5,592       | 2026-06-14 17:56:39 |\n| 23| show_cost.py              | 7,011       | 2026-06-20 18:40:41 |\n| 24| show_history.py           | 14,733      | 2026-06-18 10:28:30 |\n| 25| snapshot_config.py        | 8,548       | 2026-06-20 18:38:48 |\n| 26| suggest_assignee.py       | 11,200      | 2026-06-18 10:51:55 |\n| 27| test_event_id_reset.py    | 6,462       | 2026-06-20 15:28:31 |\n| 28| test_isolation.py         | 17,102      | 2026-06-18 10:35:55 |\n| 29| update_task.py            | 3,219       | 2026-06-14 14:59:13 |\n| 30| validate_task.py          | 5,649       | 2026-06-14 16:51:05 |\n\n=== __pycache__ 目录 (28 个 .pyc 文件) ===\n所有 Python 源文件均有对应的 cpython-313 .pyc 编译缓存文件，位于 scripts\\__pycache__\\ 目录下。\n\n文件分类概述:\n- 任务管理: create_task.py, update_task.py, complete_task.py, validate_task.py, list_tasks.py, dispatch_task.py\n- 消息系统: send_message.py, receive_message.py, list_messages.py, broadcast.py, resend_unacked.py\n- 监控/审计: check_alerts.py, audit_log.py, show_audit.py, event_log.py, test_event_id_reset.py\n- 成本管理: record_cost.py, show_cost.py\n- 调度/状态: scheduler_tick.py, build_state.py, snapshot_config.py\n- 适配器: hermes_adapter.py, openclaw_executor.py\n- 命令系统: command_map.py, review_command.py\n- 环境检查: check_env.py\n- 测试/基准: test_isolation.py, benchmark_pipeline.py\n- 辅助: suggest_assignee.py, show_history.py\n",
-      "notes": "list all files in the scripts directory"
+      "notes": "list all files in the scripts directory\n[Stage4 concurrent test] 执行成功"
     },
     {
       "id": "Task-019",
@@ -218,9 +218,9 @@
       "priority": "high",
       "assignee": "agent-exec-01",
       "createdAt": "2026-06-22T04:06:35.834901+00:00",
-      "updatedAt": "2026-06-22T04:10:07.980953+00:00",
+      "updatedAt": "2026-06-22T04:37:46.396810+00:00",
       "output": "Task-020 结果\n\n统计目录: G:\\agent-chat-cluster\\scripts\n.py 文件数量: 30\n\n文件列表:\n1. audit_log.py\n2. benchmark_pipeline.py\n3. broadcast.py\n4. build_state.py\n5. check_alerts.py\n6. check_env.py\n7. command_map.py\n8. complete_task.py\n9. create_task.py\n10. dispatch_task.py\n11. event_log.py\n12. hermes_adapter.py\n13. list_messages.py\n14. list_tasks.py\n15. openclaw_executor.py\n16. receive_message.py\n17. record_cost.py\n18. resend_unacked.py\n19. review_command.py\n20. scheduler_tick.py\n21. send_message.py\n22. show_audit.py\n23. show_cost.py\n24. show_history.py\n25. snapshot_config.py\n26. suggest_assignee.py\n27. test_event_id_reset.py\n28. test_isolation.py\n29. update_task.py\n30. validate_task.py\n",
-      "notes": ""
+      "notes": "[Stage4 concurrent test] 执行成功"
     },
     {
       "id": "Task-021",
@@ -229,9 +229,86 @@
       "priority": "high",
       "assignee": "agent-ext-01",
       "createdAt": "2026-06-22T04:06:35.907175+00:00",
-      "updatedAt": "2026-06-22T04:10:08.057599+00:00",
+      "updatedAt": "2026-06-22T04:37:46.396961+00:00",
       "output": "Task-021: Concurrent test B - count markdown docs\n\nTotal .md files: 45\n\nFile list:\n1.  .codewhale-task.md\n2.  ACCEPTANCE_COMMAND_MAP.md\n3.  ACCEPTANCE_CONFIG_SNAPSHOT.md\n4.  ACCEPTANCE_COST_LEDGER.md\n5.  ACCEPTANCE_STAGE0.md\n6.  ACCEPTANCE_STAGE1.md\n7.  ACCEPTANCE_STAGE2.md\n8.  ACCEPTANCE_STAGE2_PRECHECK.md\n9.  ACCEPTANCE_STAGE2_PRECHECK_BLOCK2.md\n10. ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md\n11. ACCEPTANCE_STAGE3.md\n12. DEMO_RUNBOOK.md\n13. MVP_DELIVERY_REPORT.md\n14. ORIGINAL_PLAN_GAP_ANALYSIS.md\n15. PROJECT_PLAN.md\n16. PROJECT_STATUS.md\n17. README.md\n18. .codewhale\\instructions.md\n19. agents\\hermes\\hermes01\\README.md\n20. docs\\COMMAND_REFERENCE.md\n21. docs\\OPERATOR_RUNBOOK.md\n22. docs\\REAL_COMMANDS.md\n23. docs\\SECURITY_NOTES.md\n24. docs\\SYSTEM_ARCHITECTURE.md\n25. docs\\TASK_PROTOCOL.md\n26. logs\\runs\\Task-001_dispatch.md\n27. logs\\runs\\Task-002_dispatch.md\n28. logs\\runs\\Task-003_dispatch.md\n29. logs\\runs\\Task-004_dispatch.md\n30. logs\\runs\\Task-005_dispatch.md\n31. logs\\runs\\Task-006_dispatch.md\n32. logs\\runs\\Task-007_dispatch.md\n33. logs\\runs\\Task-008_dispatch.md\n34. logs\\runs\\Task-009_dispatch.md\n35. logs\\runs\\Task-019_dispatch.md\n36. logs\\runs\\Task-020_dispatch.md\n37. logs\\runs\\Task-021_dispatch.md\n38. memory\\2026-06-18.md\n39. memory\\2026-06-20.md\n40. memory\\2026-06-22.md\n41. snapshots\\baseline-old-scheme\\PROJECT_PLAN.md\n42. snapshots\\baseline-old-scheme\\README.md\n43. snapshots\\baseline-old-scheme\\docs\\OPERATOR_RUNBOOK.md\n44. snapshots\\baseline-old-scheme\\docs\\SECURITY_NOTES.md\n45. snapshots\\baseline-old-scheme\\docs\\TASK_PROTOCOL.md\n",
-      "notes": ""
+      "notes": "[Stage4 concurrent test] 执行成功"
+    },
+    {
+      "id": "Task-022",
+      "title": "Stage4 concurrent: count .py files in scripts",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-exec-01",
+      "createdAt": "2026-06-22T04:30:13.222379+00:00",
+      "updatedAt": "2026-06-22T04:37:46.397111+00:00",
+      "output": "Task-022 执行结果\n=====================\n任务标题: Stage4 concurrent: count .py files in scripts\n执行时间: 2026-06-22 12:35 (GMT+8)\n执行状态: SUCCESS\n\n统计目录: G:\\agent-chat-cluster\\scripts\n.py 文件数量: 30\n\n文件列表:\n1. audit_log.py\n2. benchmark_pipeline.py\n3. broadcast.py\n4. build_state.py\n5. check_alerts.py\n6. check_env.py\n7. command_map.py\n8. complete_task.py\n9. create_task.py\n10. dispatch_task.py\n11. event_log.py\n12. hermes_adapter.py\n13. list_messages.py\n14. list_tasks.py\n15. openclaw_executor.py\n16. receive_message.py\n17. record_cost.py\n18. resend_unacked.py\n19. review_command.py\n20. scheduler_tick.py\n21. send_message.py\n22. show_audit.py\n23. show_cost.py\n24. show_history.py\n25. snapshot_config.py\n26. suggest_assignee.py\n27. test_event_id_reset.py\n28. test_isolation.py\n29. update_task.py\n30. validate_task.py\n",
+      "notes": "[Stage4 concurrent test] 执行成功"
+    },
+    {
+      "id": "Task-023",
+      "title": "Stage4 concurrent: count .md files in docs",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-22T04:30:22.623039+00:00",
+      "updatedAt": "2026-06-22T04:37:46.397261+00:00",
+      "output": "Task-023 执行结果\n=====================\n任务标题: Stage4 concurrent: count .md files in docs\n执行时间: 2026-06-22 12:35 (GMT+8)\n执行状态: SUCCESS\n\n统计目录: G:\\agent-chat-cluster\\docs\n.md 文件数量: 6\n\n文件列表:\n1. docs\\COMMAND_REFERENCE.md\n2. docs\\OPERATOR_RUNBOOK.md\n3. docs\\REAL_COMMANDS.md\n4. docs\\SECURITY_NOTES.md\n5. docs\\SYSTEM_ARCHITECTURE.md\n6. docs\\TASK_PROTOCOL.md\n",
+      "notes": "[Stage4 concurrent test] 执行成功"
+    },
+    {
+      "id": "Task-024",
+      "title": "Stage4 concurrent: list config files",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-02",
+      "createdAt": "2026-06-22T04:30:35.465585+00:00",
+      "updatedAt": "2026-06-22T04:37:46.397411+00:00",
+      "output": "Task-024 执行结果\n=====================\n任务标题: Stage4 concurrent: list config files\n执行时间: 2026-06-22 12:35 (GMT+8)\n执行状态: SUCCESS\n\n列出目录: G:\\agent-chat-cluster\\config\n\n配置文件列表:\n1. .round_robin_state\n2. agents.json\n3. policies.json\n\n说明:\n- agents.json: 定义 8 个 Agent (agent-exec-01, agent-ext-01~06, agent-hermes-01)\n- policies.json: 定义执行策略（超时、并发、路径白名单等）\n- .round_robin_state: 轮询调度状态文件\n",
+      "notes": "[Stage4 concurrent test] 执行成功"
+    },
+    {
+      "id": "Task-025",
+      "title": "Stage4 concurrent: count audit log entries",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-03",
+      "createdAt": "2026-06-22T04:30:35.502114+00:00",
+      "updatedAt": "2026-06-22T04:37:46.397558+00:00",
+      "output": "Task-025 执行结果\n=====================\n任务标题: Stage4 concurrent: count audit log entries\n执行时间: 2026-06-22 12:35 (GMT+8)\n执行状态: SUCCESS\n\n审计日志文件: logs/audit/2026-06-22.jsonl\n审计日志条目数: 20\n\n条目概览（按时间倒序）:\n1. 04:34:36 - openclaw_executor_start - Task-028\n2. 04:34:36 - task_dispatched - Task-028 → agent-ext-06\n3. 04:34:24 - openclaw_executor_start - Task-027\n4. 04:34:24 - task_dispatched - Task-027 → agent-ext-05\n5. 04:34:10 - openclaw_executor_start - Task-026\n6. 04:34:10 - task_dispatched - Task-026 → agent-ext-04\n7. 04:34:05 - openclaw_executor_start - Task-025\n8. 04:34:05 - task_dispatched - Task-025 → agent-ext-03\n9. 04:33:00 - openclaw_executor_start - Task-024\n10. 04:33:00 - task_dispatched - Task-024 → agent-ext-02\n11. 04:33:00 - task_dispatched - Task-023 → agent-ext-01\n12. 04:32:50 - openclaw_executor_start - Task-022\n13. 04:32:50 - task_dispatched - Task-022 → agent-exec-01\n14. 04:30:35 - task_created - Task-026\n15. 04:30:35 - task_created - Task-025\n16. 04:30:35 - task_created - Task-024\n17. 04:30:22 - task_created - Task-023\n18. 04:30:13 - task_created - Task-022\n19. 04:10:08 - openclaw_executor_success - Task-021\n20. 04:10:07 - openclaw_executor_success - Task-020\n",
+      "notes": "[Stage4 concurrent test] 执行成功"
+    },
+    {
+      "id": "Task-026",
+      "title": "Stage4 concurrent: list task dispatch logs",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-04",
+      "createdAt": "2026-06-22T04:30:35.516135+00:00",
+      "updatedAt": "2026-06-22T04:37:46.397765+00:00",
+      "output": "Task-026 执行结果\n=====================\n任务标题: Stage4 concurrent: list task dispatch logs\n执行时间: 2026-06-22 12:35 (GMT+8)\n执行状态: SUCCESS\n\n列出目录: G:\\agent-chat-cluster\\logs\\runs\n派工日志文件数: 19\n\n文件列表:\n1. Task-001_dispatch.md\n2. Task-002_dispatch.md\n3. Task-003_dispatch.md\n4. Task-004_dispatch.md\n5. Task-005_dispatch.md\n6. Task-006_dispatch.md\n7. Task-007_dispatch.md\n8. Task-008_dispatch.md\n9. Task-009_dispatch.md\n10. Task-019_dispatch.md\n11. Task-020_dispatch.md\n12. Task-021_dispatch.md\n13. Task-022_dispatch.md\n14. Task-023_dispatch.md\n15. Task-024_dispatch.md\n16. Task-025_dispatch.md\n17. Task-026_dispatch.md\n18. Task-027_dispatch.md\n19. Task-028_dispatch.md\n\n说明: 每个文件包含任务的派工提示，由 dispatch_task.py 生成。\n",
+      "notes": "[Stage4 concurrent test] 执行成功"
+    },
+    {
+      "id": "Task-027",
+      "title": "Stage4 concurrent: count memory files",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-05",
+      "createdAt": "2026-06-22T04:30:35.530000+00:00",
+      "updatedAt": "2026-06-22T04:37:46.397929+00:00",
+      "output": "Task-027 执行结果\n=====================\n任务标题: Stage4 concurrent: count memory files\n执行时间: 2026-06-22 12:35 (GMT+8)\n执行状态: SUCCESS\n\n统计目录: G:\\agent-chat-cluster\\memory\n记忆文件数: 3\n\n文件列表:\n1. memory\\2026-06-18.md\n2. memory\\2026-06-20.md\n3. memory\\2026-06-22.md\n\n说明: 每日记忆文件，记录当天的重要决策、阶段完成、脚本验收等信息。\n",
+      "notes": "[Stage4 concurrent test] 执行成功"
+    },
+    {
+      "id": "Task-028",
+      "title": "Stage4 concurrent: list acceptance docs",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-06",
+      "createdAt": "2026-06-22T04:30:35.540000+00:00",
+      "updatedAt": "2026-06-22T04:37:46.398094+00:00",
+      "output": "Task-028 执行结果\n=====================\n任务标题: Stage4 concurrent: list acceptance docs\n执行时间: 2026-06-22 12:35 (GMT+8)\n执行状态: SUCCESS\n\n列出目录: G:\\agent-chat-cluster (根目录)\n验收文档数: 10\n\n文件列表:\n1. ACCEPTANCE_COMMAND_MAP.md\n2. ACCEPTANCE_CONFIG_SNAPSHOT.md\n3. ACCEPTANCE_COST_LEDGER.md\n4. ACCEPTANCE_STAGE0.md\n5. ACCEPTANCE_STAGE1.md\n6. ACCEPTANCE_STAGE2.md\n7. ACCEPTANCE_STAGE2_PRECHECK.md\n8. ACCEPTANCE_STAGE2_PRECHECK_BLOCK2.md\n9. ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md\n10. ACCEPTANCE_STAGE3.md\n\n说明: 验收文档覆盖 Stage 0~3 及预检模块，记录每个阶段的验收结果和测试通过情况。\n",
+      "notes": "[Stage4 concurrent test] 执行成功"
     }
   ]
 }

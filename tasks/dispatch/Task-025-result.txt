@@ -1,0 +1,30 @@
+Task-025 执行结果
+=====================
+任务标题: Stage4 concurrent: count audit log entries
+执行时间: 2026-06-22 12:35 (GMT+8)
+执行状态: SUCCESS
+
+审计日志文件: logs/audit/2026-06-22.jsonl
+审计日志条目数: 20
+
+条目概览（按时间倒序）:
+1. 04:34:36 - openclaw_executor_start - Task-028
+2. 04:34:36 - task_dispatched - Task-028 → agent-ext-06
+3. 04:34:24 - openclaw_executor_start - Task-027
+4. 04:34:24 - task_dispatched - Task-027 → agent-ext-05
+5. 04:34:10 - openclaw_executor_start - Task-026
+6. 04:34:10 - task_dispatched - Task-026 → agent-ext-04
+7. 04:34:05 - openclaw_executor_start - Task-025
+8. 04:34:05 - task_dispatched - Task-025 → agent-ext-03
+9. 04:33:00 - openclaw_executor_start - Task-024
+10. 04:33:00 - task_dispatched - Task-024 → agent-ext-02
+11. 04:33:00 - task_dispatched - Task-023 → agent-ext-01
+12. 04:32:50 - openclaw_executor_start - Task-022
+13. 04:32:50 - task_dispatched - Task-022 → agent-exec-01
+14. 04:30:35 - task_created - Task-026
+15. 04:30:35 - task_created - Task-025
+16. 04:30:35 - task_created - Task-024
+17. 04:30:22 - task_created - Task-023
+18. 04:30:13 - task_created - Task-022
+19. 04:10:08 - openclaw_executor_success - Task-021
+20. 04:10:07 - openclaw_executor_success - Task-020

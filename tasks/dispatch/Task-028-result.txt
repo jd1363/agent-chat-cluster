@@ -1,0 +1,22 @@
+Task-028 执行结果
+=====================
+任务标题: Stage4 concurrent: list acceptance docs
+执行时间: 2026-06-22 12:35 (GMT+8)
+执行状态: SUCCESS
+
+列出目录: G:\agent-chat-cluster (根目录)
+验收文档数: 10
+
+文件列表:
+1. ACCEPTANCE_COMMAND_MAP.md
+2. ACCEPTANCE_CONFIG_SNAPSHOT.md
+3. ACCEPTANCE_COST_LEDGER.md
+4. ACCEPTANCE_STAGE0.md
+5. ACCEPTANCE_STAGE1.md
+6. ACCEPTANCE_STAGE2.md
+7. ACCEPTANCE_STAGE2_PRECHECK.md
+8. ACCEPTANCE_STAGE2_PRECHECK_BLOCK2.md
+9. ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md
+10. ACCEPTANCE_STAGE3.md
+
+说明: 验收文档覆盖 Stage 0~3 及预检模块，记录每个阶段的验收结果和测试通过情况。
