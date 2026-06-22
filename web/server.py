@@ -93,6 +93,21 @@ def get_cost():
     }
 
 
+def get_events(limit=50):
+    entries = read_jsonl_dir(os.path.join(PROJECT_ROOT, 'logs', 'events'), limit)
+    entries.reverse()
+    return {'entries': entries[:limit]}
+
+
+def get_policies():
+    data = read_json(os.path.join(PROJECT_ROOT, 'config', 'policies.json'), {})
+    return data.get('policies', {})
+
+
+def get_state():
+    return read_json(os.path.join(PROJECT_ROOT, 'state', 'system_state.json'), {})
+
+
 def get_alerts():
     tasks_data = get_tasks()
     agents_data = get_agents()
@@ -162,6 +177,13 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
             self._json(get_messages(limit))
         elif path == '/api/cost':
             self._json(get_cost())
+        elif path == '/api/events':
+            limit = int(params.get('limit', ['50'])[0])
+            self._json(get_events(limit))
+        elif path == '/api/policies':
+            self._json(get_policies())
+        elif path == '/api/state':
+            self._json(get_state())
         elif path == '/api/alerts':
             self._json(get_alerts())
         else:
