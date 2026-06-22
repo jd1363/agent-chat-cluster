@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-22T02:09:43Z",
+  "generatedAt": "2026-06-22T02:25:12Z",
   "sourceFiles": [
     "tasks\\tasks.json",
     "config\\agents.json",
@@ -167,12 +167,12 @@
     ]
   },
   "agents": {
-    "total": 7,
-    "enabled": 3,
+    "total": 8,
+    "enabled": 4,
     "disabled": 4,
     "byRiskLevel": {
       "low": 1,
-      "medium": 6
+      "medium": 7
     },
     "items": [
       {
@@ -237,6 +237,28 @@
         "cwd": "agents/ext/ext06",
         "riskLevel": "medium",
         "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
+      },
+      {
+        "id": "agent-hermes-01",
+        "role": "executor",
+        "type": "hermes",
+        "enabled": true,
+        "cwd": "agents/hermes/hermes01",
+        "riskLevel": "medium",
+        "notes": "Hermes Agent v0.10.0 真实执行后端。通过 hermes chat --quiet CLI 调用。模型: doubao-seed-2-0-code-preview-260215。",
+        "backend": {
+          "type": "hermes-cli",
+          "command": "hermes",
+          "args": [
+            "chat",
+            "-q",
+            "{prompt}",
+            "--quiet",
+            "--max-turns",
+            "30"
+          ],
+          "workDir": "G:\\hermers\\hermes-agent"
+        }
       }
     ]
   },
@@ -298,7 +320,7 @@
   "scheduler": {
     "pendingTasks": 0,
     "inProgressTasks": 0,
-    "availableAgents": 3,
+    "availableAgents": 4,
     "backpressure": false,
     "reasons": []
   }
