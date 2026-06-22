@@ -136,6 +136,11 @@ python scripts/command_map.py --old "/task list"
 python scripts/command_map.py --old "/usage set-budget agent codex 25" --json
 python scripts/command_map.py --list
 
+# 多维度只读告警检查（不自动修复）
+python scripts/check_alerts.py
+python scripts/check_alerts.py --json
+python scripts/check_alerts.py --quiet   # 只显示 warning+critical
+
 # 消息总线（阶段 2，轻量级主控→Agent 消息传递）
 python scripts/send_message.py --to agent-ext-01 --message "check config"
 python scripts/send_message.py --to agent-ext-01 --message "task dispatched" --json
@@ -208,6 +213,8 @@ python scripts/scheduler_tick.py --write-event --dry-run
 | `scripts/record_cost.py` | 写入本地成本/Token 估算台账 | 旧方案 `/usage` 替代第一版；只记录/估算，不自动暂停 Agent |
 | `scripts/show_cost.py` | 查询成本/Token 台账，支持明细、按 Agent/任务汇总、预算阈值提示 | 预算只提示，不承诺精确账单 |
 | `scripts/command_map.py` | 旧方案伪命令到当前真实替代方式的只读映射器 | 不执行命令；未知/高风险命令默认不得直接运行 |
+| `scripts/check_alerts.py` | 多维度只读告警检查：failed 任务/超时/Agent 状态/审计异常/未 ACK 消息/成本/日志体积 | 只读不写，不自动修复；退出码 0/1/2 表示 info/warning/critical |
+| `scripts/check_alerts.py` | 多维度只读告警检查：failed 任务/超时/Agent 状态/审计异常/未 ACK 消息/成本/磁盘 | 只读不写，不自动修复；退出码 0/1/2 对应 info/warning/critical |
 | `scripts/send_message.py` | 主控向已启用 Agent 发送消息；`--to all` 需 `--manual-approval` | 阶段 2 消息总线，只写 |
 | `scripts/broadcast.py` | 受控主控多播包装脚本；遵守 `globalBroadcast` 策略门禁 | 阶段 2 消息总线，只写 |
 | `scripts/receive_message.py` | Agent 获取最新未读消息，支持标记为已读 / ACK | 阶段 2 消息总线，读+追加状态 |

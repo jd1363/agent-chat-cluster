@@ -118,7 +118,12 @@
 
 1. [x] 本地成本/Token 估算台账：`scripts/record_cost.py` + `scripts/show_cost.py`，替代旧方案不可确认的 `/usage` 命令第一版，先做手动/估算记录、汇总、预算阈值提示，不承诺精确美元级自动暂停。
 2. [x] 旧方案命令映射器：`scripts/command_map.py`，把 `/task`、`/audit`、`/snapshot`、`/usage`、`/acp spawn` 等伪命令映射到当前真实脚本或标记为 forbidden/pending。
-3. [ ] 多维度告警雏形：先做本地状态/日志告警，不做自动自愈，不做无限重启。
+3. [x] 多维度告警雏形：`scripts/check_alerts.py`，只读扫描 failed 任务/超时/Agent 状态/审计异常/未 ACK 消息/成本超预算/日志体积，不自动修复。
+4. [x] 原始方案差距对照表：`ORIGINAL_PLAN_GAP_ANALYSIS.md`，66 项功能逐条标注完成状态。
+5. [x] 配置快照验收：`ACCEPTANCE_CONFIG_SNAPSHOT.md`。
+6. [x] 成本台账验收：`ACCEPTANCE_COST_LEDGER.md`。
+7. [x] 命令映射验收 + 命令参考：`ACCEPTANCE_COMMAND_MAP.md` + `docs/COMMAND_REFERENCE.md`。
+8. [x] 标签/别名/定时任务说明：`docs/COMMAND_REFERENCE.md` 补充定时任务与标签说明章节。
 
 ### 暂缓项
 
