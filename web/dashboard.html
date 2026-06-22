@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Chat Cluster - Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f172a;color:#e5e7eb;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px}
+.header{background:#1e293b;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #334155;position:sticky;top:0;z-index:100}
+.header h1{font-size:20px;font-weight:700}
+.header .refresh-info{font-size:12px;color:#94a3b8}
+.container{max-width:1400px;margin:0 auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:20px}
+.card{background:#1e293b;border-radius:12px;padding:20px;border:1px solid #334155}
+.card h2{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card h2 .icon{font-size:18px}
+.stats-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.stat-badge{background:#334155;padding:6px 12px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:6px}
+.stat-badge .num{font-size:18px;font-weight:700}
+.filter-bar{margin-bottom:12px}
+.filter-bar select{background:#0f172a;color:#e5e7eb;border:1px solid #475569;border-radius:6px;padding:4px 8px;font-size:13px}
+.task-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;max-height:400px;overflow-y:auto}
+.task-card{background:#0f172a;border-radius:8px;padding:10px;border-left:3px solid #475569;font-size:12px}
+.task-card.done{border-left-color:#22c55e}
+.task-card.in_progress{border-left-color:#3b82f6}
+.task-card.pending{border-left-color:#64748b}
+.task-card.failed{border-left-color:#ef4444}
+.task-card.blocked{border-left-color:#f97316}
+.task-card.cancelled{border-left-color:#475569;opacity:0.6}
+.task-card .tid{font-weight:700;color:#60a5fa;font-size:11px}
+.task-card .ttitle{margin:4px 0;line-height:1.3}
+.task-card .tmeta{font-size:10px;color:#94a3b8;display:flex;gap:8px}
+.prio-high{color:#ef4444}
+.prio-medium{color:#eab308}
+.prio-low{color:#22c55e}
+.agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.agent-card{background:#0f172a;border-radius:8px;padding:12px;border:1px solid #334155}
+.agent-card .aid{font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.dot.on{background:#22c55e}
+.dot.off{background:#64748b}
+.agent-card .ameta{font-size:11px;color:#94a3b8;margin-top:4px}
+.audit-list{max-height:350px;overflow-y:auto}
+.audit-item{padding:8px 0;border-bottom:1px solid #334155;font-size:12px}
+.audit-item .atime{color:#64748b;font-size:10px}
+.audit-item .atype{display:inline-block;background:#334155;padding:1px 6px;border-radius:4px;font-size:10px;margin:0 4px}
+.audit-stats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.audit-stat{background:#334155;padding:4px 8px;border-radius:6px;font-size:11px}
+.msg-table{width:100%;border-collapse:collapse;font-size:12px}
+.msg-table th{text-align:left;padding:6px 8px;background:#0f172a;color:#94a3b8;font-weight:600;font-size:11px}
+.msg-table td{padding:6px 8px;border-bottom:1px solid #334155}
+.msg-table tr.unacked{background:rgba(239,68,68,0.1)}
+.cost-big{font-size:32px;font-weight:700;color:#22c55e}
+.cost-sub{font-size:13px;color:#94a3b8;margin-bottom:12px}
+.cost-agent{margin-bottom:8px}
+.cost-agent .cname{font-size:12px;display:flex;justify-content:space-between}
+.cost-bar{height:8px;background:#334155;border-radius:4px;margin-top:4px}
+.cost-bar .fill{height:100%;border-radius:4px;background:#3b82f6}
+.alert-list{display:flex;flex-direction:column;gap:8px}
+.alert-item{padding:10px 14px;border-radius:8px;font-size:13px;display:flex;align-items:center;gap:8px}
+.alert-item.red{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3)}
+.alert-item.yellow{background:rgba(234,179,8,0.15);border:1px solid rgba(234,179,8,0.3)}
+.alert-item.green{background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3)}
+.empty{color:#64748b;font-style:italic;text-align:center;padding:20px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid #334155;border-top-color:#60a5fa;border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:768px){.container{grid-template-columns:1fr}.header h1{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>🐼 Agent Chat Cluster Dashboard</h1>
+<div class="refresh-info"><span id="lastRefresh">--</span> | <span id="autoStatus">自动刷新中</span></div>
+</div>
+<div class="container">
+
+<!-- Task Overview -->
+<div class="card" style="grid-column:1/-1">
+<h2><span class="icon">📋</span> 任务总览</h2>
+<div class="stats-row" id="taskStats"></div>
+<div class="filter-bar">
+<select id="agentFilter" onchange="renderTasks()"><option value="">全部 Agent</option></select>
+</div>
+<div class="task-board" id="taskBoard"><div class="empty">加载中...</div></div>
+</div>
+
+<!-- Agent Status -->
+<div class="card">
+<h2><span class="icon">🤖</span> Agent 状态</h2>
+<div class="agent-grid" id="agentGrid"><div class="empty">加载中...</div></div>
+</div>
+
+<!-- Audit Log -->
+<div class="card">
+<h2><span class="icon">📝</span> 审计日志</h2>
+<div class="audit-stats" id="auditStats"></div>
+<div class="audit-list" id="auditList"><div class="empty">加载中...</div></div>
+</div>
+
+<!-- Message Bus -->
+<div class="card">
+<h2><span class="icon">📨</span> 消息总线</h2>
+<div style="max-height:380px;overflow-y:auto">
+<table class="msg-table" id="msgTable"><thead><tr><th>ID</th><th>From</th><th>To</th><th>状态</th><th>消息</th><th>时间</th></tr></thead><tbody id="msgBody"><tr><td colspan="6" class="empty">加载中...</td></tr></tbody></table>
+</div>
+</div>
+
+<!-- Cost Ledger -->
+<div class="card">
+<h2><span class="icon">💰</span> 成本台账</h2>
+<div class="cost-big" id="costTotal">$0.00</div>
+<div class="cost-sub" id="costTokens">0 tokens</div>
+<div id="costByAgent"><div class="empty">加载中...</div></div>
+</div>
+
+<!-- Alerts -->
+<div class="card">
+<h2><span class="icon">🚨</span> 告警概览</h2>
+<div class="alert-list" id="alertList"><div class="empty">加载中...</div></div>
+</div>
+
+</div>
+
+<script>
+let allTasks=[], allAgents=[];
+
+async function fetchJSON(url){
+  try{const r=await fetch(url);return await r.json();}catch(e){console.error(url,e);return null;}
+}
+
+async function loadTasks(){
+  const d=await fetchJSON('/api/tasks');
+  if(!d)return;
+  allTasks=d.tasks||[];
+  const stats=d.stats||{};
+  const colors={done:'#22c55e',in_progress:'#3b82f6',pending:'#64748b',failed:'#ef4444',blocked:'#f97316',cancelled:'#475569'};
+  let html='';
+  for(const s of ['done','in_progress','pending','failed','blocked','cancelled']){
+    if(stats[s]!==undefined) html+=`<div class="stat-badge"><span class="num" style="color:${colors[s]||'#fff'}">${stats[s]}</span> ${s}</div>`;
+  }
+  if(stats['unknown']){html+=`<div class="stat-badge"><span class="num">${stats['unknown']}</span> unknown</div>`;}
+  document.getElementById('taskStats').innerHTML=html;
+  renderTasks();
+}
+
+function renderTasks(){
+  const filter=document.getElementById('agentFilter').value;
+  let agents=[...new Set(allTasks.map(t=>t.assignee).filter(Boolean))];
+  if(document.getElementById('agentFilter').options.length<=1){
+    agents.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;document.getElementById('agentFilter').appendChild(o);});
+  }
+  let tasks=filter?allTasks.filter(t=>t.assignee===filter):allTasks;
+  if(!tasks.length){document.getElementById('taskBoard').innerHTML='<div class="empty">暂无任务</div>';return;}
+  document.getElementById('taskBoard').innerHTML=tasks.map(t=>{
+    const p=t.priority||'low';
+    const d=t.createdAt?new Date(t.createdAt).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+    return `<div class="task-card ${t.status}">
+      <div class="tid">${t.id}</div>
+      <div class="ttitle">${esc(t.title||'')}</div>
+      <div class="tmeta"><span class="prio-${p}">●${p}</span> ${t.assignee||'-'} ${d}</div>
+    </div>`;
+  }).join('');
+}
+
+async function loadAgents(){
+  const d=await fetchJSON('/api/agents');
+  if(!d)return;
+  allAgents=d.agents||[];
+  if(!allAgents.length){document.getElementById('agentGrid').innerHTML='<div class="empty">暂无 Agent</div>';return;}
+  document.getElementById('agentGrid').innerHTML=allAgents.map(a=>{
+    const on=a.enabled;
+    return `<div class="agent-card">
+      <div class="aid"><span class="dot ${on?'on':'off'}"></span>${a.id}</div>
+      <div class="ameta">role: ${a.role||'-'} | type: ${a.type||'-'}<br>risk: ${a.riskLevel||'-'}<br>cwd: ${a.cwd||'-'}</div>
+    </div>`;
+  }).join('');
+}
+
+async function loadAudit(){
+  const d=await fetchJSON('/api/audit?limit=50');
+  if(!d)return;
+  const entries=d.entries||[];
+  if(!entries.length){document.getElementById('auditList').innerHTML='<div class="empty">暂无审计记录</div>';return;}
+  const typeCounts={};
+  entries.forEach(e=>{const t=e.eventType||'?';typeCounts[t]=(typeCounts[t]||0)+1;});
+  document.getElementById('auditStats').innerHTML=Object.entries(typeCounts).map(([t,c])=>`<div class="audit-stat">${t}: ${c}</div>`).join('');
+  document.getElementById('auditList').innerHTML=entries.map(e=>{
+    const tm=e.timestamp?new Date(e.timestamp).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}):'';
+    return `<div class="audit-item"><span class="atime">${tm}</span> <span class="atype">${e.eventType||'?'}</span> ${e.taskId||''} ${esc(e.message||'')}</div>`;
+  }).join('');
+}
+
+async function loadMessages(){
+  const d=await fetchJSON('/api/messages?limit=30');
+  if(!d)return;
+  const entries=d.entries||[];
+  if(!entries.length){document.getElementById('msgBody').innerHTML='<tr><td colspan="6" class="empty">暂无消息</td></tr>';return;}
+  document.getElementById('msgBody').innerHTML=entries.map(m=>{
+    const acked=m.status==='acked';
+    const tm=m.timestamp?new Date(m.timestamp).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+    return `<tr class="${acked?'':'unacked'}">
+      <td>${m.id||'-'}</td><td>${m.from||'-'}</td><td>${m.to||'-'}</td>
+      <td>${acked?'✅':'⏳'}</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.message||m.content||'')}</td><td>${tm}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadCost(){
+  const d=await fetchJSON('/api/cost');
+  if(!d)return;
+  document.getElementById('costTotal').textContent='$'+(d.totalCost||0).toFixed(4);
+  document.getElementById('costTokens').textContent=(d.totalTokens||0).toLocaleString()+' tokens';
+  const byAgent=d.byAgent||{};
+  const entries=Object.entries(byAgent);
+  if(!entries.length){document.getElementById('costByAgent').innerHTML='<div class="empty">暂无成本记录</div>';return;}
+  const maxCost=Math.max(...entries.map(([,v])=>v.cost),0.01);
+  document.getElementById('costByAgent').innerHTML=entries.map(([k,v])=>{
+    const pct=(v.cost/maxCost*100).toFixed(0);
+    return `<div class="cost-agent"><div class="cname"><span>${k}</span><span>$${v.cost.toFixed(4)} (${v.tokens} tok)</span></div><div class="cost-bar"><div class="fill" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+
+async function loadAlerts(){
+  const d=await fetchJSON('/api/alerts');
+  if(!d)return;
+  const alerts=d.alerts||[];
+  if(!alerts.length){
+    document.getElementById('alertList').innerHTML='<div class="alert-item green">✅ 一切正常，无告警</div>';
+    return;
+  }
+  document.getElementById('alertList').innerHTML=alerts.map(a=>{
+    const icon=a.level==='red'?'🔴':a.level==='yellow'?'🟡':'🟢';
+    return `<div class="alert-item ${a.level}">${icon} ${esc(a.text)}</div>`;
+  }).join('');
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+async function refreshAll(){
+  await Promise.all([loadTasks(),loadAgents(),loadAudit(),loadMessages(),loadCost(),loadAlerts()]);
+  document.getElementById('lastRefresh').textContent='最后刷新: '+new Date().toLocaleTimeString('zh-CN');
+}
+
+refreshAll();
+setInterval(refreshAll,30000);
+</script>
+</body>
+</html>

@@ -143,12 +143,11 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         path = parsed.path
         params = parse_qs(parsed.query)
 
-        self.send_header('Access-Control-Allow-Origin', '*')
-
         if path == '/' or path == '/dashboard.html':
             html = serve_html()
             self.send_response(200)
             self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(html.encode('utf-8'))
         elif path == '/api/tasks':
@@ -168,6 +167,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         else:
             self.send_response(404)
             self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(json.dumps({'error': 'not found'}).encode('utf-8'))
 
@@ -175,6 +175,7 @@ class DashboardHandler(http.server.BaseHTTPRequestHandler):
         body = json.dumps(data, ensure_ascii=False, indent=2).encode('utf-8')
         self.send_response(200)
         self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Content-Length', str(len(body)))
         self.end_headers()
         self.wfile.write(body)

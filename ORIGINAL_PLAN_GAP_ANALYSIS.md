@@ -129,8 +129,8 @@
 
 | # | 原始方案描述 | 当前状态 | 实现情况与差距 |
 |---|------------|---------|---------------|
-| 53 | `openclaw --web` Web 界面 | ⚠️ 部分完成 | OpenClaw Gateway Dashboard（http://127.0.0.1:18789/）可用；但非项目自建 Web UI |
-| 54 | 终端可视化看板 | ⚠️ 部分完成 | `scripts/show_history.py --report` 提供文本报表；无图形化看板 |
+| 53 | `openclaw --web` Web 界面 | ✅ 已完成 | 项目自建 Web Dashboard：`web/dashboard.html` + `web/server.py`（Python 标准库 HTTP 服务，端口 8765），6 大模块：任务总览/Agent 状态/审计日志/消息总线/成本台账/告警概览，30 秒自动刷新 |
+| 54 | 终端可视化看板 | ✅ 已完成 | `web/dashboard.html` 图形化看板，支持任务卡片墙、Agent 状态卡、审计时间线、消息表格、成本进度条、告警分级显示；`scripts/show_history.py --report` 文本报表仍保留 |
 
 ## 十三、安全与策略
 
