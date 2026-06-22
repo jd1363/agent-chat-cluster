@@ -1,0 +1,5 @@
+任务 ID: Task-018
+任务标题: OpenClaw executor e2e test: list scripts directory
+任务说明: list all files in the scripts directory
+
+请在项目目录下执行上述任务，给出详细的执行过程和结果。

@@ -1,14 +1,29 @@
 #!/usr/bin/env python3
-"""OpenClaw Executor — 通过 OpenClaw CLI 真实派工执行任务。
+"""OpenClaw Executor — 任务执行调度器。
 
-封装 `openclaw agent --message "PROMPT" --json` 调用，
-将任务从 tasks.json 读取、构建 prompt、调用 OpenClaw 执行、
-写回结果到任务台账并记录审计日志。
+生成执行 prompt 并写入 dispatch 目录，供主控（OpenClaw 主会话）
+通过 sessions_spawn 派发子 Agent 执行。
+
+执行流程:
+  1. openclaw_executor 生成 prompt 文件到 tasks/dispatch/Task-XXX-prompt.txt
+  2. 将任务状态更新为 in_progress
+  3. 写审计日志
+  4. 主控检测到 in_progress + prompt 文件，用 sessions_spawn 派子 Agent
+  5. 子 Agent 读取 prompt 文件执行，结果写回 tasks/dispatch/Task-XXX-result.txt
+  6. openclaw_executor --collect 读取结果文件，更新任务状态为 done/failed
 
 用法:
+  # 生成执行 prompt（主控调用）
   python scripts/openclaw_executor.py --task-id Task-XXX
+
+  # dry-run 模式
   python scripts/openclaw_executor.py --task-id Task-XXX --dry-run
-  python scripts/openclaw_executor.py --task-id Task-XXX --timeout 600
+
+  # 收集执行结果（子 Agent 完成后调用）
+  python scripts/openclaw_executor.py --task-id Task-XXX --collect
+
+  # 直接执行（调用 openclaw agent CLI，需要独立 session）
+  python scripts/openclaw_executor.py --task-id Task-XXX --direct --timeout 120
 """
 
 from __future__ import annotations
@@ -21,6 +36,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from shutil import which
 from typing import Any, Dict, Optional
 
 # ── 路径常量 ──────────────────────────────────────────────
@@ -37,7 +53,6 @@ os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
 
 def _utf8_print(msg: str) -> None:
-    """安全打印，避免 Windows GBK 崩溃。"""
     try:
         sys.stdout.buffer.write((msg + "\n").encode("utf-8"))
         sys.stdout.buffer.flush()
@@ -55,13 +70,13 @@ def _today_str() -> str:
 
 # ── 数据读取 ──────────────────────────────────────────────
 
-def load_tasks() -> Dict[str, Any]:
-    with open(TASKS_FILE, "r", encoding="utf-8") as f:
+def load_json(path: Path) -> Dict[str, Any]:
+    with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
-def save_tasks(data: Dict[str, Any]) -> None:
-    with open(TASKS_FILE, "w", encoding="utf-8") as f:
+def save_json(path: Path, data: Dict[str, Any]) -> None:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
@@ -72,11 +87,6 @@ def find_task(data: Dict[str, Any], task_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def load_agents() -> Dict[str, Any]:
-    with open(AGENTS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
 def find_agent(agents_data: Dict[str, Any], agent_id: str) -> Optional[Dict[str, Any]]:
     for a in agents_data.get("agents", []):
         if a.get("id") == agent_id:
@@ -84,32 +94,18 @@ def find_agent(agents_data: Dict[str, Any], agent_id: str) -> Optional[Dict[str,
     return None
 
 
-def load_policies() -> Dict[str, Any]:
-    with open(POLICIES_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def get_max_runtime_minutes(policies: Dict[str, Any]) -> int:
+def get_policy_value(policies: Dict[str, Any], key: str, default: int) -> int:
     try:
         return int(policies.get("policies", {}).get("execution", {})
-                    .get("maxRuntimeMinutes", {}).get("value", 30))
+                    .get(key, {}).get("value", default))
     except (ValueError, TypeError):
-        return 30
-
-
-def get_max_output_kb(policies: Dict[str, Any]) -> int:
-    try:
-        return int(policies.get("policies", {}).get("execution", {})
-                    .get("maxOutputKB", {}).get("value", 1024))
-    except (ValueError, TypeError):
-        return 1024
+        return default
 
 
 # ── 审计日志 ──────────────────────────────────────────────
 
 def write_audit(event_type: str, task_id: str, details: str,
                 environment: str = "production") -> None:
-    """追加审计日志到 logs/audit/YYYY-MM-DD.jsonl"""
     AUDIT_DIR.mkdir(parents=True, exist_ok=True)
     entry = {
         "timestamp": _now_iso(),
@@ -126,30 +122,57 @@ def write_audit(event_type: str, task_id: str, details: str,
 # ── Prompt 构建 ───────────────────────────────────────────
 
 def build_prompt(task: Dict[str, Any], agent: Optional[Dict[str, Any]]) -> str:
-    """从任务详情构建给 OpenClaw 的执行 prompt。"""
     parts = []
     parts.append(f"任务 ID: {task.get('id', 'unknown')}")
     parts.append(f"任务标题: {task.get('title', '')}")
-
     notes = task.get("notes", "")
     if notes:
         parts.append(f"任务说明: {notes}")
-
     parts.append("")
     parts.append("请在项目目录下执行上述任务，给出详细的执行过程和结果。")
-
     return "\n".join(parts)
 
 
-# ── 执行 ──────────────────────────────────────────────────
+# ── Dispatch 文件 ─────────────────────────────────────────
 
-def execute_openclaw(prompt: str, timeout: int, max_output_kb: int) -> Dict[str, Any]:
-    """调用 openclaw agent --message PROMPT --json 执行任务。
+def write_prompt_file(task_id: str, prompt: str) -> Path:
+    DISPATCH_DIR.mkdir(parents=True, exist_ok=True)
+    prompt_file = DISPATCH_DIR / f"{task_id}-prompt.txt"
+    with open(prompt_file, "w", encoding="utf-8") as f:
+        f.write(prompt)
+    return prompt_file
 
-    返回:
-      {"success": bool, "output": str, "error": str}
-    """
-    cmd = ["openclaw", "agent", "--message", prompt, "--json"]
+
+def read_result_file(task_id: str) -> Optional[str]:
+    result_file = DISPATCH_DIR / f"{task_id}-result.txt"
+    if result_file.exists():
+        with open(result_file, "r", encoding="utf-8") as f:
+            return f.read()
+    return None
+
+
+def write_result_file(task_id: str, result: str) -> Path:
+    DISPATCH_DIR.mkdir(parents=True, exist_ok=True)
+    result_file = DISPATCH_DIR / f"{task_id}-result.txt"
+    with open(result_file, "w", encoding="utf-8") as f:
+        f.write(result)
+    return result_file
+
+
+# ── 直接执行模式（openclaw agent CLI）────────────────────
+
+def execute_direct(prompt: str, timeout: int, max_output_kb: int) -> Dict[str, Any]:
+    """调用 openclaw agent CLI 执行任务。"""
+    openclaw_cmd = "openclaw"
+    for candidate in ["openclaw.cmd", "openclaw"]:
+        if which(candidate):
+            openclaw_cmd = candidate
+            break
+
+    session_key = f"agent:main:executor:{int(time.time())}"
+    cmd = [openclaw_cmd, "agent", "--agent", "main",
+           "--session-key", session_key,
+           "--message", prompt, "--json"]
 
     try:
         result = subprocess.run(
@@ -161,34 +184,33 @@ def execute_openclaw(prompt: str, timeout: int, max_output_kb: int) -> Dict[str,
     except subprocess.TimeoutExpired:
         return {"success": False, "output": "", "error": f"OpenClaw 执行超时 (>{timeout}s)"}
     except FileNotFoundError:
-        return {"success": False, "output": "", "error": "openclaw 命令未找到，请确认已安装并在 PATH 中"}
+        return {"success": False, "output": "", "error": "openclaw 命令未找到"}
     except Exception as e:
         return {"success": False, "output": "", "error": f"调用异常: {e}"}
 
-    # 解析输出
     stdout = result.stdout.decode("utf-8", errors="replace") if result.stdout else ""
     stderr = result.stderr.decode("utf-8", errors="replace") if result.stderr else ""
 
-    # 截断输出
     max_bytes = max_output_kb * 1024
     if len(stdout.encode("utf-8")) > max_bytes:
         stdout = stdout.encode("utf-8")[:max_bytes].decode("utf-8", errors="replace")
         stdout += "\n... [输出已截断]"
 
-    # openclaw agent --json 返回 JSON，尝试解析
     parsed_output = stdout
     try:
         parsed = json.loads(stdout)
         if isinstance(parsed, dict):
-            parsed_output = parsed.get("response", parsed.get("message", parsed.get("content", stdout)))
-            if not isinstance(parsed_output, str):
+            for key in ("response", "message", "content", "reply"):
+                if key in parsed and isinstance(parsed[key], str):
+                    parsed_output = parsed[key]
+                    break
+            else:
                 parsed_output = json.dumps(parsed, ensure_ascii=False, indent=2)
     except (json.JSONDecodeError, ValueError):
-        pass  # 不是 JSON，直接用原始输出
+        pass
 
     success = result.returncode == 0
     error_msg = stderr.strip() if not success and stderr else ""
-
     return {"success": success, "output": parsed_output, "error": error_msg}
 
 
@@ -196,110 +218,132 @@ def execute_openclaw(prompt: str, timeout: int, max_output_kb: int) -> Dict[str,
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="OpenClaw Executor — 通过 OpenClaw CLI 真实派工执行任务"
+        description="OpenClaw Executor — 任务执行调度器"
     )
     parser.add_argument("--task-id", required=True, help="要执行的任务 ID (如 Task-001)")
     parser.add_argument("--dry-run", action="store_true", help="只打印命令，不真实执行")
+    parser.add_argument("--direct", action="store_true",
+                        help="直接调用 openclaw agent CLI 执行（重量级，可能较慢）")
+    parser.add_argument("--collect", action="store_true",
+                        help="收集执行结果文件并更新任务状态")
     parser.add_argument("--timeout", type=int, default=None,
-                        help="超时秒数（默认从 policies.json 读取）")
+                        help="超时秒数（--direct 模式，默认从 policies.json 读取）")
     args = parser.parse_args()
 
-    # ── 1. 读取任务 ──
-    _utf8_print(f"[INFO] 读取任务 {args.task_id}...")
-    tasks_data = load_tasks()
+    tasks_data = load_json(TASKS_FILE)
     task = find_task(tasks_data, args.task_id)
     if not task:
         _utf8_print(f"[ERROR] 任务 {args.task_id} 不存在")
         return 1
 
-    _utf8_print(f"[OK] 任务标题: {task.get('title', '')}")
+    # ── collect 模式：收集结果 ──
+    if args.collect:
+        _utf8_print(f"[INFO] 收集 {args.task_id} 执行结果...")
+        result_text = read_result_file(args.task_id)
+        if result_text is None:
+            _utf8_print(f"[ERROR] 未找到结果文件 tasks/dispatch/{args.task_id}-result.txt")
+            return 1
 
-    # ── 2. 读取 Agent 信息 ──
+        # 判断成功/失败
+        is_success = not result_text.startswith("[EXECUTION FAILED]")
+        task["output"] = result_text[:1024 * 1024]
+        task["status"] = "done" if is_success else "failed"
+        task["updatedAt"] = _now_iso()
+        save_json(TASKS_FILE, tasks_data)
+
+        event = "openclaw_executor_success" if is_success else "openclaw_executor_failed"
+        write_audit(event, args.task_id, f"collect, output={len(result_text)}字符")
+        _utf8_print(f"[OK] 任务已标记 {'done' if is_success else 'failed'}，审计日志已记录")
+        return 0 if is_success else 1
+
+    # ── 读取 Agent + 策略 ──
     assignee = task.get("assignee")
     agent = None
     if assignee:
-        agents_data = load_agents()
+        agents_data = load_json(AGENTS_FILE)
         agent = find_agent(agents_data, assignee)
         if agent:
             _utf8_print(f"[INFO] 指派 Agent: {assignee} (cwd={agent.get('cwd', 'N/A')})")
-        else:
-            _utf8_print(f"[WARN] Agent {assignee} 未在注册表中找到")
-    else:
-        _utf8_print("[INFO] 任务未指派 Agent，将使用默认 OpenClaw Agent")
 
-    # ── 3. 读取策略 ──
-    policies = load_policies()
-    timeout = args.timeout or get_max_runtime_minutes(policies) * 60
-    max_output_kb = get_max_output_kb(policies)
-    _utf8_print(f"[INFO] 超时: {timeout}s  输出上限: {max_output_kb}KB")
+    policies = load_json(POLICIES_FILE)
+    timeout = args.timeout or get_policy_value(policies, "maxRuntimeMinutes", 30) * 60
+    max_output_kb = get_policy_value(policies, "maxOutputKB", 1024)
 
-    # ── 4. 构建 prompt ──
     prompt = build_prompt(task, agent)
     _utf8_print(f"[INFO] 构建 prompt ({len(prompt)} 字符)")
 
-    # ── 5. dry-run 或真实执行 ──
+    # ── dry-run ──
     if args.dry_run:
         _utf8_print("")
-        _utf8_print("[DRY-RUN] 以下是将要执行的命令：")
-        _utf8_print(f"  命令: openclaw agent --message \"<prompt>\" --json")
-        _utf8_print(f"  超时: {timeout}s")
-        _utf8_print(f"  Prompt 内容:")
-        _utf8_print("  " + "=" * 50)
+        _utf8_print("[DRY-RUN] Prompt 内容:")
+        _utf8_print("=" * 50)
         for line in prompt.split("\n"):
-            _utf8_print("  " + line)
-        _utf8_print("  " + "=" * 50)
-        _utf8_print("[DRY-RUN] 未执行 OpenClaw，未修改任务状态。")
+            _utf8_print(line)
+        _utf8_print("=" * 50)
+        if args.direct:
+            _utf8_print(f"[DRY-RUN] 将调用: openclaw agent --agent main --session-key <auto> --json")
+            _utf8_print(f"  超时: {timeout}s")
+        else:
+            _utf8_print(f"[DRY-RUN] 将生成 prompt 文件到 tasks/dispatch/{args.task_id}-prompt.txt")
+            _utf8_print(f"  主控检测到 prompt 文件后用 sessions_spawn 派子 Agent 执行")
         write_audit("openclaw_executor_dry_run", args.task_id,
-                     f"dry-run, prompt={len(prompt)}字符")
-        _utf8_print("[OK] dry-run 完成，审计日志已记录")
+                    f"dry-run, mode={'direct' if args.direct else 'dispatch'}, prompt={len(prompt)}字符")
+        _utf8_print("[OK] dry-run 完成")
         return 0
 
-    # ── 6. 真实执行 ──
-    _utf8_print(f"[INFO] 开始调用 OpenClaw Agent...")
+    # ── direct 模式：直接调用 CLI ──
+    if args.direct:
+        _utf8_print(f"[INFO] 直接调用 OpenClaw Agent (timeout={timeout}s)...")
+        write_audit("openclaw_executor_start", args.task_id,
+                    f"direct mode, timeout={timeout}s")
+        start = time.time()
+        result = execute_direct(prompt, timeout, max_output_kb)
+        elapsed = time.time() - start
+
+        if result["success"]:
+            _utf8_print(f"[OK] 执行完成 ({elapsed:.1f}s)")
+            task["output"] = result["output"]
+            task["status"] = "done"
+            task["updatedAt"] = _now_iso()
+            task["notes"] = (task.get("notes", "") +
+                             f"\n[OpenClaw Executor] direct 执行成功 ({elapsed:.1f}s)").strip()
+            save_json(TASKS_FILE, tasks_data)
+            write_audit("openclaw_executor_success", args.task_id,
+                        f"direct, 耗时={elapsed:.1f}s, 输出={len(result['output'])}字符")
+            _utf8_print("[OK] 任务已标记 done")
+            preview = result["output"][:500]
+            _utf8_print("")
+            _utf8_print("[OUTPUT PREVIEW]")
+            _utf8_print(preview)
+            return 0
+        else:
+            _utf8_print(f"[FAIL] 执行失败 ({elapsed:.1f}s): {result['error']}")
+            task["status"] = "failed"
+            task["updatedAt"] = _now_iso()
+            task["notes"] = (task.get("notes", "") +
+                             f"\n[OpenClaw Executor] direct 执行失败: {result['error']}").strip()
+            save_json(TASKS_FILE, tasks_data)
+            write_audit("openclaw_executor_failed", args.task_id,
+                        f"direct, 耗时={elapsed:.1f}s, 错误={result['error'][:200]}")
+            return 1
+
+    # ── dispatch 模式（默认）：生成 prompt 文件 + 更新任务状态 ──
+    _utf8_print(f"[INFO] 生成执行 prompt 文件...")
+    prompt_file = write_prompt_file(args.task_id, prompt)
+
+    task["status"] = "in_progress"
+    task["updatedAt"] = _now_iso()
+    save_json(TASKS_FILE, tasks_data)
+
     write_audit("openclaw_executor_start", args.task_id,
-                f"assignee={assignee or 'default'}, timeout={timeout}s")
+                f"dispatch mode, prompt_file={prompt_file.name}")
 
-    start_time = time.time()
-    result = execute_openclaw(prompt, timeout, max_output_kb)
-    elapsed = time.time() - start_time
-
-    if result["success"]:
-        _utf8_print(f"[OK] OpenClaw 执行完成 ({elapsed:.1f}s)")
-        _utf8_print(f"[INFO] 输出长度: {len(result['output'])} 字符")
-
-        # 写回任务
-        task["output"] = result["output"][:max_output_kb * 1024]
-        task["status"] = "done"
-        task["updatedAt"] = _now_iso()
-        task["notes"] = (task.get("notes", "") + f"\n[OpenClaw Executor] 执行成功 ({elapsed:.1f}s)").strip()
-        save_tasks(tasks_data)
-
-        write_audit("openclaw_executor_success", args.task_id,
-                    f"耗时={elapsed:.1f}s, 输出={len(result['output'])}字符")
-        _utf8_print("[OK] 任务已标记 done，审计日志已记录")
-
-        # 打印输出预览
-        preview = result["output"][:500]
-        _utf8_print("")
-        _utf8_print("[OUTPUT PREVIEW]")
-        _utf8_print(preview)
-        if len(result["output"]) > 500:
-            _utf8_print("... [仅显示前 500 字符]")
-
-        return 0
-    else:
-        _utf8_print(f"[FAIL] OpenClaw 执行失败 ({elapsed:.1f}s)")
-        _utf8_print(f"[ERROR] {result['error']}")
-
-        task["status"] = "failed"
-        task["updatedAt"] = _now_iso()
-        task["notes"] = (task.get("notes", "") + f"\n[OpenClaw Executor] 执行失败: {result['error']}").strip()
-        save_tasks(tasks_data)
-
-        write_audit("openclaw_executor_failed", args.task_id,
-                    f"耗时={elapsed:.1f}s, 错误={result['error'][:200]}")
-        _utf8_print("[OK] 任务已标记 failed，审计日志已记录")
-        return 1
+    _utf8_print(f"[OK] Prompt 文件已生成: {prompt_file}")
+    _utf8_print(f"[OK] 任务已标记 in_progress")
+    _utf8_print(f"[INFO] 主控检测到 prompt 文件后，用 sessions_spawn 派子 Agent 执行")
+    _utf8_print(f"[INFO] 子 Agent 完成后，将结果写入 tasks/dispatch/{args.task_id}-result.txt")
+    _utf8_print(f"[INFO] 然后运行: python scripts/openclaw_executor.py --task-id {args.task_id} --collect")
+    return 0
 
 
 if __name__ == "__main__":

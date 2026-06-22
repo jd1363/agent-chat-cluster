@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 18,
+  "nextId": 19,
   "tasks": [
     {
       "id": "Task-001",
@@ -188,6 +188,17 @@
       "updatedAt": "2026-06-22T03:07:32.037997+00:00",
       "output": "2加2等于4。\n",
       "notes": "Hermes 执行成功\n[admin] hermes disabled, assignee cleared"
+    },
+    {
+      "id": "Task-018",
+      "title": "OpenClaw executor e2e test: list scripts directory",
+      "status": "done",
+      "priority": "medium",
+      "assignee": null,
+      "createdAt": "2026-06-22T03:37:43.297384+00:00",
+      "updatedAt": "2026-06-22T03:49:47.590332+00:00",
+      "output": "Task-018 执行结果\n=====================\n任务标题: OpenClaw executor e2e test: list scripts directory\n任务说明: list all files in the scripts directory\n执行时间: 2026-06-22 11:47 (GMT+8)\n执行状态: SUCCESS\n\n执行过程:\n1. 读取任务 prompt 文件 Task-018-prompt.txt，确认任务为列出 scripts 目录下所有文件。\n2. 使用 PowerShell `Get-ChildItem -Recurse` 列出 G:\\agent-chat-cluster\\scripts\\ 目录下的所有文件（含子目录）。\n\n执行结果:\n共找到 28 个 Python 源文件 + 1 个 __pycache__ 目录（含 28 个 .pyc 编译缓存文件）。\n\n=== Python 源文件 (28 个) ===\n\n| # | 文件名                    | 大小(bytes) | 最后修改时间        |\n|---|---------------------------|-------------|---------------------|\n| 1 | audit_log.py              | 2,757       | 2026-06-17 14:38:58 |\n| 2 | benchmark_pipeline.py     | 10,853      | 2026-06-18 11:37:14 |\n| 3 | broadcast.py              | 1,255       | 2026-06-20 11:59:08 |\n| 4 | build_state.py            | 18,109      | 2026-06-20 18:01:14 |\n| 5 | check_alerts.py           | 13,302      | 2026-06-22 09:38:12 |\n| 6 | check_env.py              | 3,625       | 2026-06-20 14:36:06 |\n| 7 | command_map.py            | 8,782       | 2026-06-20 18:43:37 |\n| 8 | complete_task.py          | 3,843       | 2026-06-14 15:53:20 |\n| 9 | create_task.py            | 2,565       | 2026-06-14 14:58:51 |\n| 10| dispatch_task.py          | 9,990       | 2026-06-17 14:56:25 |\n| 11| event_log.py              | 14,588      | 2026-06-20 15:27:54 |\n| 12| hermes_adapter.py         | 15,946      | 2026-06-22 11:06:24 |\n| 13| list_messages.py          | 5,964       | 2026-06-18 11:48:21 |\n| 14| list_tasks.py             | 4,780       | 2026-06-14 17:56:38 |\n| 15| openclaw_executor.py      | 14,327      | 2026-06-22 11:46:14 |\n| 16| receive_message.py        | 5,555       | 2026-06-20 11:38:47 |\n| 17| record_cost.py            | 5,274       | 2026-06-20 18:40:23 |\n| 18| resend_unacked.py         | 7,942       | 2026-06-18 19:19:13 |\n| 19| review_command.py         | 9,484       | 2026-06-18 11:17:40 |\n| 20| scheduler_tick.py         | 15,169      | 2026-06-20 18:01:14 |\n| 21| send_message.py           | 8,880       | 2026-06-20 12:00:53 |\n| 22| show_audit.py             | 5,592       | 2026-06-14 17:56:39 |\n| 23| show_cost.py              | 7,011       | 2026-06-20 18:40:41 |\n| 24| show_history.py           | 14,733      | 2026-06-18 10:28:30 |\n| 25| snapshot_config.py        | 8,548       | 2026-06-20 18:38:48 |\n| 26| suggest_assignee.py       | 11,200      | 2026-06-18 10:51:55 |\n| 27| test_event_id_reset.py    | 6,462       | 2026-06-20 15:28:31 |\n| 28| test_isolation.py         | 17,102      | 2026-06-18 10:35:55 |\n| 29| update_task.py            | 3,219       | 2026-06-14 14:59:13 |\n| 30| validate_task.py          | 5,649       | 2026-06-14 16:51:05 |\n\n=== __pycache__ 目录 (28 个 .pyc 文件) ===\n所有 Python 源文件均有对应的 cpython-313 .pyc 编译缓存文件，位于 scripts\\__pycache__\\ 目录下。\n\n文件分类概述:\n- 任务管理: create_task.py, update_task.py, complete_task.py, validate_task.py, list_tasks.py, dispatch_task.py\n- 消息系统: send_message.py, receive_message.py, list_messages.py, broadcast.py, resend_unacked.py\n- 监控/审计: check_alerts.py, audit_log.py, show_audit.py, event_log.py, test_event_id_reset.py\n- 成本管理: record_cost.py, show_cost.py\n- 调度/状态: scheduler_tick.py, build_state.py, snapshot_config.py\n- 适配器: hermes_adapter.py, openclaw_executor.py\n- 命令系统: command_map.py, review_command.py\n- 环境检查: check_env.py\n- 测试/基准: test_isolation.py, benchmark_pipeline.py\n- 辅助: suggest_assignee.py, show_history.py\n",
+      "notes": "list all files in the scripts directory"
     }
   ]
 }
