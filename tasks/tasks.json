@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 40,
+  "nextId": 42,
   "tasks": [
     {
       "id": "Task-001",
@@ -430,6 +430,28 @@
       "updatedAt": "2026-06-22T12:02:54.357061+00:00",
       "output": null,
       "notes": "D1 event test - never dispatched, obsolete"
+    },
+    {
+      "id": "Task-040",
+      "title": "test from server",
+      "status": "cancelled",
+      "priority": "low",
+      "assignee": null,
+      "createdAt": "2026-06-22T12:54:06.493406+00:00",
+      "updatedAt": "2026-06-22T12:54:42.873838+00:00",
+      "output": null,
+      "notes": "cleanup test task"
+    },
+    {
+      "id": "Task-041",
+      "title": "??????",
+      "status": "cancelled",
+      "priority": "low",
+      "assignee": null,
+      "createdAt": "2026-06-22T12:58:28.292595+00:00",
+      "updatedAt": "2026-06-22T12:58:38.093869+00:00",
+      "output": null,
+      "notes": "frontend test cleanup"
     }
   ]
 }

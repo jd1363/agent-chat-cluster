@@ -10,3 +10,5 @@ docs/_tmp_old_scheme_extract/
 # Runtime snapshots and cost logs
 snapshots/
 logs/cost/
+
+web_server_*.txt
