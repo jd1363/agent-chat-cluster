@@ -277,6 +277,13 @@ def main():
         },
     )
 
+    # 构建子进程环境：强制 UTF-8，避免 Windows GBK 控制台导致中文乱码
+    hermes_env = os.environ.copy()
+    hermes_env["PYTHONIOENCODING"] = "utf-8"
+    hermes_env["PYTHONUTF8"] = "1"
+    hermes_env["LANG"] = "en_US.UTF-8"
+    hermes_env["LC_ALL"] = "en_US.UTF-8"
+
     try:
         result = subprocess.run(
             hermes_args,
@@ -286,6 +293,7 @@ def main():
             errors="replace",
             timeout=timeout,
             cwd=HERMES_WORK_DIR,
+            env=hermes_env,
         )
     except subprocess.TimeoutExpired:
         error_msg = f"Hermes 执行超时（>{timeout}s）"
