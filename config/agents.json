@@ -23,7 +23,7 @@
       "id": "agent-ext-02",
       "role": "external",
       "type": "extension",
-      "enabled": false,
+      "enabled": true,
       "cwd": "agents/ext/ext02",
       "riskLevel": "medium",
       "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
@@ -63,6 +63,21 @@
       "cwd": "agents/ext/ext06",
       "riskLevel": "medium",
       "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
+    },
+    {
+      "id": "agent-hermes-01",
+      "role": "executor",
+      "type": "hermes",
+      "enabled": true,
+      "cwd": "agents/hermes/hermes01",
+      "riskLevel": "medium",
+      "notes": "Hermes Agent v0.10.0 真实执行后端。通过 hermes chat --quiet CLI 调用。模型: doubao-seed-2-0-code-preview-260215。",
+      "backend": {
+        "type": "hermes-cli",
+        "command": "hermes",
+        "args": ["chat", "-q", "{prompt}", "--quiet", "--max-turns", "30"],
+        "workDir": "G:\\hermers\\hermes-agent"
+      }
     }
   ]
 }

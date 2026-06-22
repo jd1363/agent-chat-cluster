@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 11,
+  "nextId": 13,
   "tasks": [
     {
       "id": "Task-001",
@@ -111,6 +111,28 @@
       "updatedAt": "2026-06-20T04:02:52.881280+00:00",
       "output": null,
       "notes": "阶段3消息总线收口完成：--to all/broadcast.py 读取 globalBroadcast 策略并要求 --manual-approval；broadcast_sent 记录 manualApproval；消息ID分配增加 .state.lock 跨进程锁；README/RUNBOOK/SECURITY_NOTES 已同步；回归 py_compile/check_env/validate_task/resend dry-run/list_tasks 通过"
+    },
+    {
+      "id": "Task-011",
+      "title": "Stage4 concurrent test A",
+      "status": "cancelled",
+      "priority": "high",
+      "assignee": null,
+      "createdAt": "2026-06-22T02:08:32.547027+00:00",
+      "updatedAt": "2026-06-22T02:09:27.864721+00:00",
+      "output": null,
+      "notes": ""
+    },
+    {
+      "id": "Task-012",
+      "title": "Stage4 concurrent test B",
+      "status": "cancelled",
+      "priority": "high",
+      "assignee": null,
+      "createdAt": "2026-06-22T02:08:40.222082+00:00",
+      "updatedAt": "2026-06-22T02:09:35.822120+00:00",
+      "output": null,
+      "notes": ""
     }
   ]
 }

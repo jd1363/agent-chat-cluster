@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-20T10:02:36Z",
+  "generatedAt": "2026-06-22T02:09:43Z",
   "sourceFiles": [
     "tasks\\tasks.json",
     "config\\agents.json",
@@ -11,22 +11,24 @@
     "logs\\audit\\2026-06-17.jsonl",
     "logs\\audit\\2026-06-18.jsonl",
     "logs\\audit\\2026-06-20.jsonl",
+    "logs\\audit\\2026-06-22.jsonl",
     "logs\\events\\2026-06-20.jsonl"
   ],
   "tasks": {
-    "total": 10,
+    "total": 12,
     "byStatus": {
       "done": 8,
-      "failed": 2
+      "failed": 2,
+      "cancelled": 2
     },
     "byPriority": {
-      "high": 3,
+      "high": 5,
       "medium": 5,
       "low": 2
     },
     "byAssignee": {
       "agent-exec-01": 2,
-      "(unassigned)": 1,
+      "(unassigned)": 3,
       "agent-ext-01": 7
     },
     "items": [
@@ -139,13 +141,35 @@
         "updatedAt": "2026-06-20T04:02:52.881280+00:00",
         "output": null,
         "notes": "阶段3消息总线收口完成：--to all/broadcast.py 读取 globalBroadcast 策略并要求 --manual-approval；broadcast_sent 记录 manualApproval；消息ID分配增加 .state.lock 跨进程锁；README/RUNBOOK/SECURITY_NOTES 已同步；回归 py_compile/check_env/validate_task/resend dry-run/list_tasks 通过"
+      },
+      {
+        "id": "Task-011",
+        "title": "Stage4 concurrent test A",
+        "status": "cancelled",
+        "priority": "high",
+        "assignee": null,
+        "createdAt": "2026-06-22T02:08:32.547027+00:00",
+        "updatedAt": "2026-06-22T02:09:27.864721+00:00",
+        "output": null,
+        "notes": ""
+      },
+      {
+        "id": "Task-012",
+        "title": "Stage4 concurrent test B",
+        "status": "cancelled",
+        "priority": "high",
+        "assignee": null,
+        "createdAt": "2026-06-22T02:08:40.222082+00:00",
+        "updatedAt": "2026-06-22T02:09:35.822120+00:00",
+        "output": null,
+        "notes": ""
       }
     ]
   },
   "agents": {
     "total": 7,
-    "enabled": 2,
-    "disabled": 5,
+    "enabled": 3,
+    "disabled": 4,
     "byRiskLevel": {
       "low": 1,
       "medium": 6
@@ -173,7 +197,7 @@
         "id": "agent-ext-02",
         "role": "external",
         "type": "extension",
-        "enabled": false,
+        "enabled": true,
         "cwd": "agents/ext/ext02",
         "riskLevel": "medium",
         "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
@@ -232,21 +256,24 @@
     "latestTimestamp": "2026-06-20T04:01:35.291783+00:00"
   },
   "audit": {
-    "total": 92,
+    "total": 101,
     "byEventType": {
-      "task_created": 22,
+      "task_created": 24,
       "task_dispatched": 17,
       "task_blocked": 2,
       "task_completed": 12,
       "test": 1,
-      "task_updated": 4,
+      "task_updated": 6,
       "message_sent": 7,
       "broadcast_sent": 4,
       "message_resent": 16,
       "message_failed": 5,
-      "task_failed": 2
+      "task_failed": 2,
+      "snapshot_saved": 3,
+      "snapshot_restored": 1,
+      "cost_recorded": 1
     },
-    "latestTimestamp": "2026-06-20T04:02:52.882095+00:00"
+    "latestTimestamp": "2026-06-22T02:09:35.823036+00:00"
   },
   "events": {
     "total": 8,
@@ -262,7 +289,7 @@
     "latestTimestamp": "2026-06-20T09:59:26Z"
   },
   "policy": {
-    "maxConcurrency": 1,
+    "maxConcurrency": 2,
     "maxRetries": 1,
     "globalBroadcastAllowed": false,
     "autoOutboundAllowed": false,
@@ -271,7 +298,7 @@
   "scheduler": {
     "pendingTasks": 0,
     "inProgressTasks": 0,
-    "availableAgents": 2,
+    "availableAgents": 3,
     "backpressure": false,
     "reasons": []
   }
