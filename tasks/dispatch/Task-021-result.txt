@@ -1,0 +1,50 @@
+Task-021: Concurrent test B - count markdown docs
+
+Total .md files: 45
+
+File list:
+1.  .codewhale-task.md
+2.  ACCEPTANCE_COMMAND_MAP.md
+3.  ACCEPTANCE_CONFIG_SNAPSHOT.md
+4.  ACCEPTANCE_COST_LEDGER.md
+5.  ACCEPTANCE_STAGE0.md
+6.  ACCEPTANCE_STAGE1.md
+7.  ACCEPTANCE_STAGE2.md
+8.  ACCEPTANCE_STAGE2_PRECHECK.md
+9.  ACCEPTANCE_STAGE2_PRECHECK_BLOCK2.md
+10. ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md
+11. ACCEPTANCE_STAGE3.md
+12. DEMO_RUNBOOK.md
+13. MVP_DELIVERY_REPORT.md
+14. ORIGINAL_PLAN_GAP_ANALYSIS.md
+15. PROJECT_PLAN.md
+16. PROJECT_STATUS.md
+17. README.md
+18. .codewhale\instructions.md
+19. agents\hermes\hermes01\README.md
+20. docs\COMMAND_REFERENCE.md
+21. docs\OPERATOR_RUNBOOK.md
+22. docs\REAL_COMMANDS.md
+23. docs\SECURITY_NOTES.md
+24. docs\SYSTEM_ARCHITECTURE.md
+25. docs\TASK_PROTOCOL.md
+26. logs\runs\Task-001_dispatch.md
+27. logs\runs\Task-002_dispatch.md
+28. logs\runs\Task-003_dispatch.md
+29. logs\runs\Task-004_dispatch.md
+30. logs\runs\Task-005_dispatch.md
+31. logs\runs\Task-006_dispatch.md
+32. logs\runs\Task-007_dispatch.md
+33. logs\runs\Task-008_dispatch.md
+34. logs\runs\Task-009_dispatch.md
+35. logs\runs\Task-019_dispatch.md
+36. logs\runs\Task-020_dispatch.md
+37. logs\runs\Task-021_dispatch.md
+38. memory\2026-06-18.md
+39. memory\2026-06-20.md
+40. memory\2026-06-22.md
+41. snapshots\baseline-old-scheme\PROJECT_PLAN.md
+42. snapshots\baseline-old-scheme\README.md
+43. snapshots\baseline-old-scheme\docs\OPERATOR_RUNBOOK.md
+44. snapshots\baseline-old-scheme\docs\SECURITY_NOTES.md
+45. snapshots\baseline-old-scheme\docs\TASK_PROTOCOL.md

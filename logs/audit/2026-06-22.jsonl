@@ -65,3 +65,13 @@
 {"timestamp": "2026-06-22T04:04:40.363822+00:00", "eventType": "task_dispatched", "taskId": "Task-019", "message": "任务已派发至 agent-ext-01", "environment": "production", "data": {"assignee": "agent-ext-01", "dispatchFile": "logs\\runs\\Task-019_dispatch.md"}}
 {"timestamp": "2026-06-22T04:04:40.429787+00:00", "eventType": "openclaw_executor_dry_run", "taskId": "Task-019", "details": "dry-run, mode=dispatch, prompt=84字符", "environment": "production"}
 {"timestamp": "2026-06-22T04:05:03.540122+00:00", "eventType": "task_updated", "taskId": "Task-019", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}
+{"timestamp": "2026-06-22T04:06:35.835763+00:00", "eventType": "task_created", "taskId": "Task-020", "message": "创建任务: Concurrent test A: count Python scripts", "environment": "production", "data": {"priority": "high"}}
+{"timestamp": "2026-06-22T04:06:35.908114+00:00", "eventType": "task_created", "taskId": "Task-021", "message": "创建任务: Concurrent test B: count markdown docs", "environment": "production", "data": {"priority": "high"}}
+{"timestamp": "2026-06-22T04:06:51.872716+00:00", "eventType": "task_dispatched", "taskId": "Task-021", "message": "任务已派发至 agent-ext-01", "environment": "production", "data": {"assignee": "agent-ext-01", "dispatchFile": "logs\\runs\\Task-021_dispatch.md"}}
+
+{"timestamp": "2026-06-22T04:07:38.530976+00:00", "eventType": "task_updated", "taskId": "Task-020", "message": "更新任务字段: status", "environment": "production", "data": {"status": "pending"}}
+{"timestamp": "2026-06-22T04:07:38.602355+00:00", "eventType": "task_updated", "taskId": "Task-021", "message": "更新任务字段: status", "environment": "production", "data": {"status": "pending"}}
+{"timestamp": "2026-06-22T04:07:57.819696+00:00", "eventType": "task_updated", "taskId": "Task-020", "message": "更新任务字段: status, assignee", "environment": "production", "data": {"status": "in_progress", "assignee": "agent-exec-01"}}
+{"timestamp": "2026-06-22T04:07:57.897144+00:00", "eventType": "task_updated", "taskId": "Task-021", "message": "更新任务字段: status, assignee", "environment": "production", "data": {"status": "in_progress", "assignee": "agent-ext-01"}}
+{"timestamp": "2026-06-22T04:10:07.981925+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-020", "details": "collect, output=678字符", "environment": "production"}
+{"timestamp": "2026-06-22T04:10:08.058437+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-021", "details": "collect, output=1552字符", "environment": "production"}

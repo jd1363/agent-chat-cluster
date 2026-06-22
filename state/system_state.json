@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-06-22T03:49:59Z",
+  "generatedAt": "2026-06-22T04:10:23Z",
   "sourceFiles": [
     "tasks\\tasks.json",
     "config\\agents.json",
@@ -15,21 +15,21 @@
     "logs\\events\\2026-06-20.jsonl"
   ],
   "tasks": {
-    "total": 18,
+    "total": 21,
     "byStatus": {
-      "done": 13,
+      "done": 15,
       "failed": 3,
-      "cancelled": 2
+      "cancelled": 3
     },
     "byPriority": {
-      "high": 5,
+      "high": 7,
       "medium": 10,
-      "low": 3
+      "low": 4
     },
     "byAssignee": {
-      "agent-exec-01": 2,
+      "agent-exec-01": 3,
       "(unassigned)": 9,
-      "agent-ext-01": 7
+      "agent-ext-01": 9
     },
     "items": [
       {
@@ -229,6 +229,39 @@
         "updatedAt": "2026-06-22T03:49:47.590332+00:00",
         "output": "Task-018 执行结果\n=====================\n任务标题: OpenClaw executor e2e test: list scripts directory\n任务说明: list all files in the scripts directory\n执行时间: 2026-06-22 11:47 (GMT+8)\n执行状态: SUCCESS\n\n执行过程:\n1. 读取任务 prompt 文件 Task-018-prompt.txt，确认任务为列出 scripts 目录下所有文件。\n2. 使用 PowerShell `Get-ChildItem -Recurse` 列出 G:\\agent-chat-cluster\\scripts\\ 目录下的所有文件（含子目录）。\n\n执行结果:\n共找到 28 个 Python 源文件 + 1 个 __pycache__ 目录（含 28 个 .pyc 编译缓存文件）。\n\n=== Python 源文件 (28 个) ===\n\n| # | 文件名                    | 大小(bytes) | 最后修改时间        |\n|---|---------------------------|-------------|---------------------|\n| 1 | audit_log.py              | 2,757       | 2026-06-17 14:38:58 |\n| 2 | benchmark_pipeline.py     | 10,853      | 2026-06-18 11:37:14 |\n| 3 | broadcast.py              | 1,255       | 2026-06-20 11:59:08 |\n| 4 | build_state.py            | 18,109      | 2026-06-20 18:01:14 |\n| 5 | check_alerts.py           | 13,302      | 2026-06-22 09:38:12 |\n| 6 | check_env.py              | 3,625       | 2026-06-20 14:36:06 |\n| 7 | command_map.py            | 8,782       | 2026-06-20 18:43:37 |\n| 8 | complete_task.py          | 3,843       | 2026-06-14 15:53:20 |\n| 9 | create_task.py            | 2,565       | 2026-06-14 14:58:51 |\n| 10| dispatch_task.py          | 9,990       | 2026-06-17 14:56:25 |\n| 11| event_log.py              | 14,588      | 2026-06-20 15:27:54 |\n| 12| hermes_adapter.py         | 15,946      | 2026-06-22 11:06:24 |\n| 13| list_messages.py          | 5,964       | 2026-06-18 11:48:21 |\n| 14| list_tasks.py             | 4,780       | 2026-06-14 17:56:38 |\n| 15| openclaw_executor.py      | 14,327      | 2026-06-22 11:46:14 |\n| 16| receive_message.py        | 5,555       | 2026-06-20 11:38:47 |\n| 17| record_cost.py            | 5,274       | 2026-06-20 18:40:23 |\n| 18| resend_unacked.py         | 7,942       | 2026-06-18 19:19:13 |\n| 19| review_command.py         | 9,484       | 2026-06-18 11:17:40 |\n| 20| scheduler_tick.py         | 15,169      | 2026-06-20 18:01:14 |\n| 21| send_message.py           | 8,880       | 2026-06-20 12:00:53 |\n| 22| show_audit.py             | 5,592       | 2026-06-14 17:56:39 |\n| 23| show_cost.py              | 7,011       | 2026-06-20 18:40:41 |\n| 24| show_history.py           | 14,733      | 2026-06-18 10:28:30 |\n| 25| snapshot_config.py        | 8,548       | 2026-06-20 18:38:48 |\n| 26| suggest_assignee.py       | 11,200      | 2026-06-18 10:51:55 |\n| 27| test_event_id_reset.py    | 6,462       | 2026-06-20 15:28:31 |\n| 28| test_isolation.py         | 17,102      | 2026-06-18 10:35:55 |\n| 29| update_task.py            | 3,219       | 2026-06-14 14:59:13 |\n| 30| validate_task.py          | 5,649       | 2026-06-14 16:51:05 |\n\n=== __pycache__ 目录 (28 个 .pyc 文件) ===\n所有 Python 源文件均有对应的 cpython-313 .pyc 编译缓存文件，位于 scripts\\__pycache__\\ 目录下。\n\n文件分类概述:\n- 任务管理: create_task.py, update_task.py, complete_task.py, validate_task.py, list_tasks.py, dispatch_task.py\n- 消息系统: send_message.py, receive_message.py, list_messages.py, broadcast.py, resend_unacked.py\n- 监控/审计: check_alerts.py, audit_log.py, show_audit.py, event_log.py, test_event_id_reset.py\n- 成本管理: record_cost.py, show_cost.py\n- 调度/状态: scheduler_tick.py, build_state.py, snapshot_config.py\n- 适配器: hermes_adapter.py, openclaw_executor.py\n- 命令系统: command_map.py, review_command.py\n- 环境检查: check_env.py\n- 测试/基准: test_isolation.py, benchmark_pipeline.py\n- 辅助: suggest_assignee.py, show_history.py\n",
         "notes": "list all files in the scripts directory"
+      },
+      {
+        "id": "Task-019",
+        "title": "dispatch execute integration test",
+        "status": "cancelled",
+        "priority": "low",
+        "assignee": "agent-ext-01",
+        "createdAt": "2026-06-22T04:04:34.078822+00:00",
+        "updatedAt": "2026-06-22T04:05:03.539271+00:00",
+        "output": null,
+        "notes": ""
+      },
+      {
+        "id": "Task-020",
+        "title": "Concurrent test A: count Python scripts",
+        "status": "done",
+        "priority": "high",
+        "assignee": "agent-exec-01",
+        "createdAt": "2026-06-22T04:06:35.834901+00:00",
+        "updatedAt": "2026-06-22T04:10:07.980953+00:00",
+        "output": "Task-020 结果\n\n统计目录: G:\\agent-chat-cluster\\scripts\n.py 文件数量: 30\n\n文件列表:\n1. audit_log.py\n2. benchmark_pipeline.py\n3. broadcast.py\n4. build_state.py\n5. check_alerts.py\n6. check_env.py\n7. command_map.py\n8. complete_task.py\n9. create_task.py\n10. dispatch_task.py\n11. event_log.py\n12. hermes_adapter.py\n13. list_messages.py\n14. list_tasks.py\n15. openclaw_executor.py\n16. receive_message.py\n17. record_cost.py\n18. resend_unacked.py\n19. review_command.py\n20. scheduler_tick.py\n21. send_message.py\n22. show_audit.py\n23. show_cost.py\n24. show_history.py\n25. snapshot_config.py\n26. suggest_assignee.py\n27. test_event_id_reset.py\n28. test_isolation.py\n29. update_task.py\n30. validate_task.py\n",
+        "notes": ""
+      },
+      {
+        "id": "Task-021",
+        "title": "Concurrent test B: count markdown docs",
+        "status": "done",
+        "priority": "high",
+        "assignee": "agent-ext-01",
+        "createdAt": "2026-06-22T04:06:35.907175+00:00",
+        "updatedAt": "2026-06-22T04:10:08.057599+00:00",
+        "output": "Task-021: Concurrent test B - count markdown docs\n\nTotal .md files: 45\n\nFile list:\n1.  .codewhale-task.md\n2.  ACCEPTANCE_COMMAND_MAP.md\n3.  ACCEPTANCE_CONFIG_SNAPSHOT.md\n4.  ACCEPTANCE_COST_LEDGER.md\n5.  ACCEPTANCE_STAGE0.md\n6.  ACCEPTANCE_STAGE1.md\n7.  ACCEPTANCE_STAGE2.md\n8.  ACCEPTANCE_STAGE2_PRECHECK.md\n9.  ACCEPTANCE_STAGE2_PRECHECK_BLOCK2.md\n10. ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md\n11. ACCEPTANCE_STAGE3.md\n12. DEMO_RUNBOOK.md\n13. MVP_DELIVERY_REPORT.md\n14. ORIGINAL_PLAN_GAP_ANALYSIS.md\n15. PROJECT_PLAN.md\n16. PROJECT_STATUS.md\n17. README.md\n18. .codewhale\\instructions.md\n19. agents\\hermes\\hermes01\\README.md\n20. docs\\COMMAND_REFERENCE.md\n21. docs\\OPERATOR_RUNBOOK.md\n22. docs\\REAL_COMMANDS.md\n23. docs\\SECURITY_NOTES.md\n24. docs\\SYSTEM_ARCHITECTURE.md\n25. docs\\TASK_PROTOCOL.md\n26. logs\\runs\\Task-001_dispatch.md\n27. logs\\runs\\Task-002_dispatch.md\n28. logs\\runs\\Task-003_dispatch.md\n29. logs\\runs\\Task-004_dispatch.md\n30. logs\\runs\\Task-005_dispatch.md\n31. logs\\runs\\Task-006_dispatch.md\n32. logs\\runs\\Task-007_dispatch.md\n33. logs\\runs\\Task-008_dispatch.md\n34. logs\\runs\\Task-009_dispatch.md\n35. logs\\runs\\Task-019_dispatch.md\n36. logs\\runs\\Task-020_dispatch.md\n37. logs\\runs\\Task-021_dispatch.md\n38. memory\\2026-06-18.md\n39. memory\\2026-06-20.md\n40. memory\\2026-06-22.md\n41. snapshots\\baseline-old-scheme\\PROJECT_PLAN.md\n42. snapshots\\baseline-old-scheme\\README.md\n43. snapshots\\baseline-old-scheme\\docs\\OPERATOR_RUNBOOK.md\n44. snapshots\\baseline-old-scheme\\docs\\SECURITY_NOTES.md\n45. snapshots\\baseline-old-scheme\\docs\\TASK_PROTOCOL.md\n",
+        "notes": ""
       }
     ]
   },
@@ -344,14 +377,14 @@
     "latestTimestamp": "2026-06-20T04:01:35.291783+00:00"
   },
   "audit": {
-    "total": 156,
+    "total": 169,
     "byEventType": {
-      "task_created": 30,
-      "task_dispatched": 17,
+      "task_created": 33,
+      "task_dispatched": 19,
       "task_blocked": 2,
       "task_completed": 14,
       "test": 1,
-      "task_updated": 25,
+      "task_updated": 30,
       "message_sent": 7,
       "broadcast_sent": 4,
       "message_resent": 16,
@@ -364,12 +397,12 @@
       "hermes_adapter_start": 6,
       "hermes_adapter_timeout": 1,
       "hermes_adapter_success": 5,
-      "openclaw_executor_dry_run": 2,
+      "openclaw_executor_dry_run": 3,
       "openclaw_executor_start": 5,
       "openclaw_executor_failed": 4,
-      "openclaw_executor_success": 1
+      "openclaw_executor_success": 3
     },
-    "latestTimestamp": "2026-06-22T03:49:47.591144+00:00"
+    "latestTimestamp": "2026-06-22T04:10:08.058437+00:00"
   },
   "events": {
     "total": 8,

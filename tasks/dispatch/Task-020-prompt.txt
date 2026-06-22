@@ -1,0 +1,4 @@
+任务 ID: Task-020
+任务标题: Concurrent test A: count Python scripts
+
+请在 G:\agent-chat-cluster\scripts 目录下，统计所有 .py 文件的数量，并列出文件名。保持简洁。

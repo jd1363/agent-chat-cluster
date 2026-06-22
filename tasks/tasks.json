@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 20,
+  "nextId": 22,
   "tasks": [
     {
       "id": "Task-001",
@@ -209,6 +209,28 @@
       "createdAt": "2026-06-22T04:04:34.078822+00:00",
       "updatedAt": "2026-06-22T04:05:03.539271+00:00",
       "output": null,
+      "notes": ""
+    },
+    {
+      "id": "Task-020",
+      "title": "Concurrent test A: count Python scripts",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-exec-01",
+      "createdAt": "2026-06-22T04:06:35.834901+00:00",
+      "updatedAt": "2026-06-22T04:10:07.980953+00:00",
+      "output": "Task-020 结果\n\n统计目录: G:\\agent-chat-cluster\\scripts\n.py 文件数量: 30\n\n文件列表:\n1. audit_log.py\n2. benchmark_pipeline.py\n3. broadcast.py\n4. build_state.py\n5. check_alerts.py\n6. check_env.py\n7. command_map.py\n8. complete_task.py\n9. create_task.py\n10. dispatch_task.py\n11. event_log.py\n12. hermes_adapter.py\n13. list_messages.py\n14. list_tasks.py\n15. openclaw_executor.py\n16. receive_message.py\n17. record_cost.py\n18. resend_unacked.py\n19. review_command.py\n20. scheduler_tick.py\n21. send_message.py\n22. show_audit.py\n23. show_cost.py\n24. show_history.py\n25. snapshot_config.py\n26. suggest_assignee.py\n27. test_event_id_reset.py\n28. test_isolation.py\n29. update_task.py\n30. validate_task.py\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-021",
+      "title": "Concurrent test B: count markdown docs",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-22T04:06:35.907175+00:00",
+      "updatedAt": "2026-06-22T04:10:08.057599+00:00",
+      "output": "Task-021: Concurrent test B - count markdown docs\n\nTotal .md files: 45\n\nFile list:\n1.  .codewhale-task.md\n2.  ACCEPTANCE_COMMAND_MAP.md\n3.  ACCEPTANCE_CONFIG_SNAPSHOT.md\n4.  ACCEPTANCE_COST_LEDGER.md\n5.  ACCEPTANCE_STAGE0.md\n6.  ACCEPTANCE_STAGE1.md\n7.  ACCEPTANCE_STAGE2.md\n8.  ACCEPTANCE_STAGE2_PRECHECK.md\n9.  ACCEPTANCE_STAGE2_PRECHECK_BLOCK2.md\n10. ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md\n11. ACCEPTANCE_STAGE3.md\n12. DEMO_RUNBOOK.md\n13. MVP_DELIVERY_REPORT.md\n14. ORIGINAL_PLAN_GAP_ANALYSIS.md\n15. PROJECT_PLAN.md\n16. PROJECT_STATUS.md\n17. README.md\n18. .codewhale\\instructions.md\n19. agents\\hermes\\hermes01\\README.md\n20. docs\\COMMAND_REFERENCE.md\n21. docs\\OPERATOR_RUNBOOK.md\n22. docs\\REAL_COMMANDS.md\n23. docs\\SECURITY_NOTES.md\n24. docs\\SYSTEM_ARCHITECTURE.md\n25. docs\\TASK_PROTOCOL.md\n26. logs\\runs\\Task-001_dispatch.md\n27. logs\\runs\\Task-002_dispatch.md\n28. logs\\runs\\Task-003_dispatch.md\n29. logs\\runs\\Task-004_dispatch.md\n30. logs\\runs\\Task-005_dispatch.md\n31. logs\\runs\\Task-006_dispatch.md\n32. logs\\runs\\Task-007_dispatch.md\n33. logs\\runs\\Task-008_dispatch.md\n34. logs\\runs\\Task-009_dispatch.md\n35. logs\\runs\\Task-019_dispatch.md\n36. logs\\runs\\Task-020_dispatch.md\n37. logs\\runs\\Task-021_dispatch.md\n38. memory\\2026-06-18.md\n39. memory\\2026-06-20.md\n40. memory\\2026-06-22.md\n41. snapshots\\baseline-old-scheme\\PROJECT_PLAN.md\n42. snapshots\\baseline-old-scheme\\README.md\n43. snapshots\\baseline-old-scheme\\docs\\OPERATOR_RUNBOOK.md\n44. snapshots\\baseline-old-scheme\\docs\\SECURITY_NOTES.md\n45. snapshots\\baseline-old-scheme\\docs\\TASK_PROTOCOL.md\n",
       "notes": ""
     }
   ]
