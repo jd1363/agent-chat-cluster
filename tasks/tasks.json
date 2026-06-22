@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 38,
+  "nextId": 40,
   "tasks": [
     {
       "id": "Task-001",
@@ -407,6 +407,28 @@
       "createdAt": "2026-06-22T08:38:05.167862+00:00",
       "updatedAt": "2026-06-22T08:41:09.462629+00:00",
       "output": "﻿Task: Task-037\nResult:\naudit cost dead_letter events messages runs\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-038",
+      "title": "D1 event test",
+      "status": "pending",
+      "priority": "low",
+      "assignee": null,
+      "createdAt": "2026-06-22T09:05:29.246562+00:00",
+      "updatedAt": "2026-06-22T09:05:29.246562+00:00",
+      "output": null,
+      "notes": ""
+    },
+    {
+      "id": "Task-039",
+      "title": "D1 event test",
+      "status": "pending",
+      "priority": "low",
+      "assignee": null,
+      "createdAt": "2026-06-22T09:07:51.193837+00:00",
+      "updatedAt": "2026-06-22T09:07:51.193837+00:00",
+      "output": null,
       "notes": ""
     }
   ]

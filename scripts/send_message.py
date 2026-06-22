@@ -29,6 +29,7 @@ LOCK_TIMEOUT_SECONDS = 5
 
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from audit_log import append_audit  # type: ignore
+from event_log import build_event, append_event  # type: ignore
 
 
 def fail(message: str) -> None:
@@ -201,6 +202,16 @@ def send_message(to_agent: str, content: str) -> dict:
         message=f"Message {message_id} sent to {to_agent}",
         data={"messageId": message_id, "to": to_agent},
     )
+    try:
+        _evt = build_event(
+            event_type="message.sent",
+            source="send_message",
+            correlation_id=message_id,
+            payload={"messageId": message_id, "from": "master", "to": to_agent, "subject": content[:80]},
+        )
+        append_event(_evt)
+    except Exception as e:
+        print(f"[WARN] 事件日志追加失败: {e}")
     return record
 
 
@@ -244,6 +255,16 @@ def send_broadcast(content: str, manual_approval: bool = False) -> dict:
         message=f"Broadcast {parent_id} sent to {len(recipients)} agents",
         data={"messageId": parent_id, "to": recipients, "recipientCount": len(recipients), "manualApproval": manual_approval},
     )
+    try:
+        _evt = build_event(
+            event_type="message.broadcast",
+            source="send_message",
+            correlation_id=parent_id,
+            payload={"messageId": parent_id, "from": "master", "recipients": len(recipients), "subject": content[:80]},
+        )
+        append_event(_evt)
+    except Exception as e:
+        print(f"[WARN] 事件日志追加失败: {e}")
     return {"parent": parent_record, "children": child_records}
 
 

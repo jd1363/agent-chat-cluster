@@ -22,6 +22,7 @@ TASKS_FILE = PROJECT_ROOT / "tasks" / "tasks.json"
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from audit_log import append_audit  # type: ignore
 from file_lock import file_lock  # type: ignore
+from event_log import build_event, append_event  # type: ignore
 
 
 def load_tasks():
@@ -99,6 +100,18 @@ def main():
         task_id=task_id,
         data={"priority": args.priority},
     )
+
+    # 写事件日志
+    try:
+        event = build_event(
+            event_type="task.created",
+            source="create_task",
+            correlation_id=task_id,
+            payload={"taskId": task_id, "title": args.title, "priority": args.priority, "assignee": None},
+        )
+        append_event(event)
+    except Exception as e:
+        print(f"[WARN] 事件日志追加失败: {e}")
 
     print(f"[OK] 已创建 {task_id}: {args.title} (priority={args.priority})")
 

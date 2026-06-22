@@ -26,6 +26,7 @@ COST_DIR = PROJECT_ROOT / "logs" / "cost"
 
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from audit_log import append_audit  # type: ignore
+from event_log import build_event, append_event  # type: ignore
 
 
 def utc_now() -> str:
@@ -133,6 +134,24 @@ def main() -> None:
             "source": args.source,
         },
     )
+    try:
+        _corr = args.task_id or args.agent_id
+        _evt = build_event(
+            event_type="cost.recorded",
+            source="record_cost",
+            correlation_id=_corr,
+            payload={
+                "entryId": args.agent_id,
+                "agent": args.agent_id,
+                "task": args.task_id,
+                "tokensIn": args.input_tokens,
+                "tokensOut": args.output_tokens,
+                "cost": record.get("estimatedCost"),
+            },
+        )
+        append_event(_evt)
+    except Exception as e:
+        print(f"[WARN] 事件日志追加失败: {e}")
     print(f"[OK] 成本记录已写入: {path.relative_to(PROJECT_ROOT)}")
 
 

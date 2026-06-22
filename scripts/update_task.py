@@ -23,6 +23,7 @@ VALID_STATUSES = {"pending", "in_progress", "done", "failed", "blocked", "cancel
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from audit_log import append_audit  # type: ignore
 from file_lock import file_lock  # type: ignore
+from event_log import build_event, append_event  # type: ignore
 
 
 def load_tasks():
@@ -110,6 +111,18 @@ def main():
             task_id=args.id,
             data=changes,
         )
+
+        # 写事件日志
+        try:
+            event = build_event(
+                event_type="task.updated",
+                source="update_task",
+                correlation_id=args.id,
+                payload={"taskId": args.id, "changes": changes},
+            )
+            append_event(event)
+        except Exception as e:
+            print(f"[WARN] 事件日志追加失败: {e}")
     else:
         print(f"[INFO] 未提供任何更新字段，{args.id} 保持不变")
 

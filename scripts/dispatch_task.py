@@ -35,6 +35,7 @@ VALIDATE_SCRIPT = PROJECT_ROOT / "scripts" / "validate_task.py"
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from audit_log import append_audit  # type: ignore
 from file_lock import file_lock  # type: ignore
+from event_log import build_event, append_event  # type: ignore
 
 VALID_STATUSES = {"pending", "in_progress", "done", "failed", "blocked", "cancelled"}
 
@@ -300,6 +301,18 @@ def main():
         task_id=task_id,
         data={"assignee": args.assignee, "dispatchFile": str(dispatch_path.relative_to(PROJECT_ROOT))},
     )
+
+    # 写事件日志
+    try:
+        event = build_event(
+            event_type="task.dispatched",
+            source="dispatch_task",
+            correlation_id=task_id,
+            payload={"taskId": task_id, "assignee": args.assignee},
+        )
+        append_event(event)
+    except Exception as e:
+        print(f"[WARN] 事件日志追加失败: {e}")
 
     print(f"[OK] {task_id} 已派发至 {args.assignee}")
     print(f"[OK] 派工提示: {dispatch_path}")

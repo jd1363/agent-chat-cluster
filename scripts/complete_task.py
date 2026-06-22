@@ -26,6 +26,7 @@ TASKS_FILE = PROJECT_ROOT / "tasks" / "tasks.json"
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from audit_log import append_audit  # type: ignore
 from file_lock import file_lock  # type: ignore
+from event_log import build_event, append_event  # type: ignore
 
 VALID_FINAL_STATUSES = {"done", "failed", "blocked"}
 
@@ -126,6 +127,22 @@ def main():
             "force": args.force,
         },
     )
+
+    # 写事件日志
+    try:
+        event = build_event(
+            event_type="task.completed",
+            source="complete_task",
+            correlation_id=args.id,
+            payload={
+                "taskId": args.id,
+                "status": args.status,
+                "output": args.output[:500] if args.output else None,
+            },
+        )
+        append_event(event)
+    except Exception as e:
+        print(f"[WARN] 事件日志追加失败: {e}")
 
     print(f"[OK] {args.id} 已更新为 {args.status}")
 

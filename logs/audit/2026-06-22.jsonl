@@ -131,3 +131,5 @@
 {"timestamp": "2026-06-22T08:41:09.259028+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-035", "details": "collect, output=269字符", "environment": "production"}
 {"timestamp": "2026-06-22T08:41:09.362520+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-036", "details": "collect, output=26字符", "environment": "production"}
 {"timestamp": "2026-06-22T08:41:09.463778+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-037", "details": "collect, output=68字符", "environment": "production"}
+{"timestamp": "2026-06-22T09:05:29.247612+00:00", "eventType": "task_created", "taskId": "Task-038", "message": "创建任务: D1 event test", "environment": "production", "data": {"priority": "low"}}
+{"timestamp": "2026-06-22T09:07:51.194915+00:00", "eventType": "task_created", "taskId": "Task-039", "message": "创建任务: D1 event test", "environment": "production", "data": {"priority": "low"}}

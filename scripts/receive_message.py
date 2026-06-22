@@ -22,6 +22,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MESSAGES_DIR = PROJECT_ROOT / "logs" / "messages"
 MAX_MESSAGE_LOG_BYTES = 5 * 1024 * 1024
 
+sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+from event_log import build_event, append_event  # type: ignore
+
 
 def fail(message: str) -> None:
     print(f"[FAIL] {message}", file=sys.stderr)
@@ -103,6 +106,16 @@ def append_ack(record: Dict, agent_id: str) -> Dict:
         "ackFor": message_id,
     }
     append_message(ack)
+    try:
+        _evt = build_event(
+            event_type="message.received",
+            source="receive_message",
+            correlation_id=message_id,
+            payload={"messageId": ack["id"], "from": "system", "to": "master", "subject": ack["content"][:80]},
+        )
+        append_event(_evt)
+    except Exception as e:
+        print(f"[WARN] 事件日志追加失败: {e}")
     return ack
 
 
