@@ -1,0 +1,52 @@
+# 任务: 后端添加 7天天气预报 API 接口
+
+## 项目位置
+`G:\weather\weather-ai-project`
+
+## 现有架构
+- FastAPI 后端，入口 `app.py`
+- 后端模块在 `backend/` 目录：`chat_api.py`, `weather_core.py`, `superpowers.py`, `mcp_server.py`, `schemas.py`
+- 天气数据来源：和风天气 API (QWeather)
+- 现有 `weather_core.py` 中有 `WeatherClient` 类，已实现 `get_current_weather`
+- 配置在 `.env` 文件，已有 `QWEATHER_API_KEY`, `QWEATHER_API_BASE_URL` 等
+
+## 需求
+在 `backend/weather_core.py` 的 `WeatherClient` 类中添加 `get_7day_forecast(city)` 方法：
+1. 调用和风天气 7天预报 API: `{api_base_url}/weather/7d?location={location_id}&key=***}`
+2. 先用已有的 `_lookup_location(city)` 获取 location_id
+3. 解析返回数据，提取每天的日期(date)、最高温(tempMax)、最低温(tempMin)、天气(textDay)、风向(windDirDay)、风力(windScaleDay)
+4. 返回 list[dict]，每个 dict 包含上述字段
+
+然后在 `app.py` 中添加新的 API 端点：
+```python
+@app.get("/api/forecast")
+def forecast(city: str = "Beijing"):
+    # 返回 7 天天气预报
+```
+
+在 `backend/schemas.py` 中添加对应的 response model。
+
+## 输出要求（重要！）
+
+你必须输出完整的文件内容，使用以下格式：
+
+```file:backend/weather_core.py
+（完整的文件内容，包括新增的方法）
+```
+
+```file:app.py
+（完整的文件内容，包括新增的端点）
+```
+
+```file:backend/schemas.py
+（完整的文件内容，包括新增的 model）
+```
+
+不要只描述要做什么，必须输出完整的代码文件内容。每个文件用 ```file:路径 开头，``` 结尾。
+
+## 约束
+- 只用 Python 标准库 + 已安装的依赖（fastapi, requests, pydantic, dotenv）
+- 不要修改现有的 `/api/chat` 或 `/api/health` 接口
+- 不要修改现有的 `get_current_weather` 方法
+- mock_mode 为 true 时返回模拟数据
+- 代码风格和现有代码保持一致（from __future__ import annotations, type hints）

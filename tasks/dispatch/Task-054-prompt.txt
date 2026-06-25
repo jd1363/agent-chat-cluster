@@ -1,0 +1,34 @@
+# 任务: 后端添加空气质量查询 API 接口
+
+## 项目位置
+`G:\weather\weather-ai-project`
+
+## 现有架构
+- FastAPI 后端，入口 `app.py`
+- 后端模块在 `backend/` 目录：`chat_api.py`, `weather_core.py`, `superpowers.py`, `mcp_server.py`, `schemas.py`
+- 天气数据来源：和风天气 API (QWeather)
+- 现有 `weather_core.py` 中有 `WeatherClient` 类，已实现 `_lookup_location(city)` 和 `_get_json(url, params)`
+- 配置在 `.env` 文件，已有 `QWEATHER_API_KEY`, `QWEATHER_API_BASE_URL` 等
+
+## 需求
+在 `backend/weather_core.py` 的 `WeatherClient` 类中添加 `get_air_quality(city)` 方法：
+1. 调用和风天气空气质量 API: `{api_base_url}/air/now?location={location_id}&key={api_key}`
+2. 先用已有的 `_lookup_location(city)` 获取 location_id
+3. 解析返回数据，提取 AQI(aqi)、类别(category)、PM2.5(pm2p5)、PM10(pm10)、SO2(so2)、NO2(no2)、CO(co)、O3(o3)
+4. 返回 dict 包含上述字段
+
+然后在 `app.py` 中添加新的 API 端点：
+```python
+@app.get("/api/air")
+def air_quality(city: str = "Beijing"):
+    # 返回空气质量数据
+```
+
+在 `backend/schemas.py` 中添加对应的 response model。
+
+## 约束
+- 只用 Python 标准库 + 已安装的依赖（fastapi, requests, pydantic, dotenv）
+- 不要修改现有的 `/api/chat` 或 `/api/health` 接口
+- 不要修改现有的 `get_current_weather` 方法
+- mock_mode 为 true 时返回模拟数据
+- 代码风格和现有代码保持一致（from __future__ import annotations, type hints）

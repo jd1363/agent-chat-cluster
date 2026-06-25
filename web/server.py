@@ -17,6 +17,8 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
+from urllib.request import urlopen
+from urllib.error import URLError
 
 # --- Project paths ---
 WEB_DIR = Path(__file__).resolve().parent
@@ -193,6 +195,51 @@ def get_alerts():
     }
 
 
+def get_air_quality(params):
+    """
+    Query real-time air quality via Open-Meteo Air Quality API (no API key required).
+    Params: lat, lon (optional; defaults to Beijing).
+    """
+    try:
+        lat = float(params.get("lat", ["39.9042"])[0])
+        lon = float(params.get("lon", ["116.4074"])[0])
+    except (TypeError, ValueError):
+        return {"error": "Invalid lat/lon parameters"}
+
+    url = (
+        f"https://air-quality-api.open-meteo.com/v1/air-quality?"
+        f"latitude={lat}&longitude={lon}"
+        f"&current=us_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone"
+        f"&timezone=auto"
+    )
+
+    try:
+        with urlopen(url, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except (URLError, json.JSONDecodeError, TimeoutError) as e:
+        return {"error": f"Failed to fetch air quality data: {e}"}
+
+    current = data.get("current", {})
+    result = {
+        "location": {
+            "latitude": lat,
+            "longitude": lon,
+            "timezone": data.get("timezone", "auto"),
+        },
+        "current": {
+            "us_aqi": current.get("us_aqi"),
+            "pm10": current.get("pm10"),
+            "pm2_5": current.get("pm2_5"),
+            "carbon_monoxide": current.get("carbon_monoxide"),
+            "nitrogen_dioxide": current.get("nitrogen_dioxide"),
+            "sulphur_dioxide": current.get("sulphur_dioxide"),
+            "ozone": current.get("ozone"),
+            "time": current.get("time"),
+        },
+    }
+    return result
+
+
 def serve_html():
     html_path = WEB_DIR / "dashboard.html"
     with open(html_path, encoding="utf-8") as f:
@@ -366,6 +413,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self._json(get_state())
         elif path == "/api/alerts":
             self._json(get_alerts())
+        elif path == "/api/air_quality":
+            self._json(get_air_quality(params))
         elif path == "/api/stream/events":
             self._sse_events()
         elif path.startswith("/api/stream/tasks/") and path.endswith("/logs"):

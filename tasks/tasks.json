@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 53,
+  "nextId": 57,
   "tasks": [
     {
       "id": "Task-001",
@@ -572,6 +572,50 @@
       "createdAt": "2026-06-25T03:50:38.176910+00:00",
       "updatedAt": "2026-06-25T03:52:37.826215+00:00",
       "output": "Let me check what Task-052 is about.\r\n未找到 Task-052 的相关记录。请告诉我这个任务的具体内容——你希望我做什么？\r\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-053",
+      "title": "天气项目升级: 后端添加 7天天气预报 API 接口 (/api/forecast)",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-exec-01",
+      "createdAt": "2026-06-25T04:19:54.062142+00:00",
+      "updatedAt": "2026-06-25T04:50:45.371375+00:00",
+      "output": "请把项目上下文发过来，包括你希望我做的具体任务、相关文件/模块、运行方式或错误信息。\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-054",
+      "title": "天气项目升级: 后端添加 空气质量查询 API 接口 (/api/air)",
+      "status": "in_progress",
+      "priority": "high",
+      "assignee": "agent-exec-01",
+      "createdAt": "2026-06-25T04:19:54.148923+00:00",
+      "updatedAt": "2026-06-25T04:23:00.422013+00:00",
+      "output": "执行超时 (>120s)",
+      "notes": ""
+    },
+    {
+      "id": "Task-055",
+      "title": "天气项目升级: 前端添加 7天天气预报展示组件",
+      "status": "pending",
+      "priority": "high",
+      "assignee": null,
+      "createdAt": "2026-06-25T04:19:54.237891+00:00",
+      "updatedAt": "2026-06-25T04:19:54.237891+00:00",
+      "output": null,
+      "notes": ""
+    },
+    {
+      "id": "Task-056",
+      "title": "天气项目升级: 前端添加 空气质量展示组件",
+      "status": "pending",
+      "priority": "high",
+      "assignee": null,
+      "createdAt": "2026-06-25T04:19:54.327921+00:00",
+      "updatedAt": "2026-06-25T04:19:54.327921+00:00",
+      "output": null,
       "notes": ""
     }
   ]
