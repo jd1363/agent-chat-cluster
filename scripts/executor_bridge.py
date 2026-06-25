@@ -23,6 +23,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import signal
 import subprocess
 import sys
@@ -162,6 +163,26 @@ def read_prompt_file(task_id: str) -> str:
         sys.exit(1)
 
 
+
+def _resolve_windows_command(command: str) -> str:
+    """在 Windows 上解析 CLI 命令的完整路径。
+
+    npm 全局安装的 CLI 通常是 .ps1/.cmd 脚本，
+    shell=False 时需要用 .cmd 路径才能直接执行。
+    """
+    import shutil
+    # 1. 直接找 command.cmd
+    cmd_path = shutil.which(command + ".cmd")
+    if cmd_path:
+        return cmd_path
+    # 2. 找 command 本身
+    cmd_path = shutil.which(command)
+    if cmd_path:
+        return cmd_path
+    # 3. 原样返回
+    return command
+
+
 def build_command_args(
     executor_config: Dict[str, Any], prompt: str
 ) -> List[str]:
@@ -184,7 +205,13 @@ def build_command_args(
     # 替换 {prompt} 占位符
     resolved_args = [a.replace("{prompt}", prompt) for a in args]
 
-    return [command] + resolved_args
+    # Windows: resolve .ps1/.cmd scripts to .cmd full path for shell=False
+    if os.name == "nt":
+        resolved_command = _resolve_windows_command(command)
+    else:
+        resolved_command = command
+
+    return [resolved_command] + resolved_args
 
 
 def execute_cli(
