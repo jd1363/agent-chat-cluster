@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 45,
+  "nextId": 48,
   "tasks": [
     {
       "id": "Task-001",
@@ -485,6 +485,39 @@
       "updatedAt": "2026-06-25T01:57:16.597548+00:00",
       "output": "`Task-044` 已完成。\n\n结果是 `hello`，我已把回报写到 [tasks/dispatch/Task-044-result.txt](G:/agent-chat-cluster/tasks/dispatch/Task-044-result.txt)，并通过 `scripts/complete_task.py` 将任务状态更新为 `done`。任务记录里现在是 `Task-044 -> done`，输出文件也已挂上。\n\n验证命令里有一次误打成 `hello`，那次失败没有改动文件；随后 `echo hello` 成功返回 `hello`。\n",
       "notes": "Codex echo hello E2E completed; echo hello returned hello."
+    },
+    {
+      "id": "Task-045",
+      "title": "E2E test: CodeWhale echo hello",
+      "status": "done",
+      "priority": "low",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-25T03:39:05.589966+00:00",
+      "updatedAt": "2026-06-25T03:39:22.091786+00:00",
+      "output": "由于您只提供了任务 ID（Task-045），没有描述该任务的具体内容或背景，我无法确定任务中具体使用了哪些工具。\n\n如果您能补充任务说明或上下文，我可以帮您分析。如果这是对当前对话过程的元问题，那么目前使用的“工具”是纯文本交互界面，没有调用外部插件、代码执行或图像生成等功能。\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-046",
+      "title": "E2E test: OpenCode echo hello",
+      "status": "done",
+      "priority": "low",
+      "assignee": "agent-ext-02",
+      "createdAt": "2026-06-25T03:39:05.682217+00:00",
+      "updatedAt": "2026-06-25T03:39:41.447482+00:00",
+      "output": "您好！我看到您提到了任务 ID \"Task-046\"，但我目前还不清楚这个任务的具体内容和要求。\n\n为了更好地帮助您，能否请您提供以下信息：\n\n1. **任务描述**：Task-046 具体需要完成什么工作？\n2. **相关文件/代码**：是否有特定的文件、代码库或文档需要处理？\n3. **目标/期望结果**：完成这个任务后应该达到什么效果？\n4. **背景信息**：是否有之前的讨论、需求文档或相关上下文？\n\n请补充这些细节，我会立即为您处理！\r\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-047",
+      "title": "E2E test: MiMo echo hello",
+      "status": "done",
+      "priority": "low",
+      "assignee": "agent-ext-04",
+      "createdAt": "2026-06-25T03:39:05.775797+00:00",
+      "updatedAt": "2026-06-25T03:40:05.068317+00:00",
+      "output": "请问 Task-047 是哪个系统的任务？比如 Linear、Jira、GitHub Issues 还是其他地方？这样我可以帮您查看具体内容。\r\n",
+      "notes": ""
     }
   ]
 }
