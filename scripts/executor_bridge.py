@@ -594,9 +594,12 @@ def main() -> int:
     max_output_kb = config_max_output
 
     # 项目模式：超时至少 600 秒
-    if not args.timeout and args.project:
-        timeout = max(config_timeout, 600)
-        _utf8_print(f"[INFO] 项目模式: 超时调整为 {timeout}s")
+    if args.project:
+        if not args.timeout:
+            timeout = max(config_timeout, 600)
+            _utf8_print(f"[INFO] 项目模式: 超时调整为 {timeout}s")
+        work_dir = args.project
+        _utf8_print(f"[INFO] 项目模式: 工作目录改为 {work_dir}")
 
     _utf8_print(f"[INFO] executor: command={command}, args={args_list}")
     _utf8_print(f"[INFO] workDir={work_dir}, timeout={timeout}s, maxOutput={max_output_kb}KB")
