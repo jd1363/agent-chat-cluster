@@ -408,19 +408,20 @@ _EXCLUDE_DIRS = {'.git', '__pycache__', 'node_modules', '.pytest_cache', '.venv'
 _EXCLUDE_SUFFIXES = {'.pyc', '.pyo', '.so', '.dll', '.exe'}
 
 # 单文件最大字符数 & 总字符上限
-_MAX_FILE_CHARS = 4000
-_MAX_TOTAL_CHARS = 20000
+_MAX_FILE_CHARS = 2000  # 单文件最多 2000 字符（从 4000 降低）
+_MAX_TOTAL_CHARS = 5000  # 总上下文最多 5000 字符（从 20000 降低）
 
 
-def build_project_context(project_path: str) -> str:
+def build_project_context(project_path: str, max_chars: int = _MAX_TOTAL_CHARS) -> str:
     """遍历项目目录，构建上下文字符串供 CLI Agent 参考。
 
     生成文件树（排除 .git/__pycache__/node_modules 等），
-    读取所有 .py 和 .md 文件内容（每文件限 4000 字符，总计 20000），
+    读取所有 .py 和 .md 文件内容（每文件限 _MAX_FILE_CHARS 字符，总计 max_chars），
     拼成 Markdown 格式的上下文字符串。
 
     Args:
         project_path: 项目根目录的绝对路径
+        max_chars: 上下文最大字符数，默认 _MAX_TOTAL_CHARS (5000)
 
     Returns:
         Markdown 格式的项目上下文字符串
@@ -457,7 +458,7 @@ def build_project_context(project_path: str) -> str:
     total_chars = 0
 
     for fp in file_entries:
-        if total_chars >= _MAX_TOTAL_CHARS:
+        if total_chars >= max_chars:
             break
         if fp.suffix not in (".py", ".md"):
             continue
@@ -475,7 +476,7 @@ def build_project_context(project_path: str) -> str:
         lang = "python" if fp.suffix == ".py" else "markdown"
         block = f"#### {rel_path}\n```{lang}\n{text}\n```\n"
 
-        remaining = _MAX_TOTAL_CHARS - total_chars
+        remaining = max_chars - total_chars
         if len(block) > remaining:
             block = block[:remaining] + "\n... [上下文已截断]\n"
 
@@ -590,7 +591,7 @@ def main() -> int:
     # ── 2.5 项目上下文注入 ──
     if args.project:
         _utf8_print(f"[INFO] 注入项目上下文: {args.project}")
-        context = build_project_context(args.project)
+        context = build_project_context(args.project, max_chars=5000)
         if context:
             prompt = context + "\n\n---\n\n## 执行任务\n\n" + prompt
             _utf8_print(f"[INFO] 上下文已注入，prompt 长度: {len(prompt)} 字符")
