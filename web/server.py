@@ -392,6 +392,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self._post_complete_task(body_data)
         elif path == "/api/tasks/cancel":
             self._post_cancel_task(body_data)
+        elif path == "/api/tasks/execute":
+            self._post_execute_task(body_data)
         elif path == "/api/messages/send":
             self._post_send_message(body_data)
         else:
@@ -460,6 +462,27 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self._json({"ok": True, "task": task})
         else:
             self._json({"ok": False, "error": output})
+
+    def _post_execute_task(self, body):
+        task_id = body.get("id", "").strip()
+        assignee = body.get("assignee", "agent-exec-01").strip()
+        if not task_id:
+            self._json({"ok": False, "error": "id is required"})
+            return
+        # executor_bridge 执行真实 CLI 可能需要几分钟，用 Popen 异步执行，立即返回
+        script_path = SCRIPTS_DIR / "dispatch_task.py"
+        cmd = [sys.executable, str(script_path), "--id", task_id, "--assignee", assignee, "--execute", "--execute-real"]
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                cwd=str(PROJECT_ROOT),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                env=SUB_ENV,
+            )
+            self._json({"ok": True, "message": f"Task {task_id} execution started (PID {proc.pid})", "pid": proc.pid})
+        except Exception as e:
+            self._json({"ok": False, "error": str(e)})
 
     def _post_send_message(self, body):
         to = body.get("to", "").strip()

@@ -58,6 +58,11 @@ body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: #0f11
 .alert-yellow { background: #2a2615; border: 1px solid #4a3a15; }
 .alert-green { background: #152a18; border: 1px solid #1b5e20; }
 
+/* Execute button */
+.exec-btn { padding: 4px 12px; border-radius: 4px; border: 1px solid #1b5e20; background: #1b3a1f; color: #4caf50; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+.exec-btn:hover { background: #2a5a2f; border-color: #4caf50; }
+.exec-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #1a1d29; }
@@ -205,13 +210,21 @@ function renderTasks(data) {
         const status = escapeHtml(t.status || 'unknown');
         const title = escapeHtml(t.title || t.id);
         const assignee = escapeHtml(t.assignee || '—');
+        const taskId = escapeHtml(t.id);
+        const isPending = status === 'pending';
+        const executeBtn = isPending
+            ? `<button class="exec-btn" onclick="executeTask('${taskId}')">▶ Execute</button>`
+            : '';
         return `
         <div class="task-item">
             <div>
                 <div class="task-title">${title}</div>
                 <div style="font-size:11px;color:#666;">Assigned: ${assignee}</div>
             </div>
-            <span class="task-status status-${status}">${status}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+                ${executeBtn}
+                <span class="task-status status-${status}">${status}</span>
+            </div>
         </div>`;
     }).join('');
 }
@@ -261,6 +274,34 @@ function renderAlerts(data) {
         const icon = a.level === 'red' ? '🔴' : '🟡';
         return `<div class="alert-item ${cls}">${icon} ${escapeHtml(a.text)}</div>`;
     }).join('');
+}
+
+// --- Execute task ---
+async function executeTask(taskId) {
+    if (!confirm(`Start execution of ${taskId}?`)) return;
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '⏳ Starting...';
+    try {
+        const res = await fetch('/api/tasks/execute', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id: taskId})
+        });
+        const data = await res.json();
+        if (data.ok) {
+            btn.textContent = '✅ Started';
+            setTimeout(loadAll, 2000);
+        } else {
+            alert('Execution failed: ' + (data.error || 'Unknown error'));
+            btn.disabled = false;
+            btn.textContent = '▶ Execute';
+        }
+    } catch (e) {
+        alert('Request failed: ' + e.message);
+        btn.disabled = false;
+        btn.textContent = '▶ Execute';
+    }
 }
 
 // --- Data loading ---
