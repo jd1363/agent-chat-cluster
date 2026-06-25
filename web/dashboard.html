@@ -3,242 +3,311 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agent Chat Cluster - 调度面板</title>
+<title>Agent Chat Cluster - Dashboard</title>
 <style>
-:root{--bg0:#0a0e1a;--bg1:#0f172a;--bg2:#1e293b;--bg3:#334155;--border:#334155;--text:#e5e7eb;--dim:#94a3b8;--muted:#64748b;--pri:#3b82f6;--acc:#8b5cf6;--ok:#22c55e;--warn:#eab308;--err:#ef4444;--info:#06b6d4;--r:14px;--gap:16px}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:linear-gradient(135deg,#0a0e1a,#0f172a 50%,#0a0e1a);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;min-height:100vh}
-.app{max-width:1480px;margin:0 auto;padding:16px}
-.header{background:rgba(30,41,59,.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(51,65,85,.5);border-radius:var(--r);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--gap);position:sticky;top:8px;z-index:100;box-shadow:0 4px 24px rgba(0,0,0,.3)}
-.header-left{display:flex;align-items:center;gap:12px}
-.header h1{font-size:18px;font-weight:800;letter-spacing:-.02em}
-.logo{font-size:22px}
-.slight{width:10px;height:10px;border-radius:50%;display:inline-block;animation:pulse 2s ease-in-out infinite}
-.slight.green{background:var(--ok);box-shadow:0 0 8px var(--ok)}
-.slight.yellow{background:var(--warn);box-shadow:0 0 8px var(--warn)}
-.slight.red{background:var(--err);box-shadow:0 0 8px var(--err)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.header-right{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--dim)}
-.tswitch{position:relative;width:36px;height:20px;background:var(--bg3);border-radius:10px;cursor:pointer;transition:.2s}
-.tswitch.on{background:var(--pri)}
-.tswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
-.tswitch.on::after{left:18px}
-.grid{display:grid;gap:var(--gap);margin-bottom:var(--gap)}
-.row-kpi{grid-template-columns:repeat(4,1fr)}
-.row-main{grid-template-columns:1.5fr 1fr}
-.row-data{grid-template-columns:1fr 1fr}
-.row-bottom{grid-template-columns:1fr 1fr}
-@media(max-width:1024px){.row-kpi{grid-template-columns:repeat(2,1fr)}.row-main,.row-data,.row-bottom{grid-template-columns:1fr}}
-@media(max-width:768px){.row-kpi{grid-template-columns:1fr}}
-.card{background:rgba(30,41,59,.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(51,65,85,.4);border-radius:var(--r);padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.2);transition:border-color .2s}
-.card:hover{border-color:rgba(59,130,246,.3)}
-.card-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:14px}
-.card-title .icon{font-size:16px}
-.card-title .count{margin-left:auto;background:var(--bg3);padding:2px 8px;border-radius:6px;font-size:11px;color:var(--dim)}
-.kpi{display:flex;flex-direction:column;gap:6px}
-.kpi-icon{font-size:22px}
-.kpi-value{font-size:28px;font-weight:800;letter-spacing:-.02em}
-.kpi-label{font-size:12px;color:var(--dim)}
-.kpi-trend{font-size:11px;color:var(--dim)}
-.agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
-.agent-card{background:rgba(15,23,42,.6);border:1px solid var(--border);border-radius:10px;padding:12px;transition:transform .15s,box-shadow .15s}
-.agent-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
-.agent-card .aid{font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px}
-.adot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.adot.on{background:var(--ok);box-shadow:0 0 6px var(--ok)}
-.adot.off{background:var(--muted)}
-.agent-card .ameta{font-size:10px;color:var(--dim);margin-top:6px;line-height:1.5}
-.agent-card .arole{display:inline-block;background:var(--bg3);padding:1px 6px;border-radius:4px;font-size:10px;margin-top:4px}
-.kanban{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px}
-.kanban-col{min-width:200px;flex:1;display:flex;flex-direction:column;gap:8px}
-.kcol-h{font-size:12px;font-weight:700;padding:6px 10px;border-radius:8px;display:flex;align-items:center;gap:6px}
-.kcol-h .badge{margin-left:auto;background:rgba(255,255,255,.1);padding:1px 6px;border-radius:4px;font-size:10px}
-.kanban-col.done .kcol-h{background:rgba(34,197,94,.1);color:var(--ok)}
-.kanban-col.pending .kcol-h{background:rgba(100,116,139,.15);color:var(--dim)}
-.kanban-col.in_progress .kcol-h{background:rgba(59,130,246,.1);color:var(--pri)}
-.kanban-col.failed .kcol-h{background:rgba(239,68,68,.1);color:var(--err)}
-.kanban-col.cancelled .kcol-h{background:rgba(100,116,139,.1);color:var(--muted)}
-.task-card{background:rgba(15,23,42,.8);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px;cursor:pointer;transition:border-color .15s;position:relative;overflow:hidden}
-.task-card:hover{border-color:var(--pri)}
-.task-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px}
-.task-card.done::before{background:var(--ok)}
-.task-card.pending::before{background:var(--muted)}
-.task-card.in_progress::before{background:var(--pri)}
-.task-card.failed::before{background:var(--err)}
-.task-card.cancelled::before{background:var(--muted);opacity:.5}
-.task-card .tid{font-weight:700;color:var(--pri);font-size:10px}
-.task-card .ttitle{margin:3px 0;line-height:1.3}
-.task-card .tmeta{font-size:9px;color:var(--dim);display:flex;gap:6px;align-items:center}
-.prio-h{color:var(--err)}.prio-m{color:var(--warn)}.prio-l{color:var(--ok)}
-.tabs{display:flex;gap:2px;margin-bottom:12px;background:var(--bg1);border-radius:8px;padding:3px}
-.tab{padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--dim);transition:.15s;font-weight:600}
-.tab.active{background:var(--pri);color:#fff}
-.tab:hover:not(.active){background:var(--bg3);color:var(--text)}
-.log-list{max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
-.log-item{padding:7px 10px;border-radius:6px;font-size:11px;background:rgba(15,23,42,.5);border:1px solid rgba(51,65,85,.3);display:flex;gap:8px;align-items:flex-start}
-.log-time{color:var(--muted);font-size:10px;white-space:nowrap;flex-shrink:0}
-.log-type{display:inline-block;background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;white-space:nowrap}
-.log-msg{color:var(--dim);flex:1;word-break:break-word}
-.log-list::-webkit-scrollbar{width:6px}.log-list::-webkit-scrollbar-track{background:transparent}.log-list::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
-.tbl{width:100%;border-collapse:collapse;font-size:11px}
-.tbl th{text-align:left;padding:6px 8px;color:var(--dim);font-weight:600;font-size:10px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2)}
-.tbl td{padding:6px 8px;border-bottom:1px solid rgba(51,65,85,.3)}
-.tbl tr:hover{background:rgba(59,130,246,.05)}
-.tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:600}
-.tag.sent{background:rgba(59,130,246,.15);color:var(--pri)}
-.tag.read{background:rgba(34,197,94,.15);color:var(--ok)}
-.tag.failed{background:rgba(239,68,68,.15);color:var(--err)}
-.cost-total{font-size:30px;font-weight:800;color:var(--ok);letter-spacing:-.02em}
-.cost-sub{font-size:12px;color:var(--dim);margin-bottom:14px}
-.cost-bar-wrap{margin-bottom:10px}
-.cost-bar-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
-.cost-bar{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
-.cost-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
-.policy-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.policy-item{background:rgba(15,23,42,.5);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px}
-.policy-item .plabel{color:var(--dim);font-size:10px}
-.policy-item .pvalue{font-weight:700;margin-top:2px}
-.policy-item .pvalue.allow{color:var(--ok)}
-.policy-item .pvalue.deny{color:var(--err)}
-.alert-item{padding:10px 12px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.alert-item.red{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25)}
-.alert-item.yellow{background:rgba(234,179,8,.12);border:1px solid rgba(234,179,8,.25)}
-.alert-item.green{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25)}
-.filter-bar{display:flex;gap:8px;margin-bottom:12px}
-.filter-bar select{background:var(--bg1);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center}
-.modal-overlay.show{display:flex}
-.modal{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto}
-.modal h3{font-size:16px;font-weight:700;margin-bottom:12px}
-.modal .m-row{display:flex;gap:8px;margin-bottom:8px;font-size:12px}
-.modal .m-label{color:var(--dim);min-width:80px}
-.modal .m-val{flex:1;word-break:break-word}
-.modal-close{margin-top:16px;padding:8px 20px;background:var(--pri);border:none;border-radius:8px;color:#fff;cursor:pointer;font-size:12px}
-.empty{text-align:center;color:var(--muted);font-style:italic;padding:24px;font-size:12px}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; background: #0f1117; color: #e0e0e0; min-height: 100vh; }
+.header { background: linear-gradient(135deg, #1a1d29 0%, #252839 100%); padding: 20px 30px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #333; }
+.header h1 { font-size: 22px; color: #7ec8e3; }
+.header .status { display: flex; align-items: center; gap: 10px; }
+.header .status .dot { width: 10px; height: 10px; border-radius: 50%; background: #4caf50; box-shadow: 0 0 6px #4caf50; }
+.header .status .dot.red { background: #f44336; box-shadow: 0 0 6px #f44336; }
+.header .status .dot.yellow { background: #ff9800; box-shadow: 0 0 6px #ff9800; }
+.container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; max-width: 1600px; margin: 0 auto; }
+.panel { background: #1a1d29; border-radius: 10px; padding: 20px; border: 1px solid #2a2d3a; }
+.panel h2 { font-size: 16px; color: #9e9e9e; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+.full-width { grid-column: 1 / -1; }
+
+/* Agent cards */
+.agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+.agent-card { background: #232639; border-radius: 8px; padding: 16px; border: 1px solid #333; transition: border-color 0.2s; }
+.agent-card:hover { border-color: #555; }
+.agent-card.disabled { opacity: 0.45; filter: grayscale(0.8); }
+.agent-card .agent-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.agent-card .agent-name { font-size: 17px; font-weight: 600; color: #e0e0e0; }
+.agent-card .agent-id { font-size: 12px; color: #666; margin-top: 2px; }
+.agent-card .agent-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.agent-card .badge-enabled { background: #1b5e20; color: #4caf50; }
+.agent-card .badge-disabled { background: #424242; color: #9e9e9e; }
+.agent-card .executor-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; background: #2a2d3a; color: #7ec8e3; margin-top: 8px; }
+.agent-card .executor-tag .icon { width: 14px; height: 14px; opacity: 0.7; }
+.agent-card .agent-meta { font-size: 12px; color: #888; margin-top: 8px; display: flex; flex-wrap: wrap; gap: 10px; }
+.agent-card .agent-meta span { display: inline-flex; align-items: center; gap: 3px; }
+
+/* Task list */
+.task-list { max-height: 400px; overflow-y: auto; }
+.task-item { padding: 10px 12px; border-bottom: 1px solid #2a2d3a; display: flex; align-items: center; justify-content: space-between; }
+.task-item:last-child { border-bottom: none; }
+.task-item .task-title { font-size: 14px; }
+.task-item .task-status { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.status-pending { background: #1a237e; color: #5c8aff; }
+.status-running { background: #1b5e20; color: #4caf50; }
+.status-done { background: #1b5e20; color: #66bb6a; }
+.status-failed { background: #4a1525; color: #f44336; }
+.status-cancelled { background: #424242; color: #9e9e9e; }
+
+/* Messages */
+.msg-list { max-height: 350px; overflow-y: auto; }
+.msg-item { padding: 8px 12px; border-bottom: 1px solid #2a2d3a; font-size: 13px; }
+.msg-item .msg-from { color: #7ec8e3; font-weight: 600; }
+.msg-item .msg-time { color: #666; font-size: 11px; }
+
+/* Alerts */
+.alert-item { padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.alert-red { background: #2a1520; border: 1px solid #4a1525; }
+.alert-yellow { background: #2a2615; border: 1px solid #4a3a15; }
+.alert-green { background: #152a18; border: 1px solid #1b5e20; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #1a1d29; }
+::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+/* Loading */
+.loading { text-align: center; padding: 20px; color: #666; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
-<div class="app">
+
 <div class="header">
-<div class="header-left"><span class="logo">🐼</span><h1>Agent Chat Cluster</h1><span class="slight green" id="statusLight"></span></div>
-<div class="header-right"><span id="lastRefresh">--</span><div class="tswitch on" id="autoToggle" onclick="toggleAuto()"></div><span id="autoLabel">自动</span></div>
+    <h1>🤖 Agent Chat Cluster</h1>
+    <div class="status">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-text">Connecting...</span>
+    </div>
 </div>
-<div class="grid row-kpi">
-<div class="card kpi"><div class="kpi-icon">📋</div><div class="kpi-value" id="kpiTasks">-</div><div class="kpi-label">总任务</div><div class="kpi-trend" id="kpiTasksTrend"></div></div>
-<div class="card kpi"><div class="kpi-icon">🤖</div><div class="kpi-value" id="kpiAgents">-</div><div class="kpi-label">活跃 Agent</div><div class="kpi-trend" id="kpiAgentsTrend"></div></div>
-<div class="card kpi"><div class="kpi-icon">📨</div><div class="kpi-value" id="kpiMsgs">-</div><div class="kpi-label">未 ACK 消息</div><div class="kpi-trend" id="kpiMsgsTrend"></div></div>
-<div class="card kpi"><div class="kpi-icon">💰</div><div class="kpi-value" id="kpiCost">-</div><div class="kpi-label">总成本</div><div class="kpi-trend" id="kpiCostTrend"></div></div>
+
+<div class="container">
+    <!-- Agents Panel -->
+    <div class="panel full-width">
+        <h2>Agents</h2>
+        <div class="agents-grid" id="agents-grid">
+            <div class="loading">Loading agents...</div>
+        </div>
+    </div>
+
+    <!-- Tasks Panel -->
+    <div class="panel">
+        <h2>Tasks</h2>
+        <div class="task-list" id="task-list">
+            <div class="loading">Loading tasks...</div>
+        </div>
+    </div>
+
+    <!-- Messages Panel -->
+    <div class="panel">
+        <h2>Recent Messages</h2>
+        <div class="msg-list" id="msg-list">
+            <div class="loading">Loading messages...</div>
+        </div>
+    </div>
+
+    <!-- Alerts Panel -->
+    <div class="panel full-width">
+        <h2>Alerts</h2>
+        <div id="alerts-list">
+            <div class="loading">Loading alerts...</div>
+        </div>
+    </div>
 </div>
-<div class="grid row-main">
-<div class="card">
-<div class="card-title"><span class="icon">🤖</span> Agent 状态 <span class="count" id="agentCount">-</span></div>
-<div class="agent-grid" id="agentGrid"><div class="empty">加载中...</div></div>
-</div>
-<div class="card">
-<div class="card-title"><span class="icon">⚡</span> 操作面板</div>
-<div style="display:flex;flex-direction:column;gap:14px">
-<div>
-<div style="font-size:12px;color:var(--dim);margin-bottom:6px">创建任务</div>
-<input id="newTaskTitle" placeholder="任务标题..." style="width:100%;background:var(--bg1);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;margin-bottom:6px">
-<div style="display:flex;gap:8px">
-<select id="newTaskPriority" style="background:var(--bg1);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px"><option value="low">低</option><option value="medium" selected>中</option><option value="high">高</option></select>
-<button onclick="createTask()" style="background:var(--pri);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:600">创建</button>
-</div>
-</div>
-<div style="border-top:1px solid var(--border);padding-top:14px">
-<div style="font-size:12px;color:var(--dim);margin-bottom:6px">发送消息</div>
-<div style="display:flex;gap:8px">
-<select id="msgTarget" style="background:var(--bg1);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px"><option value="">选择 Agent</option></select>
-<input id="msgContent" placeholder="消息内容..." style="flex:1;background:var(--bg1);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px">
-<button onclick="sendMsg()" style="background:var(--acc);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer">发送</button>
-</div>
-</div>
-<div id="opResult" style="font-size:11px;color:var(--dim);min-height:16px"></div>
-</div>
-</div>
-</div>
-<div class="grid" style="grid-template-columns:1fr">
-<div class="card">
-<div class="card-title"><span class="icon">📋</span> 任务看板 <span class="count" id="taskCount">-</span></div>
-<div class="filter-bar"><select id="agentFilter" onchange="renderTasks()"><option value="">全部 Agent</option></select></div>
-<div class="kanban" id="kanban"><div class="empty">加载中...</div></div>
-</div>
-</div>
-<div class="grid row-data">
-<div class="card">
-<div class="card-title"><span class="icon">📝</span> 审计 / 事件流</div>
-<div class="tabs"><div class="tab active" onclick="switchTab('audit')">审计日志</div><div class="tab" onclick="switchTab('events')">事件流</div></div>
-<div class="log-list" id="auditList"><div class="empty">加载中...</div></div>
-<div class="log-list" id="eventList" style="display:none"><div class="empty">加载中...</div></div>
-</div>
-<div class="card">
-<div class="card-title"><span class="icon">📨</span> 消息总线</div>
-<div style="max-height:380px;overflow-y:auto"><table class="tbl"><thead><tr><th>ID</th><th>From</th><th>To</th><th>状态</th><th>消息</th><th>时间</th></tr></thead><tbody id="msgBody"><tr><td colspan="6" class="empty">加载中...</td></tr></tbody></table></div>
-</div>
-</div>
-<div class="grid row-bottom">
-<div class="card">
-<div class="card-title"><span class="icon">💰</span> 成本分析</div>
-<div class="cost-total" id="costTotal">$0.00</div>
-<div class="cost-sub" id="costTokens">0 tokens</div>
-<div id="costByAgent"><div class="empty">加载中...</div></div>
-</div>
-<div class="card">
-<div class="card-title"><span class="icon">⚙️</span> 策略约束</div>
-<div class="policy-grid" id="policyGrid"><div class="empty">加载中...</div></div>
-</div>
-</div>
-</div>
-<div class="grid" style="grid-template-columns:1fr">
-<div class="card" id="logCard" style="display:none">
-<div class="card-title"><span class="icon">📺</span> 执行日志 <span id="logTaskId" style="color:var(--pri);font-size:12px"></span> <span class="count" id="logStatus">-</span><button onclick="closeLog()" style="margin-left:auto;background:var(--bg3);color:var(--text);border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer">关闭</button></div>
-<div id="logContent" style="background:#000;color:#00ff41;font-family:monospace;font-size:12px;padding:14px;border-radius:8px;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-all"></div>
-</div>
-</div>
-<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
-<div class="modal" id="modalContent"></div>
-</div>
+
 <script>
-let allTasks=[],allAgents=[],autoRefresh=true,timer=null;
-async function fetchJSON(url){try{const r=await fetch(url);return await r.json();}catch(e){console.error(url,e);return null;}}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function fmtDate(s){if(!s)return'';try{return new Date(s).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return s;}}
-function toggleAuto(){autoRefresh=!autoRefresh;const el=document.getElementById('autoToggle');el.classList.toggle('on',autoRefresh);document.getElementById('autoLabel').textContent=autoRefresh?'自动':'暂停';if(autoRefresh){startTimer();refreshAll();}else{stopTimer();}}
-function startTimer(){stopTimer();timer=setInterval(refreshAll,30000);}
-function stopTimer(){if(timer){clearInterval(timer);timer=null;}}
-function switchTab(tab){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');document.getElementById('auditList').style.display=tab==='audit'?'flex':'none';document.getElementById('eventList').style.display=tab==='events'?'flex':'none';}
-function showModal(html){const o=document.getElementById('modalOverlay');document.getElementById('modalContent').innerHTML='<h3>任务详情</h3>'+html+'<br><button class="modal-close" onclick="closeModal()">关闭</button>';o.classList.add('show');}
-function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
-function showTaskDetail(id){const t=allTasks.find(x=>x.id===id);if(!t)return;let html='';const rows=[['ID',t.id],['标题',t.title],['状态',t.status],['优先级',t.priority],['指派',t.assignee||'-'],['创建',fmtDate(t.createdAt)],['更新',fmtDate(t.updatedAt)],['输出',t.output],['备注',t.notes]];
-for(const[k,v]of rows){if(v)html+='<div class="m-row"><div class="m-label">'+k+'</div><div class="m-val">'+esc(v)+'</div></div>';}if(t.status==='pending'){html+='<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px"><div style="font-size:12px;color:var(--dim);margin-bottom:6px">派发任务</div><div style="display:flex;gap:8px"><select id="dispatchAssignee" style="background:var(--bg1);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px"><option value="">选择 Agent</option></select><button onclick="dispatchTask(\''+t.id+'\')" style="background:var(--pri);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer">派发</button></div></div>';}if(t.status==='in_progress'){html+='<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;display:flex;gap:8px"><button onclick="completeTask(\''+t.id+'\')" style="background:var(--ok);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer">完成</button><button onclick="cancelTask(\''+t.id+'\')" style="background:var(--err);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer">取消</button><button onclick="openLog(\''+t.id+'\')" style="background:var(--info);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer">查看日志</button></div>';}showModal(html);populateDispatchAssignee();}
-function populateDispatchAssignee(){const sel=document.getElementById('dispatchAssignee');if(!sel)return;allAgents.filter(a=>a.enabled).forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.id;sel.appendChild(o);});}
-async function postJSON(url,body){try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return await r.json();}catch(e){return{ok:false,error:e.message};}}
-async function createTask(){const title=document.getElementById('newTaskTitle').value.trim();if(!title){showOpResult('请输入标题','err');return;}const priority=document.getElementById('newTaskPriority').value;const r=await postJSON('/api/tasks/create',{title,priority});if(r&&r.ok){showOpResult('已创建 '+r.task.id,'ok');document.getElementById('newTaskTitle').value='';refreshAll();}else{showOpResult(r&&r.error||'创建失败','err');}}
-async function dispatchTask(id){const sel=document.getElementById('dispatchAssignee');const assignee=sel?sel.value:'';if(!assignee){showOpResult('请选择 Agent','err');return;}const r=await postJSON('/api/tasks/dispatch',{id,assignee});if(r&&r.ok){showOpResult('已派发 '+id+' 给 '+assignee,'ok');closeModal();refreshAll();}else{showOpResult(r&&r.error||'派发失败','err');}}
-async function completeTask(id){const summary=prompt('执行摘要:','完成');if(!summary)return;const r=await postJSON('/api/tasks/complete',{id,status:'done',summary});if(r&&r.ok){showOpResult('已完成 '+id,'ok');closeModal();refreshAll();}else{showOpResult(r&&r.error||'操作失败','err');}}
-async function cancelTask(id){const r=await postJSON('/api/tasks/cancel',{id,notes:'前端取消'});if(r&&r.ok){showOpResult('已取消 '+id,'ok');closeModal();refreshAll();}else{showOpResult(r&&r.error||'操作失败','err');}}
-async function sendMsg(){const to=document.getElementById('msgTarget').value;const message=document.getElementById('msgContent').value.trim();if(!to||!message){showOpResult('请选择 Agent 并输入消息','err');return;}const r=await postJSON('/api/messages/send',{to,message});if(r&&r.ok){showOpResult('已发送','ok');document.getElementById('msgContent').value='';refreshAll();}else{showOpResult(r&&r.error||'发送失败','err');}}
-function showOpResult(msg,type){const el=document.getElementById('opResult');el.textContent=msg;el.style.color=type==='ok'?'var(--ok)':'var(--err)';setTimeout(()=>{el.textContent='';},3000);}
-let sseSource=null,logSSE=null;
-function startSSE(){try{sseSource=new EventSource('/api/stream/events');sseSource.onmessage=(e)=>{try{const d=JSON.parse(e.data);if(d.type==='tasks'){allTasks=d.data.tasks||[];renderTasks();document.getElementById('kpiTasks').textContent=allTasks.length;}else if(d.type==='agents'){allAgents=d.data.agents||[];renderAgentsOnly();}else if(d.type==='audit'){prependAudit(d.data);}}catch(err){}};sseSource.onerror=()=>{sseSource.close();setTimeout(startSSE,3000);};}catch(e){}}
-function renderAgentsOnly(){const enabled=allAgents.filter(a=>a.enabled).length;document.getElementById('kpiAgents').textContent=enabled;document.getElementById('agentCount').textContent=enabled+'/'+allAgents.length;document.getElementById('agentGrid').innerHTML=allAgents.map(a=>{const on=a.enabled;const tasksByAgent=allTasks.filter(t=>t.assignee===a.id).length;return '<div class="agent-card"><div class="aid"><span class="adot '+(on?'on':'off')+'"></span>'+esc(a.id)+'</div><div class="ameta">role: '+esc(a.role)+' | type: '+esc(a.type)+'<br>risk: '+esc(a.riskLevel)+'<br>tasks: '+tasksByAgent+'</div><span class="arole">'+esc(a.role)+'</span></div>';}).join('');}
-function prependAudit(entry){const list=document.getElementById('auditList');const item=document.createElement('div');item.className='log-item';item.innerHTML='<span class="log-time">'+fmtDate(entry.timestamp)+'</span><span class="log-type">'+esc(entry.eventType)+'</span><span class="log-msg">'+esc(entry.taskId||'')+' '+esc(entry.message||'')+'</span>';list.insertBefore(item,list.firstChild);while(list.children.length>100){list.removeChild(list.lastChild);}}
-function openLog(taskId){document.getElementById('logCard').style.display='block';document.getElementById('logTaskId').textContent=taskId;document.getElementById('logContent').innerHTML='';document.getElementById('logStatus').textContent='连接中...';if(logSSE){logSSE.close();}try{logSSE=new EventSource('/api/stream/tasks/'+taskId+'/logs');logSSE.onmessage=(e)=>{try{const d=JSON.parse(e.data);if(d.type==='log'){const div=document.getElementById('logContent');div.innerHTML+=esc(d.line)+'\n';div.scrollTop=div.scrollHeight;}else if(d.type==='status'){document.getElementById('logStatus').textContent=d.task.status;if(['done','failed','cancelled'].includes(d.task.status)){logSSE.close();document.getElementById('logStatus').textContent+=' (已结束)';}}}catch(err){}};logSSE.onerror=()=>{document.getElementById('logStatus').textContent='连接断开';logSSE.close();};}catch(e){document.getElementById('logStatus').textContent='连接失败';}}
-function closeLog(){document.getElementById('logCard').style.display='none';if(logSSE){logSSE.close();logSSE=null;}}
-function populateMsgTarget(){const sel=document.getElementById('msgTarget');if(!sel)return;allAgents.filter(a=>a.enabled).forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.id;sel.appendChild(o);});}
-async function loadTasks(){const d=await fetchJSON('/api/tasks');if(!d)return;allTasks=d.tasks||[];const stats=d.stats||{};document.getElementById('kpiTasks').textContent=allTasks.length;let trend=[];for(const s of ['done','pending','failed','in_progress','cancelled']){if(stats[s])trend.push(stats[s]+' '+s);}document.getElementById('kpiTasksTrend').textContent=trend.join(' · ');document.getElementById('taskCount').textContent=allTasks.length;const agents=[...new Set(allTasks.map(t=>t.assignee).filter(Boolean))];const sel=document.getElementById('agentFilter');if(sel.options.length<=1){agents.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a;sel.appendChild(o);});}renderTasks();}
-function renderTasks(){const filter=document.getElementById('agentFilter').value;let tasks=filter?allTasks.filter(t=>t.assignee===filter):allTasks;const cols=['pending','in_progress','done','failed','cancelled'];const labels={pending:'待处理',in_progress:'进行中',done:'已完成',failed:'失败',cancelled:'已取消'};let html='';for(const col of cols){const items=tasks.filter(t=>t.status===col);html+='<div class="kanban-col '+col+'"><div class="kcol-h">'+labels[col]+'<span class="badge">'+items.length+'</span></div>';for(const t of items.slice(0,20)){const p=t.priority||'low';const pc=p==='high'?'prio-h':p==='medium'?'prio-m':'prio-l';const d=fmtDate(t.createdAt);html+='<div class="task-card '+t.status+'" onclick="showTaskDetail(\''+t.id+'\')"><div class="tid">'+esc(t.id)+'</div><div class="ttitle">'+esc(t.title)+'</div><div class="tmeta"><span class="'+pc+'">●'+esc(p)+'</span> '+(t.assignee||'-')+' '+d+'</div></div>';}html+='</div>';}document.getElementById('kanban').innerHTML=html;}
-function showTaskDetail(id){const t=allTasks.find(x=>x.id===id);if(!t)return;let html='';const rows=[['ID',t.id],['标题',t.title],['状态',t.status],['优先级',t.priority],['指派',t.assignee||'-'],['创建',fmtDate(t.createdAt)],['更新',fmtDate(t.updatedAt)],['输出',t.output],[ '备注',t.notes]];
-for(const [k,v] of rows){if(v)html+='<div class="m-row"><div class="m-label">'+k+'</div><div class="m-val">'+esc(v)+'</div></div>';}showModal(html);}
-async function loadAgents(){const d=await fetchJSON('/api/agents');if(!d)return;allAgents=d.agents||[];const enabled=allAgents.filter(a=>a.enabled).length;document.getElementById('kpiAgents').textContent=enabled;document.getElementById('kpiAgentsTrend').textContent=allAgents.length+' 总计';document.getElementById('agentCount').textContent=enabled+'/'+allAgents.length;if(!allAgents.length){document.getElementById('agentGrid').innerHTML='<div class="empty">暂无 Agent</div>';return;}populateMsgTarget();document.getElementById('agentGrid').innerHTML=allAgents.map(a=>{const on=a.enabled;const tasksByAgent=allTasks.filter(t=>t.assignee===a.id).length;return '<div class="agent-card"><div class="aid"><span class="adot '+(on?'on':'off')+'"></span>'+esc(a.id)+'</div><div class="ameta">role: '+esc(a.role)+' | type: '+esc(a.type)+'<br>risk: '+esc(a.riskLevel)+'<br>tasks: '+tasksByAgent+(a.backend?'<br>backend: '+esc(a.backend.type):'')+'</div><span class="arole">'+esc(a.role)+'</span></div>';}).join('');}
-async function loadAudit(){const d=await fetchJSON('/api/audit?limit=50');if(!d)return;const entries=d.entries||[];if(!entries.length){document.getElementById('auditList').innerHTML='<div class="empty">暂无审计记录</div>';return;}document.getElementById('auditList').innerHTML=entries.map(e=>'<div class="log-item"><span class="log-time">'+fmtDate(e.timestamp)+'</span><span class="log-type">'+esc(e.eventType)+'</span><span class="log-msg">'+esc(e.taskId||'')+' '+esc(e.message||'')+'</span></div>').join('');}
-async function loadEvents(){const d=await fetchJSON('/api/events?limit=50');if(!d)return;const entries=d.entries||[];if(!entries.length){document.getElementById('eventList').innerHTML='<div class="empty">暂无事件</div>';return;}document.getElementById('eventList').innerHTML=entries.map(e=>'<div class="log-item"><span class="log-time">'+fmtDate(e.timestamp)+'</span><span class="log-type">'+esc(e.eventType)+'</span><span class="log-msg">'+esc(e.source||'')+' #'+esc(e.correlationId||'')+' '+esc(JSON.stringify(e.payload||{}).slice(0,80))+'</span></div>').join('');}
-async function loadMessages(){const d=await fetchJSON('/api/messages?limit=30');if(!d)return;const entries=d.entries||[];const unacked=entries.filter(m=>m.status==='sent').length;document.getElementById('kpiMsgs').textContent=unacked;document.getElementById('kpiMsgsTrend').textContent=entries.length+' 总计';if(!entries.length){document.getElementById('msgBody').innerHTML='<tr><td colspan="6" class="empty">暂无消息</td></tr>';return;}document.getElementById('msgBody').innerHTML=entries.map(m=>'<tr><td>'+esc(m.id)+'</td><td>'+esc(m.from)+'</td><td>'+esc(m.to)+'</td><td><span class="tag '+esc(m.status)+'">'+esc(m.status)+'</span></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(m.content)+'</td><td>'+fmtDate(m.timestamp)+'</td></tr>').join('');}
-async function loadCost(){const d=await fetchJSON('/api/cost');if(!d)return;document.getElementById('kpiCost').textContent='$'+(d.totalCost||0).toFixed(4);document.getElementById('kpiCostTrend').textContent=(d.totalTokens||0).toLocaleString()+' tokens';document.getElementById('costTotal').textContent='$'+(d.totalCost||0).toFixed(4);document.getElementById('costTokens').textContent=(d.totalTokens||0).toLocaleString()+' tokens';const byAgent=d.byAgent||{};const entries=Object.entries(byAgent);if(!entries.length){document.getElementById('costByAgent').innerHTML='<div class="empty">暂无成本记录</div>';return;}const maxCost=Math.max(...entries.map(([,v])=>v.cost),0.01);document.getElementById('costByAgent').innerHTML=entries.map(([k,v])=>{const pct=(v.cost/maxCost*100).toFixed(0);return '<div class="cost-bar-wrap"><div class="cost-bar-label"><span>'+esc(k)+'</span><span>$'+v.cost.toFixed(4)+' ('+v.tokens+' tok)</span></div><div class="cost-bar"><div class="cost-bar-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--pri),var(--acc))"></div></div></div>';}).join('');}
-async function loadAlerts(){const d=await fetchJSON('/api/alerts');if(!d)return;const light=document.getElementById('statusLight');light.className='slight '+(d.level||'green');const alerts=d.alerts||[];if(!alerts.length){document.getElementById('alertList').innerHTML='<div class="alert-item green">✅ 一切正常</div>';return;}document.getElementById('alertList').innerHTML=alerts.map(a=>{const icon=a.level==='red'?'🔴':a.level==='yellow'?'🟡':'🟢';return '<div class="alert-item '+a.level+'">'+icon+' '+esc(a.text)+'</div>';}).join('');}
-async function loadPolicies(){const d=await fetchJSON('/api/policies');if(!d)return;const items=[];const comm=d.communication||{};const exec=d.execution||{};const aud=d.audit||{};items.push(['全局广播',comm.globalBroadcast&&comm.globalBroadcast.allowed?'允许':'禁止']);items.push(['自动外发',comm.autoOutbound&&comm.autoOutbound.allowed?'允许':'禁止']);items.push(['最大并发',exec.maxConcurrency?exec.maxConcurrency.value:'-']);items.push(['最大重试',exec.maxRetries?exec.maxRetries.value:'-']);items.push(['运行上限(分)',exec.maxRuntimeMinutes?exec.maxRuntimeMinutes.value:'-']);items.push(['输出上限(KB)',exec.maxOutputKB?exec.maxOutputKB.value:'-']);items.push(['审计保留(天)',aud.logRetentionDays||'-']);items.push(['危险命令',exec.dangerousCommands&&exec.dangerousCommands.allowed?'允许':'禁止']);document.getElementById('policyGrid').innerHTML=items.map(([k,v])=>{const cls=v==='禁止'?'deny':v==='允许'?'allow':'';return '<div class="policy-item"><div class="plabel">'+k+'</div><div class="pvalue '+cls+'">'+esc(String(v))+'</div></div>';}).join('');}
-async function refreshAll(){await Promise.all([loadTasks(),loadAgents(),loadAudit(),loadEvents(),loadMessages(),loadCost(),loadAlerts(),loadPolicies()]);document.getElementById('lastRefresh').textContent='刷新: '+new Date().toLocaleTimeString('zh-CN');}
-refreshAll();startTimer();startSSE();
+// --- Helper functions ---
+async function fetchJSON(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function timeAgo(ts) {
+    if (!ts) return '';
+    const diff = Date.now() - new Date(ts).getTime();
+    if (diff < 60000) return 'just now';
+    if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+    return Math.floor(diff/86400000) + 'd ago';
+}
+
+// Executor icon mapping (simple text-based icons)
+const executorIcons = {
+    'codex': '⚡',
+    'codewhale': '🐋',
+    'opencode': '📂',
+    'ollama': '🦙',
+    'mimo': '🎮',
+    'hermes': '✉️',
+};
+
+function getExecutorIcon(command) {
+    return executorIcons[command] || '🔧';
+}
+
+// --- Render functions ---
+
+function renderAgents(data) {
+    const grid = document.getElementById('agents-grid');
+    if (!data.agents || data.agents.length === 0) {
+        grid.innerHTML = '<div class="loading">No agents configured.</div>';
+        return;
+    }
+    grid.innerHTML = data.agents.map(a => {
+        const displayName = escapeHtml(a.displayName || a.id);
+        const agentId = escapeHtml(a.id);
+        const enabled = a.enabled !== false;
+        const executorCmd = escapeHtml(a.executorCommand || 'N/A');
+        const executorType = escapeHtml(a.executorType || 'N/A');
+        const icon = getExecutorIcon(a.executorCommand);
+        const role = escapeHtml(a.role || 'unknown');
+        const riskLevel = escapeHtml(a.riskLevel || 'unknown');
+        const badgeClass = enabled ? 'badge-enabled' : 'badge-disabled';
+        const badgeText = enabled ? 'ACTIVE' : 'DISABLED';
+        const cardClass = enabled ? 'agent-card' : 'agent-card disabled';
+
+        return `
+        <div class="${cardClass}">
+            <div class="agent-header">
+                <div>
+                    <div class="agent-name">${displayName}</div>
+                    <div class="agent-id">${agentId}</div>
+                </div>
+                <span class="agent-badge ${badgeClass}">${badgeText}</span>
+            </div>
+            <div class="executor-tag">
+                <span class="icon">${icon}</span>
+                ${executorCmd}
+                <span style="color:#555;margin-left:4px;">· ${executorType}</span>
+            </div>
+            <div class="agent-meta">
+                <span>Role: ${role}</span>
+                <span>Risk: ${riskLevel}</span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderTasks(data) {
+    const list = document.getElementById('task-list');
+    if (!data.tasks || data.tasks.length === 0) {
+        list.innerHTML = '<div class="loading">No tasks found.</div>';
+        return;
+    }
+    list.innerHTML = data.tasks.slice().reverse().map(t => {
+        const status = escapeHtml(t.status || 'unknown');
+        const title = escapeHtml(t.title || t.id);
+        const assignee = escapeHtml(t.assignee || '—');
+        return `
+        <div class="task-item">
+            <div>
+                <div class="task-title">${title}</div>
+                <div style="font-size:11px;color:#666;">Assigned: ${assignee}</div>
+            </div>
+            <span class="task-status status-${status}">${status}</span>
+        </div>`;
+    }).join('');
+}
+
+function renderMessages(data) {
+    const list = document.getElementById('msg-list');
+    if (!data.entries || data.entries.length === 0) {
+        list.innerHTML = '<div class="loading">No messages.</div>';
+        return;
+    }
+    list.innerHTML = data.entries.map(m => {
+        const from = escapeHtml(m.from || m.fromId || 'unknown');
+        const to = escapeHtml(m.to || m.toId || 'unknown');
+        const msg = escapeHtml((m.message || m.content || '').substring(0, 100));
+        const time = m.timestamp || m.ts || '';
+        return `
+        <div class="msg-item">
+            <span class="msg-from">${from}</span> → <span style="color:#7ec8e3">${to}</span>
+            <span class="msg-time" style="float:right;">${timeAgo(time)}</span>
+            <div style="margin-top:4px;color:#aaa;">${msg}</div>
+        </div>`;
+    }).join('');
+}
+
+function renderAlerts(data) {
+    const list = document.getElementById('alerts-list');
+    const dot = document.getElementById('status-dot');
+    const text = document.getElementById('status-text');
+
+    if (data.level === 'green') {
+        dot.className = 'dot';
+        text.textContent = 'All systems normal';
+    } else if (data.level === 'yellow') {
+        dot.className = 'dot yellow';
+        text.textContent = 'Warnings';
+    } else {
+        dot.className = 'dot red';
+        text.textContent = 'Critical issues';
+    }
+
+    if (!data.alerts || data.alerts.length === 0) {
+        list.innerHTML = '<div class="alert-item alert-green">✅ All systems normal.</div>';
+        return;
+    }
+    list.innerHTML = data.alerts.map(a => {
+        const cls = a.level === 'red' ? 'alert-red' : 'alert-yellow';
+        const icon = a.level === 'red' ? '🔴' : '🟡';
+        return `<div class="alert-item ${cls}">${icon} ${escapeHtml(a.text)}</div>`;
+    }).join('');
+}
+
+// --- Data loading ---
+async function loadAll() {
+    try {
+        const [agents, tasks, messages, alerts] = await Promise.all([
+            fetchJSON('/api/agents'),
+            fetchJSON('/api/tasks'),
+            fetchJSON('/api/messages?limit=30'),
+            fetchJSON('/api/alerts'),
+        ]);
+        renderAgents(agents);
+        renderTasks(tasks);
+        renderMessages(messages);
+        renderAlerts(alerts);
+    } catch (e) {
+        console.error('Load error:', e);
+        document.getElementById('status-text').textContent = 'Error: ' + e.message;
+    }
+}
+
+// --- SSE for real-time updates ---
+function connectSSE() {
+    const es = new EventSource('/api/stream/events');
+    es.addEventListener('message', (e) => {
+        try {
+            const msg = JSON.parse(e.data);
+            if (msg.type === 'tasks') renderTasks(msg.data);
+            else if (msg.type === 'agents') renderAgents(msg.data);
+            else if (msg.type === 'audit') {
+                // Could show audit notifications
+            }
+        } catch (err) {
+            console.warn('SSE parse error:', err);
+        }
+    });
+    es.onerror = () => {
+        document.getElementById('status-text').textContent = 'Reconnecting...';
+    };
+}
+
+// --- Init ---
+loadAll();
+connectSSE();
+// Refresh every 30s as fallback
+setInterval(loadAll, 30000);
 </script>
+
 </body>
 </html>

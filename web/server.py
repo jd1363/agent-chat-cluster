@@ -90,7 +90,19 @@ def get_tasks():
 
 def get_agents():
     data = read_json(AGENTS_FILE, {"agents": []})
-    return {"agents": data.get("agents", [])}
+    agents = data.get("agents", [])
+    # Enrich each agent with displayName and executor info
+    for a in agents:
+        if "displayName" not in a or not a.get("displayName"):
+            a["displayName"] = a.get("id", "unknown")
+        executor = a.get("executor") or a.get("backend")
+        if executor:
+            a["executorCommand"] = executor.get("command", "N/A")
+            a["executorType"] = executor.get("type", "N/A")
+        else:
+            a["executorCommand"] = "N/A"
+            a["executorType"] = "N/A"
+    return {"agents": agents}
 
 
 def get_audit(limit=50):

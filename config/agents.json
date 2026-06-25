@@ -8,7 +8,16 @@
       "enabled": true,
       "cwd": "agents/resident/exec01",
       "riskLevel": "low",
-      "notes": "MVP 阶段唯一启用的示例执行 Agent，仅验证主控→Agent 命令通道。禁止执行危险命令，禁止自动外发。"
+      "notes": "Codex 执行引擎，通过 codex exec CLI 调用。主控→Agent 命令通道验证。",
+      "displayName": "Codex",
+      "executor": {
+        "type": "cli",
+        "command": "codex",
+        "args": ["exec", "{prompt}"],
+        "workDir": "G:\\agent-chat-cluster",
+        "timeoutSeconds": 120,
+        "maxOutputKB": 1024
+      }
     },
     {
       "id": "agent-ext-01",
@@ -17,7 +26,16 @@
       "enabled": true,
       "cwd": "agents/ext/ext01",
       "riskLevel": "medium",
-      "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
+      "notes": "CodeWhale 执行引擎，通过 codewhale exec CLI 调用。",
+      "displayName": "CodeWhale",
+      "executor": {
+        "type": "cli",
+        "command": "codewhale",
+        "args": ["exec", "{prompt}"],
+        "workDir": "G:\\agent-chat-cluster",
+        "timeoutSeconds": 120,
+        "maxOutputKB": 1024
+      }
     },
     {
       "id": "agent-ext-02",
@@ -26,7 +44,16 @@
       "enabled": true,
       "cwd": "agents/ext/ext02",
       "riskLevel": "medium",
-      "notes": "ext 席位，当前禁用。启用前需人工审批并验证环境隔离。"
+      "notes": "OpenCode 执行引擎，通过 opencode run CLI 调用。",
+      "displayName": "OpenCode",
+      "executor": {
+        "type": "cli",
+        "command": "opencode",
+        "args": ["run", "{prompt}"],
+        "workDir": "G:\\agent-chat-cluster",
+        "timeoutSeconds": 120,
+        "maxOutputKB": 1024
+      }
     },
     {
       "id": "agent-ext-03",
@@ -35,7 +62,16 @@
       "enabled": true,
       "cwd": "agents/ext/ext03",
       "riskLevel": "medium",
-      "notes": "ext 席位，已启用。阶段4扩容。"
+      "notes": "Ollama 执行引擎，通过 ollama run CLI 调用，模型: maayan/Qwen2.5-14B-Instruct-GGUF:latest。",
+      "displayName": "Ollama",
+      "executor": {
+        "type": "cli",
+        "command": "ollama",
+        "args": ["run", "maayan/Qwen2.5-14B-Instruct-GGUF:latest", "{prompt}"],
+        "workDir": "G:\\agent-chat-cluster",
+        "timeoutSeconds": 120,
+        "maxOutputKB": 1024
+      }
     },
     {
       "id": "agent-ext-04",
@@ -44,7 +80,16 @@
       "enabled": true,
       "cwd": "agents/ext/ext04",
       "riskLevel": "medium",
-      "notes": "ext 席位，已启用。阶段4扩容。"
+      "notes": "MiMo 执行引擎，通过 mimo run CLI 调用。",
+      "displayName": "MiMo",
+      "executor": {
+        "type": "cli",
+        "command": "mimo",
+        "args": ["run", "{prompt}"],
+        "workDir": "G:\\agent-chat-cluster",
+        "timeoutSeconds": 120,
+        "maxOutputKB": 1024
+      }
     },
     {
       "id": "agent-ext-05",
@@ -53,7 +98,16 @@
       "enabled": true,
       "cwd": "agents/ext/ext05",
       "riskLevel": "medium",
-      "notes": "ext 席位，已启用。阶段4扩容。"
+      "notes": "Codex-2 执行引擎，通过 codex exec CLI 调用。第二实例。",
+      "displayName": "Codex-2",
+      "executor": {
+        "type": "cli",
+        "command": "codex",
+        "args": ["exec", "{prompt}"],
+        "workDir": "G:\\agent-chat-cluster",
+        "timeoutSeconds": 120,
+        "maxOutputKB": 1024
+      }
     },
     {
       "id": "agent-ext-06",
@@ -62,7 +116,16 @@
       "enabled": true,
       "cwd": "agents/ext/ext06",
       "riskLevel": "medium",
-      "notes": "ext 席位，已启用。阶段4扩容。"
+      "notes": "CodeWhale-2 执行引擎，通过 codewhale exec CLI 调用。第二实例。",
+      "displayName": "CodeWhale-2",
+      "executor": {
+        "type": "cli",
+        "command": "codewhale",
+        "args": ["exec", "{prompt}"],
+        "workDir": "G:\\agent-chat-cluster",
+        "timeoutSeconds": 120,
+        "maxOutputKB": 1024
+      }
     },
     {
       "id": "agent-hermes-01",
