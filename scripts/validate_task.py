@@ -164,7 +164,11 @@ def validate_tasks():
             else:
                 agent_obj = agents_map[assignee]
                 if not agent_obj.get("enabled", False):
-                    fail(f"{prefix} ({tid}): assignee '{assignee}' 未启用 (enabled=false)")
+                    # 只对活跃状态（pending/in_progress）的任务报错，历史任务只警告
+                    if st in ("pending", "in_progress"):
+                        fail(f"{prefix} ({tid}): assignee '{assignee}' 未启用 (enabled=false)")
+                    else:
+                        ok(f"{prefix} ({tid}): assignee '{assignee}' (历史任务，Agent 已禁用)")
                 else:
                     ok(f"{prefix} ({tid}): assignee '{assignee}' 存在且已启用")
 

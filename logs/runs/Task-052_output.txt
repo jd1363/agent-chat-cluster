@@ -1,0 +1,17 @@
+﻿[PREFLIGHT] 步骤 1/3: 校验任务台账与 Agent 注册表...
+python : Traceback (most recent call last):
+所在位置 行:1 字符: 27
++ ... at-cluster; python scripts/dispatch_task.py --id Task-052 --assignee  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "G:\agent-chat-cluster\scripts\dispatch_task.py", line 383, in <module>
+    main()
+    ~~~~^^
+  File "G:\agent-chat-cluster\scripts\dispatch_task.py", line 248, in main
+    policies = preflight(args.id, args.assignee)
+  File "G:\agent-chat-cluster\scripts\dispatch_task.py", line 104, in preflight
+    print(f"[PREFLIGHT FAIL] validate_task.py 未通过:\n{result.stdout}{result.stderr}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'gbk' codec can't encode character '\ufffd' in position 45: illegal multibyte sequence

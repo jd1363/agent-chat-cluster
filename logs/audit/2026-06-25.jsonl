@@ -56,3 +56,8 @@
 {"timestamp": "2026-06-25T03:44:22.179078+00:00", "eventType": "executor_bridge_success", "taskId": "Task-049", "message": "agent=agent-ext-02, command=opencode, 耗时=12.5s, 输出=234字符", "environment": "production"}
 {"timestamp": "2026-06-25T03:46:09.932706+00:00", "eventType": "executor_bridge_failed", "taskId": "Task-051", "message": "agent=agent-ext-03, command=ollama, 耗时=120.0s, 错误=执行超时 (>120s)", "environment": "production"}
 {"timestamp": "2026-06-25T03:46:38.031484+00:00", "eventType": "executor_bridge_failed", "taskId": "Task-050", "message": "agent=agent-ext-04, command=mimo, 耗时=120.0s, 错误=执行超时 (>120s)", "environment": "production"}
+{"timestamp": "2026-06-25T03:50:38.178275+00:00", "eventType": "task_created", "taskId": "Task-052", "message": "创建任务: MiMo retest: echo hello", "environment": "production", "data": {"priority": "low"}}
+{"timestamp": "2026-06-25T03:52:26.533824+00:00", "eventType": "task_dispatched", "taskId": "Task-052", "message": "任务已派发至 agent-ext-04", "environment": "production", "data": {"assignee": "agent-ext-04", "dispatchFile": "logs\\runs\\Task-052_dispatch.md"}}
+{"timestamp": "2026-06-25T03:52:26.622542+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-052", "details": "dispatch mode, prompt_file=Task-052-prompt.txt", "environment": "production"}
+{"timestamp": "2026-06-25T03:52:26.709927+00:00", "eventType": "executor_bridge_start", "taskId": "Task-052", "message": "agent=agent-ext-04, command=mimo, timeout=120s", "environment": "production"}
+{"timestamp": "2026-06-25T03:52:37.828242+00:00", "eventType": "executor_bridge_success", "taskId": "Task-052", "message": "agent=agent-ext-04, command=mimo, 耗时=11.1s, 输出=82字符", "environment": "production"}

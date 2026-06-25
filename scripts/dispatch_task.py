@@ -101,7 +101,13 @@ def preflight(task_id: str | None, assignee: str) -> dict:
 
     )
     if result.returncode != 0:
-        print(f"[PREFLIGHT FAIL] validate_task.py 未通过:\n{result.stdout}{result.stderr}")
+        # 安全输出：避免 GBK 编码崩溃
+        fail_msg = f"[PREFLIGHT FAIL] validate_task.py 未通过:\n{result.stdout}{result.stderr}"
+        try:
+            sys.stdout.buffer.write((fail_msg + "\n").encode("utf-8"))
+            sys.stdout.buffer.flush()
+        except Exception:
+            print(fail_msg.encode("ascii", errors="replace").decode())
         sys.exit(1)
     print("[PREFLIGHT OK] 台账与注册表校验通过")
 

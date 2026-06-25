@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 52,
+  "nextId": 53,
   "tasks": [
     {
       "id": "Task-001",
@@ -561,6 +561,17 @@
       "createdAt": "2026-06-25T03:43:57.958853+00:00",
       "updatedAt": "2026-06-25T03:46:09.930915+00:00",
       "output": "执行超时 (>120s)",
+      "notes": ""
+    },
+    {
+      "id": "Task-052",
+      "title": "MiMo retest: echo hello",
+      "status": "done",
+      "priority": "low",
+      "assignee": "agent-ext-04",
+      "createdAt": "2026-06-25T03:50:38.176910+00:00",
+      "updatedAt": "2026-06-25T03:52:37.826215+00:00",
+      "output": "Let me check what Task-052 is about.\r\n未找到 Task-052 的相关记录。请告诉我这个任务的具体内容——你希望我做什么？\r\n",
       "notes": ""
     }
   ]
