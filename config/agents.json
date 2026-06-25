@@ -59,7 +59,7 @@
       "id": "agent-ext-03",
       "role": "external",
       "type": "extension",
-      "enabled": true,
+      "enabled": false,
       "cwd": "agents/ext/ext03",
       "riskLevel": "medium",
       "notes": "Ollama 执行引擎，通过 ollama run CLI 调用，模型: maayan/Qwen2.5-14B-Instruct-GGUF:latest。",
