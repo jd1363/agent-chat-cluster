@@ -239,6 +239,8 @@ def main():
     parser.add_argument("--id", help="指定任务 ID，如 Task-001")
     parser.add_argument("--assignee", default="agent-exec-01", help="指派给哪个 Agent（默认: agent-exec-01）")
     parser.add_argument("--execute", action="store_true", help="派工后自动调用 openclaw_executor 生成执行 prompt 文件")
+    parser.add_argument("--execute-real", action="store_true",
+                        help="派工后直接调用 executor_bridge 执行真实 CLI（需先 --execute 生成 prompt）")
     parser.add_argument("--dry-run", action="store_true", help="只打印提示，不修改任务状态")
     args = parser.parse_args()
 
@@ -346,6 +348,35 @@ def main():
                     print(f"[INFO] 执行完成后运行: python scripts/openclaw_executor.py --task-id {task_id} --collect")
             except Exception as e:
                 print(f"[WARN] 调用 openclaw_executor 异常: {e}")
+
+    # === --execute-real: 调用 executor_bridge 执行真实 CLI ===
+    if args.execute_real:
+        executor_bridge_script = PROJECT_ROOT / "scripts" / "executor_bridge.py"
+        if not executor_bridge_script.is_file():
+            print(f"[FAIL] --execute-real 指定但 executor_bridge.py 未找到: {executor_bridge_script}")
+            sys.exit(1)
+
+        # 检查 prompt 文件是否存在
+        prompt_file = PROJECT_ROOT / "tasks" / "dispatch" / f"{task_id}-prompt.txt"
+        if not prompt_file.is_file():
+            print(f"[FAIL] 未找到 prompt 文件: {prompt_file}")
+            print(f"[INFO] 请先运行 --execute 生成 prompt 文件: python scripts/dispatch_task.py --id {task_id} --execute")
+            sys.exit(1)
+
+        # 构建 executor_bridge 调用命令
+        bridge_cmd = [sys.executable, str(executor_bridge_script), "--task-id", task_id, "--assignee", args.assignee]
+
+        if args.dry_run:
+            print(f"[DRY-RUN] 将执行: {' '.join(bridge_cmd)}")
+        else:
+            print(f"[INFO] --execute-real: 调用 executor_bridge 执行真实 CLI...")
+            try:
+                result = subprocess.run(bridge_cmd, cwd=PROJECT_ROOT)
+                if result.returncode != 0:
+                    print(f"[WARN] executor_bridge 退出码 {result.returncode}")
+            except Exception as e:
+                print(f"[WARN] 调用 executor_bridge 异常: {e}")
+            print(f"[INFO] 执行完成，可用 python scripts/openclaw_executor.py --task-id {task_id} --collect 收集结果")
 
 
 if __name__ == "__main__":

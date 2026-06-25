@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -208,6 +209,9 @@ def execute_cli(
     在 Windows 上使用 shell=True 以支持 .ps1 脚本（codex/codewhale/opencode/mimo
     都是 npm 全局安装的 .ps1/.cmd 脚本）。
 
+    使用 Popen + 进程组管理，确保超时时能 kill 整个进程树，
+    避免 CLI 子进程（codex/ollama 等）残留吃内存。
+
     Args:
         command: 完整的命令字符串
         cwd: 工作目录
@@ -221,23 +225,30 @@ def execute_cli(
 
     env = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
 
-    try:
-        result = subprocess.run(
-            command,
-            shell=True,
-            capture_output=True,
-            timeout=timeout,
-            cwd=cwd,
-            env=env,
-        )
-    except subprocess.TimeoutExpired:
-        elapsed = time.monotonic() - start_time
-        return {
-            "success": False,
-            "output": "",
-            "error": f"执行超时 (>{timeout}s)",
-            "elapsed": elapsed,
+    # 创建进程组，使超时时能 kill 整个进程树
+    if os.name == "nt":
+        # Windows: CREATE_NEW_PROCESS_GROUP
+        popen_kwargs: Dict[str, Any] = {
+            "shell": True,
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE,
+            "cwd": cwd,
+            "env": env,
+            "creationflags": subprocess.CREATE_NEW_PROCESS_GROUP,
         }
+    else:
+        # Unix: 新建会话/进程组
+        popen_kwargs = {
+            "shell": True,
+            "stdout": subprocess.PIPE,
+            "stderr": subprocess.PIPE,
+            "cwd": cwd,
+            "env": env,
+            "preexec_fn": os.setsid,
+        }
+
+    try:
+        proc = subprocess.Popen(command, **popen_kwargs)
     except FileNotFoundError:
         elapsed = time.monotonic() - start_time
         return {
@@ -255,11 +266,56 @@ def execute_cli(
             "elapsed": elapsed,
         }
 
+    # 等待进程完成或超时
+    try:
+        proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        # 超时：先 terminate，等 3 秒
+        proc.terminate()
+        try:
+            proc.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            # 还没退，kill 整个进程组
+            if os.name == "nt":
+                # Windows: taskkill /T /F 递归 kill 进程树
+                subprocess.run(
+                    ["taskkill", "/T", "/F", "/PID", str(proc.pid)],
+                    capture_output=True,
+                )
+            else:
+                # Unix: kill 整个进程组
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                except ProcessLookupError:
+                    pass  # 进程已退出
+            # 回收僵尸进程
+            proc.wait()
+
+        elapsed = time.monotonic() - start_time
+        # 回收已有输出
+        stdout_bytes, stderr_bytes = proc.communicate()
+        stdout = stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else ""
+        stderr = stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else ""
+
+        # 输出截断
+        max_bytes = max_output_kb * 1024
+        if len(stdout.encode("utf-8")) > max_bytes:
+            stdout = stdout.encode("utf-8")[:max_bytes].decode("utf-8", errors="replace")
+            stdout += "\n... [输出已截断]"
+
+        return {
+            "success": False,
+            "output": stdout,
+            "error": f"执行超时 (>{timeout}s)",
+            "elapsed": elapsed,
+        }
+
     elapsed = time.monotonic() - start_time
 
-    # 解码输出
-    stdout = result.stdout.decode("utf-8", errors="replace") if result.stdout else ""
-    stderr = result.stderr.decode("utf-8", errors="replace") if result.stderr else ""
+    # 读取输出
+    stdout_bytes, stderr_bytes = proc.communicate()
+    stdout = stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else ""
+    stderr = stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else ""
 
     # 输出截断
     max_bytes = max_output_kb * 1024
@@ -267,7 +323,7 @@ def execute_cli(
         stdout = stdout.encode("utf-8")[:max_bytes].decode("utf-8", errors="replace")
         stdout += "\n... [输出已截断]"
 
-    success = result.returncode == 0
+    success = proc.returncode == 0
     error_msg = stderr.strip() if not success and stderr else ""
 
     return {
