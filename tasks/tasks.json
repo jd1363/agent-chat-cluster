@@ -588,12 +588,12 @@
     {
       "id": "Task-054",
       "title": "天气项目升级: 后端添加 空气质量查询 API 接口 (/api/air)",
-      "status": "in_progress",
+      "status": "failed",
       "priority": "high",
       "assignee": "agent-ext-04",
       "createdAt": "2026-06-25T04:19:54.148923+00:00",
-      "updatedAt": "2026-06-25T05:20:35.536339+00:00",
-      "output": "执行超时 (>120s)",
+      "updatedAt": "2026-06-25T05:32:46.317802+00:00",
+      "output": "执行超时 (>600s)",
       "notes": ""
     },
     {

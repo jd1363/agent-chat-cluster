@@ -1,39 +1,32 @@
-[EXECUTION FAILED] 执行超时 (>120s)
-已在 `web/server.py` 中新增空气质量查询接口，改动如下：
+[EXECUTION FAILED] 执行超时 (>600s)
+Let me first explore the existing codebase to understand the patterns and conventions.
+Now I have a clear picture of the patterns. Let me implement all three changes.
+Now add the module-level convenience functions at the bottom of the file:
+Now add the module-level convenience functions at the bottom of the file:
+Now add the schema and the endpoint:
+Now add the schema and the endpoint:
+Now add the endpoint in app.py:
+Now let me verify the final state of all three files and run a syntax check:
+Let me check if there are lint/typecheck commands available:
+The edits were applied twice, causing duplicates. Let me fix them:
+I see the duplicates. Let me fix them:
+Let me also check weather_core.py for duplicates:
+Let me also check weather_core.py for duplicates:
+Lint passes. Let me run the existing tests to make sure nothing is broken:
+The 2 test failures are pre-existing (unrelated to my changes — "Beijing" vs "北京" mismatch in mock mode). All lint checks pass and no new failures introduced.
 
-- **路由**：`GET /api/air_quality?lat={纬度}&lon={经度}`
-- **数据来源**：Open-Meteo Air Quality API（无需 API Key，纯标准库实现）
-- **默认坐标**：北京（`lat=39.9042`, `lon=116.4074`）
-- **返回字段**：`us_aqi`、`pm10`、`pm2_5`、`carbon_monoxide`、`nitrogen_dioxide`、`sulphur_dioxide`、`ozone`、`time`、`timezone`
+Here's a summary of what was added:
 
-示例调用及返回：
+**`backend/weather_core.py`** — `WeatherClient` class:
+- `get_air_quality(city)` — calls QWeather `/air/now` API, returns AQI data
+- `get_air_quality_with_fallback(city)` — falls back to mock on error
+- `_get_air_quality_from_qweather(city)` — resolves city → location → air data
+- `_fetch_air_now(location_id)` — raw API call
+- `_mock_air_quality(city)` — mock data for dev mode
+- `get_air_quality(city)` — module-level convenience function
 
-```bash
-curl "http://127.0.0.1:8765/api/air_quality"
-```
+**`backend/schemas.py`**:
+- `AirQualityData` model with fields: `city`, `location_id`, `source`, `aqi`, `category`, `primary`, `pm2_5`, `pm10`, `update_time`
 
-```json
-{
-  "location": {
-    "latitude": 39.9042,
-    "longitude": 116.4074,
-    "timezone": "Asia/Shanghai"
-  },
-  "current": {
-    "us_aqi": 116,
-    "pm10": 14.0,
-    "pm2_5": 8.5,
-    "carbon_monoxide": 199.0,
-    "nitrogen_dioxide": 5.2,
-    "sulphur_dioxide": 0.6,
-    "ozone": 109.0,
-    "time": "2026-06-25T12:00"
-  }
-}
-```
-
-也支持自定义坐标，例如查询上海：
-
-```
-GET /api/air_quality?lat=31.2304&lon=121.4737
-```
+**`app.py`**:
+- `GET /api/air-quality?city=<name>` endpoint using `AirQualityData` response model
