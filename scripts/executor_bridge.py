@@ -162,21 +162,21 @@ def read_prompt_file(task_id: str) -> str:
         sys.exit(1)
 
 
-def build_command(executor_config: Dict[str, Any], prompt: str) -> str:
-    """构建 CLI 命令字符串。
+def build_command_args(
+    executor_config: Dict[str, Any], prompt: str
+) -> List[str]:
+    """构建 CLI 命令参数列表（不经过 shell 解析）。
 
     将 executor_config 中的 {prompt} 占位符替换为真实 prompt 内容，
-    然后拼接成完整的命令字符串。
-
-    对于 Windows 上的 .ps1/.cmd 脚本（codex/codewhale/opencode/mimo），
-    使用 shell=True 执行，因此需要将命令拼成字符串。
+    返回 [command, arg1, arg2, ...] 列表，直接传给 subprocess.Popen，
+    避免 shell=True 解析特殊字符导致 prompt 被截断。
 
     Args:
         executor_config: executor 配置字典
         prompt: 真实 prompt 文本
 
     Returns:
-        完整的命令字符串，如 'codex exec "..."'
+        命令参数列表，如 ['codex', 'exec', 'prompt content...']
     """
     command = executor_config.get("command", "")
     args = executor_config.get("args", [])
@@ -184,37 +184,28 @@ def build_command(executor_config: Dict[str, Any], prompt: str) -> str:
     # 替换 {prompt} 占位符
     resolved_args = [a.replace("{prompt}", prompt) for a in args]
 
-    # 拼接成命令字符串
-    # prompt 中可能包含特殊字符，用双引号包裹并对内部双引号转义
-    parts = [command]
-    for arg in resolved_args:
-        # 如果参数包含空格或特殊字符，用双引号包裹
-        if " " in arg or '"' in arg or "'" in arg:
-            # 转义双引号
-            escaped = arg.replace('"', '\\"')
-            parts.append(f'"{escaped}"')
-        else:
-            parts.append(arg)
-
-    return " ".join(parts)
+    return [command] + resolved_args
 
 
 def execute_cli(
-    command: str,
+    command: List[str],
     cwd: str,
     timeout: int,
     max_output_kb: int,
 ) -> Dict[str, Any]:
-    """用 subprocess 执行 CLI 命令，捕获输出。
+    """用 subprocess 执行 CLI 命令（不经过 shell），捕获输出。
 
-    在 Windows 上使用 shell=True 以支持 .ps1 脚本（codex/codewhale/opencode/mimo
+    直接传参数列表给 Popen，不使用 shell=True，
+    避免 shell 解析特殊字符导致 prompt 被截断。
+
+    支持 .ps1/.cmd 脚本（codex/codewhale/opencode/mimo
     都是 npm 全局安装的 .ps1/.cmd 脚本）。
 
     使用 Popen + 进程组管理，确保超时时能 kill 整个进程树，
     避免 CLI 子进程（codex/ollama 等）残留吃内存。
 
     Args:
-        command: 完整的命令字符串
+        command: 命令参数列表 ['cmd', 'arg1', 'arg2']
         cwd: 工作目录
         timeout: 超时秒数
         max_output_kb: 最大输出大小（KB）
@@ -230,7 +221,7 @@ def execute_cli(
     if os.name == "nt":
         # Windows: CREATE_NEW_PROCESS_GROUP
         popen_kwargs: Dict[str, Any] = {
-            "shell": True,
+            "shell": False,
             "stdout": subprocess.PIPE,
             "stderr": subprocess.PIPE,
             "cwd": cwd,
@@ -240,7 +231,7 @@ def execute_cli(
     else:
         # Unix: 新建会话/进程组
         popen_kwargs = {
-            "shell": True,
+            "shell": False,
             "stdout": subprocess.PIPE,
             "stderr": subprocess.PIPE,
             "cwd": cwd,
@@ -599,14 +590,16 @@ def main() -> int:
             _utf8_print("[WARN] 项目上下文为空，跳过注入")
 
     # ── 3. 构建命令 ──
-    cmd_str = build_command(executor_config, prompt)
+    cmd_args = build_command_args(executor_config, prompt)
+    cmd_display = f"{command} {' '.join(executor_config.get('args', []))}"
 
     # ── dry-run 模式 ──
     if args.dry_run:
         _utf8_print("")
         _utf8_print("[DRY-RUN] 将执行以下命令:")
         _utf8_print("=" * 60)
-        _utf8_print(f"命令: {cmd_str}")
+        _utf8_print(f"命令: {cmd_display}")
+        _utf8_print(f"prompt 长度: {len(prompt)} 字符")
         _utf8_print(f"工作目录: {work_dir}")
         _utf8_print(f"超时: {timeout}s")
         _utf8_print(f"最大输出: {max_output_kb}KB")
@@ -621,7 +614,7 @@ def main() -> int:
     write_audit_log("executor_bridge_start", task_id,
                     f"agent={agent_id}, command={command}, timeout={timeout}s")
 
-    result = execute_cli(cmd_str, work_dir, timeout, max_output_kb)
+    result = execute_cli(cmd_args, work_dir, timeout, max_output_kb)
 
     elapsed = result["elapsed"]
     success = result["success"]
