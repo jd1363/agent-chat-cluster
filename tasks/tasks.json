@@ -577,12 +577,12 @@
     {
       "id": "Task-053",
       "title": "天气项目升级: 后端添加 7天天气预报 API 接口 (/api/forecast)",
-      "status": "done",
+      "status": "failed",
       "priority": "high",
-      "assignee": "agent-exec-01",
+      "assignee": "agent-ext-04",
       "createdAt": "2026-06-25T04:19:54.062142+00:00",
-      "updatedAt": "2026-06-25T04:50:45.371375+00:00",
-      "output": "请把项目上下文发过来，包括你希望我做的具体任务、相关文件/模块、运行方式或错误信息。\n",
+      "updatedAt": "2026-06-25T05:08:17.688974+00:00",
+      "output": "执行超时 (>600s)",
       "notes": ""
     },
     {

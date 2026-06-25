@@ -1,1 +1,39 @@
-请把项目上下文发过来，包括你希望我做的具体任务、相关文件/模块、运行方式或错误信息。
+[EXECUTION FAILED] 执行超时 (>600s)
+现在我了解了项目结构。需要添加7天天气预报API。让我开始实现：
+
+**1. 添加数据模型到 schemas.py**
+**2. 添加7天预报方法到 weather_core.py**
+**3. 在 WeatherClient 中添加7天预报方法**
+**4. 添加7天预报API端点到 app.py**
+**5. 验证代码**
+测试失败是已有问题（默认城市名），不是我添加的代码导致的。让我验证新API能正常启动：
+完成。7天天气预报API已添加：
+
+**新增内容：**
+
+- `GET /api/forecast?city=Beijing` - 返回7天天气预报
+- `schemas.py`: 新增 `DailyForecast` 和 `ForecastData` 模型
+- `weather_core.py`: 新增 `get_7day_forecast()` 和 `get_7day_forecast_with_fallback()` 方法，调用和风天气 `/v7/weather/7d` 接口
+
+**响应格式：**
+```json
+{
+  "city": "Beijing",
+  "location_id": "xxx",
+  "source": "QWeather",
+  "daily": [
+    {
+      "date": "2026-06-25",
+      "temp_min": "20",
+      "temp_max": "30",
+      "text_day": "Sunny",
+      "text_night": "Clear",
+      "wind_dir": "South",
+      "wind_scale": "3",
+      "humidity": "45"
+    }
+  ]
+}
+```
+
+API文档可在 `/docs` 查看。
