@@ -609,15 +609,11 @@ def main() -> int:
     prompt = read_prompt_file(task_id)
     _utf8_print(f"[INFO] prompt 长度: {len(prompt)} 字符")
 
-    # ── 2.5 项目上下文注入 ──
+    # ── 2.5 项目模式：workDir 已改为项目目录，CLI 工具会自己扫描文件 ──
+    # 注：不手动注入上下文。CLI 工具（mimo/opencode/codewhale）在 TUI/run 模式下
+    # 会自动读取 cwd 下的文件。手动注入会导致 prompt 过长被截断。
     if args.project:
-        _utf8_print(f"[INFO] 注入项目上下文: {args.project}")
-        context = build_project_context(args.project, max_chars=5000)
-        if context:
-            prompt = context + "\n\n---\n\n## 执行任务\n\n" + prompt
-            _utf8_print(f"[INFO] 上下文已注入，prompt 长度: {len(prompt)} 字符")
-        else:
-            _utf8_print("[WARN] 项目上下文为空，跳过注入")
+        _utf8_print(f"[INFO] 项目模式: workDir={work_dir}, CLI 将自动扫描项目文件")
 
     # ── 3. 构建命令 ──
     cmd_args = build_command_args(executor_config, prompt)
