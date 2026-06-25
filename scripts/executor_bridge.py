@@ -22,13 +22,14 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import signal
 import subprocess
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 # ── 路径常量 ──────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -400,6 +401,145 @@ def write_audit_log(event_type: str, task_id: str, details: str) -> None:
     )
 
 
+# ── 项目上下文 ─────────────────────────────────────────
+
+# 排除的目录/文件模式
+_EXCLUDE_DIRS = {'.git', '__pycache__', 'node_modules', '.pytest_cache', '.venv', 'venv'}
+_EXCLUDE_SUFFIXES = {'.pyc', '.pyo', '.so', '.dll', '.exe'}
+
+# 单文件最大字符数 & 总字符上限
+_MAX_FILE_CHARS = 4000
+_MAX_TOTAL_CHARS = 20000
+
+
+def build_project_context(project_path: str) -> str:
+    """遍历项目目录，构建上下文字符串供 CLI Agent 参考。
+
+    生成文件树（排除 .git/__pycache__/node_modules 等），
+    读取所有 .py 和 .md 文件内容（每文件限 4000 字符，总计 20000），
+    拼成 Markdown 格式的上下文字符串。
+
+    Args:
+        project_path: 项目根目录的绝对路径
+
+    Returns:
+        Markdown 格式的项目上下文字符串
+    """
+    root = Path(project_path)
+    if not root.is_dir():
+        _utf8_print(f"[WARN] 项目路径不存在或不是目录: {project_path}")
+        return ""
+
+    # ── 生成文件树 ──
+    tree_lines: list[str] = []
+    file_entries: list[Path] = []
+
+    for entry in sorted(root.rglob("*")):
+        # 排除目录
+        if any(part in _EXCLUDE_DIRS for part in entry.relative_to(root).parts[:-1]):
+            continue
+        # 排除 .env
+        if entry.name == ".env":
+            continue
+        # 排除后缀
+        if entry.suffix in _EXCLUDE_SUFFIXES:
+            continue
+
+        if entry.is_file():
+            file_entries.append(entry)
+            rel = entry.relative_to(root).as_posix()
+            tree_lines.append(f"  {rel}")
+
+    tree_text = "\n".join(tree_lines) if tree_lines else "  (空目录)"
+
+    # ── 读取关键文件内容 ──
+    content_parts: list[str] = []
+    total_chars = 0
+
+    for fp in file_entries:
+        if total_chars >= _MAX_TOTAL_CHARS:
+            break
+        if fp.suffix not in (".py", ".md"):
+            continue
+
+        try:
+            text = fp.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+
+        # 截断单文件
+        if len(text) > _MAX_FILE_CHARS:
+            text = text[:_MAX_FILE_CHARS] + "\n... [文件已截断]"
+
+        rel_path = fp.relative_to(root).as_posix()
+        lang = "python" if fp.suffix == ".py" else "markdown"
+        block = f"#### {rel_path}\n```{lang}\n{text}\n```\n"
+
+        remaining = _MAX_TOTAL_CHARS - total_chars
+        if len(block) > remaining:
+            block = block[:remaining] + "\n... [上下文已截断]\n"
+
+        content_parts.append(block)
+        total_chars += len(block)
+
+    content_text = "\n".join(content_parts) if content_parts else "(无 .py/.md 文件)"
+
+    return (
+        "## 项目上下文\n\n"
+        "### 文件结构\n"
+        "```\n"
+        f"{tree_text}\n"
+        "```\n\n"
+        "### 关键文件内容\n\n"
+        f"{content_text}"
+    )
+
+
+def parse_and_write_output(output: str, project_path: str) -> list[str]:
+    """解析 Agent 输出中的 ```file:路径 代码块，写入目标文件。
+
+    代码块格式约定::
+
+        ```file:backend/weather_core.py
+        # 文件内容
+        ```
+
+    安全检查：跳过包含 ``..`` 或绝对路径的文件路径。
+
+    Args:
+        output: Agent 的完整输出文本
+        project_path: 项目根目录路径，文件将写入此路径下
+
+    Returns:
+        成功写入的文件相对路径列表
+    """
+    root = Path(project_path)
+    pattern = re.compile(r"```file:(.+?)\n(.*?)```", re.DOTALL)
+    written: list[str] = []
+
+    for m in pattern.finditer(output):
+        rel_path = m.group(1).strip()
+        content = m.group(2)
+
+        # 安全检查：跳过路径遍历和绝对路径
+        if ".." in rel_path:
+            _utf8_print(f"[WARN] 跳过不安全路径（含 ..）: {rel_path}")
+            continue
+        if os.path.isabs(rel_path):
+            _utf8_print(f"[WARN] 跳过绝对路径: {rel_path}")
+            continue
+
+        target = root / rel_path
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content, encoding="utf-8")
+            written.append(rel_path)
+        except OSError as e:
+            _utf8_print(f"[WARN] 写入失败 {rel_path}: {e}")
+
+    return written
+
+
 # ── 主流程 ────────────────────────────────────────────────
 
 def main() -> int:
@@ -412,6 +552,10 @@ def main() -> int:
                         help="超时秒数（默认从 Agent executor 配置读取）")
     parser.add_argument("--dry-run", action="store_true",
                         help="只打印命令，不真实执行")
+    parser.add_argument("--project", default=None,
+                        help="目标项目路径，启用上下文注入和输出写入（如 G:\\\\weather\\\\weather-ai-project）")
+    parser.add_argument("--write-output", action="store_true",
+                        help="解析 Agent 输出中的 ```file:路径 代码块，写入目标文件")
     args = parser.parse_args()
 
     task_id = args.task_id
@@ -430,6 +574,11 @@ def main() -> int:
     timeout = args.timeout or config_timeout
     max_output_kb = config_max_output
 
+    # 项目模式：超时至少 600 秒
+    if not args.timeout and args.project:
+        timeout = max(config_timeout, 600)
+        _utf8_print(f"[INFO] 项目模式: 超时调整为 {timeout}s")
+
     _utf8_print(f"[INFO] executor: command={command}, args={args_list}")
     _utf8_print(f"[INFO] workDir={work_dir}, timeout={timeout}s, maxOutput={max_output_kb}KB")
 
@@ -437,6 +586,16 @@ def main() -> int:
     _utf8_print(f"[INFO] 读取 prompt 文件: tasks/dispatch/{task_id}-prompt.txt")
     prompt = read_prompt_file(task_id)
     _utf8_print(f"[INFO] prompt 长度: {len(prompt)} 字符")
+
+    # ── 2.5 项目上下文注入 ──
+    if args.project:
+        _utf8_print(f"[INFO] 注入项目上下文: {args.project}")
+        context = build_project_context(args.project)
+        if context:
+            prompt = context + "\n\n---\n\n## 执行任务\n\n" + prompt
+            _utf8_print(f"[INFO] 上下文已注入，prompt 长度: {len(prompt)} 字符")
+        else:
+            _utf8_print("[WARN] 项目上下文为空，跳过注入")
 
     # ── 3. 构建命令 ──
     cmd_str = build_command(executor_config, prompt)
@@ -509,6 +668,16 @@ def main() -> int:
             _utf8_print(line)
         if len(output) > 500:
             _utf8_print("... [更多输出已省略]")
+
+    # ── 8. 输出解析写入 ──
+    if args.write_output and args.project and success:
+        written = parse_and_write_output(output, args.project)
+        if written:
+            _utf8_print(f"[OK] 已写入 {len(written)} 个文件:")
+            for f in written:
+                _utf8_print(f"  - {f}")
+        else:
+            _utf8_print("[INFO] 未找到可写入的 file: 代码块")
 
     return 0 if success else 1
 
