@@ -90,3 +90,5 @@
 {"timestamp": "2026-06-25T04:50:45.372936+00:00", "eventType": "executor_bridge_success", "taskId": "Task-053", "message": "agent=agent-exec-01, command=codex, 耗时=20.2s, 输出=43字符", "environment": "production"}
 {"timestamp": "2026-06-25T04:56:51.393545+00:00", "eventType": "executor_bridge_start", "taskId": "Task-053", "message": "agent=agent-ext-04, command=mimo, timeout=600s", "environment": "production"}
 {"timestamp": "2026-06-25T05:08:17.691055+00:00", "eventType": "executor_bridge_failed", "taskId": "Task-053", "message": "agent=agent-ext-04, command=mimo, 耗时=600.0s, 错误=执行超时 (>600s)", "environment": "production"}
+{"timestamp": "2026-06-25T05:17:08.347272+00:00", "eventType": "executor_bridge_start", "taskId": "Task-053", "message": "agent=agent-ext-04, command=mimo, timeout=600s", "environment": "production"}
+{"timestamp": "2026-06-25T05:17:27.557275+00:00", "eventType": "executor_bridge_success", "taskId": "Task-053", "message": "agent=agent-ext-04, command=mimo, 耗时=19.2s, 输出=556字符", "environment": "production"}

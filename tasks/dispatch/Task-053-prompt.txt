@@ -1,1 +1,1 @@
-在 backend/weather_core.py 的 WeatherClient 类中添加 get_7day_forecast(city) 方法，调用和风天气 7d API。然后在 app.py 中添加 /api/forecast 端点。在 backend/schemas.py 中添加对应的 response model。只输出你修改过的文件路径和修改内容。
+在 backend/weather_core.py 的 WeatherClient 类中添加 get_7day_forecast(city) 方法，调用和风天气 7d API，返回每天日期、最高温、最低温、天气、风向、风力。然后在 app.py 中添加 /api/forecast 端点。在 backend/schemas.py 中添加对应的 response model。

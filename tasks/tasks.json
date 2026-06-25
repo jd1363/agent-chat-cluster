@@ -577,12 +577,12 @@
     {
       "id": "Task-053",
       "title": "天气项目升级: 后端添加 7天天气预报 API 接口 (/api/forecast)",
-      "status": "failed",
+      "status": "done",
       "priority": "high",
       "assignee": "agent-ext-04",
       "createdAt": "2026-06-25T04:19:54.062142+00:00",
-      "updatedAt": "2026-06-25T05:08:17.688974+00:00",
-      "output": "执行超时 (>600s)",
+      "updatedAt": "2026-06-25T05:17:27.555278+00:00",
+      "output": "这三个部分已经全部实现了：\n\n1. **`backend/weather_core.py`** — `WeatherClient` 类中已有 `get_7day_forecast` 方法（第138行），内部调用 `/weather/7d` API，返回 `date`、`temp_min`、`temp_max`、`text_day`、`text_night`、`wind_dir`、`wind_scale`、`humidity`。还有 `_fetch_7d`（第185行）和 mock 支持。模块级函数 `get_7day_forecast_with_fallback`（第255行）也已存在。\n\n2. **`app.py`** — `/api/forecast` 端点已定义（第30-33行），调用 `get_7day_forecast_with_fallback`，响应模型为 `ForecastData`。\n\n3. **`backend/schemas.py`** — `DailyForecast`（第30行）和 `ForecastData`（第41行）模型已定义，字段与 `weather_core.py` 的返回结构完全对应。\n\n代码已经完整，无需修改。如果你需要调整字段或增加新功能，请告诉我。\r\n",
       "notes": ""
     },
     {
@@ -590,9 +590,9 @@
       "title": "天气项目升级: 后端添加 空气质量查询 API 接口 (/api/air)",
       "status": "in_progress",
       "priority": "high",
-      "assignee": "agent-exec-01",
+      "assignee": "agent-ext-04",
       "createdAt": "2026-06-25T04:19:54.148923+00:00",
-      "updatedAt": "2026-06-25T04:23:00.422013+00:00",
+      "updatedAt": "2026-06-25T05:18:20.130174+00:00",
       "output": "执行超时 (>120s)",
       "notes": ""
     },

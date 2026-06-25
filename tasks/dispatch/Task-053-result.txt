@@ -1,39 +1,9 @@
-[EXECUTION FAILED] 执行超时 (>600s)
-现在我了解了项目结构。需要添加7天天气预报API。让我开始实现：
+这三个部分已经全部实现了：
 
-**1. 添加数据模型到 schemas.py**
-**2. 添加7天预报方法到 weather_core.py**
-**3. 在 WeatherClient 中添加7天预报方法**
-**4. 添加7天预报API端点到 app.py**
-**5. 验证代码**
-测试失败是已有问题（默认城市名），不是我添加的代码导致的。让我验证新API能正常启动：
-完成。7天天气预报API已添加：
+1. **`backend/weather_core.py`** — `WeatherClient` 类中已有 `get_7day_forecast` 方法（第138行），内部调用 `/weather/7d` API，返回 `date`、`temp_min`、`temp_max`、`text_day`、`text_night`、`wind_dir`、`wind_scale`、`humidity`。还有 `_fetch_7d`（第185行）和 mock 支持。模块级函数 `get_7day_forecast_with_fallback`（第255行）也已存在。
 
-**新增内容：**
+2. **`app.py`** — `/api/forecast` 端点已定义（第30-33行），调用 `get_7day_forecast_with_fallback`，响应模型为 `ForecastData`。
 
-- `GET /api/forecast?city=Beijing` - 返回7天天气预报
-- `schemas.py`: 新增 `DailyForecast` 和 `ForecastData` 模型
-- `weather_core.py`: 新增 `get_7day_forecast()` 和 `get_7day_forecast_with_fallback()` 方法，调用和风天气 `/v7/weather/7d` 接口
+3. **`backend/schemas.py`** — `DailyForecast`（第30行）和 `ForecastData`（第41行）模型已定义，字段与 `weather_core.py` 的返回结构完全对应。
 
-**响应格式：**
-```json
-{
-  "city": "Beijing",
-  "location_id": "xxx",
-  "source": "QWeather",
-  "daily": [
-    {
-      "date": "2026-06-25",
-      "temp_min": "20",
-      "temp_max": "30",
-      "text_day": "Sunny",
-      "text_night": "Clear",
-      "wind_dir": "South",
-      "wind_scale": "3",
-      "humidity": "45"
-    }
-  ]
-}
-```
-
-API文档可在 `/docs` 查看。
+代码已经完整，无需修改。如果你需要调整字段或增加新功能，请告诉我。
