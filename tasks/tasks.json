@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 48,
+  "nextId": 52,
   "tasks": [
     {
       "id": "Task-001",
@@ -517,6 +517,50 @@
       "createdAt": "2026-06-25T03:39:05.775797+00:00",
       "updatedAt": "2026-06-25T03:40:05.068317+00:00",
       "output": "请问 Task-047 是哪个系统的任务？比如 Linear、Jira、GitHub Issues 还是其他地方？这样我可以帮您查看具体内容。\r\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-048",
+      "title": "Concurrent R/W test: list .py files",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-01",
+      "createdAt": "2026-06-25T03:43:57.680935+00:00",
+      "updatedAt": "2026-06-25T03:44:15.967735+00:00",
+      "output": "您提到“任务 ID: Task-048”，但没有提供具体的内容或上下文。请问这个任务的具体要求是什么？例如：\n\n- 需要完成某项分析？\n- 生成特定格式的文本？\n- 执行一个代码任务？\n- 还是其他类型的指令？\n\n请补充任务描述，我会立刻为您处理。\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-049",
+      "title": "Concurrent R/W test: count .md files",
+      "status": "done",
+      "priority": "high",
+      "assignee": "agent-ext-02",
+      "createdAt": "2026-06-25T03:43:57.770013+00:00",
+      "updatedAt": "2026-06-25T03:44:22.176849+00:00",
+      "output": "您好！我注意到您提到了 **Task-049**，但还没有提供这个任务的具体内容。\n\n请告诉我关于 Task-049 的详细信息，例如：\n\n1. **任务目标** — 需要完成什么工作？\n2. **相关文件或代码** — 涉及哪些文件、模块或功能？\n3. **具体要求** — 有特定的技术栈、约束条件或验收标准吗？\n4. **背景信息** — 这是 bug 修复、功能开发、重构还是其他类型的工作？\n\n请提供尽可能详细的信息，我会立即帮您处理 Task-049！\r\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-050",
+      "title": "Concurrent R/W test: list config files",
+      "status": "failed",
+      "priority": "high",
+      "assignee": "agent-ext-04",
+      "createdAt": "2026-06-25T03:43:57.863737+00:00",
+      "updatedAt": "2026-06-25T03:46:38.029554+00:00",
+      "output": "执行超时 (>120s)",
+      "notes": ""
+    },
+    {
+      "id": "Task-051",
+      "title": "Concurrent R/W test: count directories",
+      "status": "failed",
+      "priority": "high",
+      "assignee": "agent-ext-03",
+      "createdAt": "2026-06-25T03:43:57.958853+00:00",
+      "updatedAt": "2026-06-25T03:46:09.930915+00:00",
+      "output": "执行超时 (>120s)",
       "notes": ""
     }
   ]
