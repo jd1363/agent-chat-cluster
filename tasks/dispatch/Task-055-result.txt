@@ -1,0 +1,28 @@
+[EXECUTION FAILED] 执行超时 (>600s)
+The CSS is minified on one line. Let me get the full content to understand the existing styles.
+Now let me check what weather icon mapping might exist and the weather_core for context:
+Now I have a clear picture. Let me implement the 7-day forecast component. I'll modify all three files.
+Now let me append the forecast CSS styles:
+The CSS is all on one line. Let me find a unique substring to match:
+Let me verify the HTML structure:
+I see there's an air quality section that was already present. Let me verify the JS is correct:
+The air quality section was already present in the file. Now let me update the cache-busting version numbers:
+Let me verify the final CSS file has the forecast styles:
+Let me run the existing tests to make sure nothing is broken:
+Tests show 2 pre-existing failures (mock city name mismatch: "Beijing" vs "北京") — unrelated to my changes. The frontend-only modification doesn't affect backend logic.
+
+Summary of changes:
+
+**`frontend/index.html`** — 在 `app-shell` 顶部添加了全宽的 `forecast-section`，包含：
+- 标题区（"七日天气预报" + "7-Day Outlook" pill）
+- 城市输入框 + 查询按钮
+- `forecast-grid` 容器用于渲染7天卡片
+
+**`frontend/app.js`** — 新增：
+- `WEATHER_ICONS` 映射表（中英文天气描述 → emoji 图标）
+- `formatDate()` 格式化日期（今天显示"今天"，其余显示"周X M/D"）
+- `renderForecastCard()` 渲染单天卡片（日期、图标、天气、最高/最低温、风向风力）
+- `loadForecast()` 调用 `/api/forecast?city=...` 获取数据并渲染
+- 事件绑定：按钮点击和回车键触发查询
+
+**`frontend/style.css`** — 新增 `.forecast-section`、`.forecast-header`、`.forecast-grid`、`.forecast-card` 等全套样式，风格与现有毛玻璃卡片、圆角、渐变保持一致，支持响应式（960px/600px 断点自适应列数）。
