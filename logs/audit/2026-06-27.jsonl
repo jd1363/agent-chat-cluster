@@ -41,3 +41,13 @@
 {"timestamp": "2026-06-27T04:30:44.664883+00:00", "eventType": "executor_bridge_start", "taskId": "Task-058", "message": "agent=agent-ext-01, command=codewhale, timeout=300s", "environment": "production"}
 {"timestamp": "2026-06-27T04:31:11.348720+00:00", "eventType": "task_updated", "taskId": "Task-058", "message": "更新任务字段: status", "environment": "production", "data": {"status": "done"}}
 {"timestamp": "2026-06-27T04:31:27.240245+00:00", "eventType": "executor_bridge_success", "taskId": "Task-058", "message": "agent=agent-ext-01, command=codewhale, 耗时=42.6s, 输出=16281字符", "environment": "production"}
+{"timestamp": "2026-06-27T04:35:04.019822+00:00", "eventType": "task_created", "taskId": "Task-060", "message": "创建任务: 并发测试-写: 创建一个hello.py文件", "environment": "production", "data": {"priority": "low"}}
+{"timestamp": "2026-06-27T04:35:04.129935+00:00", "eventType": "task_created", "taskId": "Task-061", "message": "创建任务: 并发测试-读: 列出项目所有Python文件", "environment": "production", "data": {"priority": "low"}}
+{"timestamp": "2026-06-27T04:35:12.435785+00:00", "eventType": "task_dispatched", "taskId": "Task-061", "message": "任务已派发至 agent-ext-02", "environment": "production", "data": {"assignee": "agent-ext-02", "dispatchFile": "logs\\runs\\Task-061_dispatch.md"}}
+{"timestamp": "2026-06-27T04:35:12.537035+00:00", "eventType": "task_dispatched", "taskId": "Task-060", "message": "任务已派发至 agent-ext-04", "environment": "production", "data": {"assignee": "agent-ext-04", "dispatchFile": "logs\\runs\\Task-060_dispatch.md"}}
+{"timestamp": "2026-06-27T04:35:12.545440+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-061", "details": "dispatch mode, prompt_file=Task-061-prompt.txt", "environment": "production"}
+{"timestamp": "2026-06-27T04:35:12.637084+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-060", "details": "dispatch mode, prompt_file=Task-060-prompt.txt", "environment": "production"}
+{"timestamp": "2026-06-27T04:35:19.932037+00:00", "eventType": "executor_bridge_start", "taskId": "Task-060", "message": "agent=agent-ext-04, command=mimo, timeout=600s", "environment": "production"}
+{"timestamp": "2026-06-27T04:35:19.934101+00:00", "eventType": "executor_bridge_start", "taskId": "Task-061", "message": "agent=agent-ext-02, command=opencode, timeout=600s", "environment": "production"}
+{"timestamp": "2026-06-27T04:36:00.180936+00:00", "eventType": "executor_bridge_success", "taskId": "Task-061", "message": "agent=agent-ext-02, command=opencode, 耗时=40.2s, 输出=2344字符", "environment": "production"}
+{"timestamp": "2026-06-27T04:36:16.110459+00:00", "eventType": "executor_bridge_success", "taskId": "Task-060", "message": "agent=agent-ext-04, command=mimo, 耗时=56.2s, 输出=83字符", "environment": "production"}
