@@ -27,6 +27,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -214,6 +215,33 @@ def build_command_args(
     return [resolved_command] + resolved_args
 
 
+def _decode_output(data: bytes) -> str:
+    """安全解码 CLI 输出：先 UTF-8，失败回退 GBK，再失败用 replace。"""
+    if not data:
+        return ""
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:
+        try:
+            return data.decode("gbk", errors="replace")
+        except (UnicodeDecodeError, LookupError):
+            return data.decode("utf-8", errors="replace")
+
+
+def _kill_process_tree(pid: int) -> None:
+    """跨平台 kill 进程树。"""
+    if os.name == "nt":
+        subprocess.run(
+            ["taskkill", "/T", "/F", "/PID", str(pid)],
+            capture_output=True,
+        )
+    else:
+        try:
+            os.killpg(os.getpgid(pid), signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+
 def execute_cli(
     command: List[str],
     cwd: str,
@@ -222,31 +250,14 @@ def execute_cli(
 ) -> Dict[str, Any]:
     """用 subprocess 执行 CLI 命令（不经过 shell），捕获输出。
 
-    直接传参数列表给 Popen，不使用 shell=True，
-    避免 shell 解析特殊字符导致 prompt 被截断。
-
-    支持 .ps1/.cmd 脚本（codex/codewhale/opencode/mimo
-    都是 npm 全局安装的 .ps1/.cmd 脚本）。
-
-    使用 Popen + 进程组管理，确保超时时能 kill 整个进程树，
-    避免 CLI 子进程（codex/ollama 等）残留吃内存。
-
-    Args:
-        command: 命令参数列表 ['cmd', 'arg1', 'arg2']
-        cwd: 工作目录
-        timeout: 超时秒数
-        max_output_kb: 最大输出大小（KB）
-
-    Returns:
-        dict: {success: bool, output: str, error: str, elapsed: float}
+    支持"提前完成检测"：当 stdout 输出中包含 {"type":"done"} 时，
+    主动 kill 进程并返回结果。适用于 CodeWhale stream-json 模式。
     """
     start_time = time.monotonic()
 
     env = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
 
-    # 创建进程组，使超时时能 kill 整个进程树
     if os.name == "nt":
-        # Windows: CREATE_NEW_PROCESS_GROUP
         popen_kwargs: Dict[str, Any] = {
             "shell": False,
             "stdout": subprocess.PIPE,
@@ -254,9 +265,10 @@ def execute_cli(
             "cwd": cwd,
             "env": env,
             "creationflags": subprocess.CREATE_NEW_PROCESS_GROUP,
+            "bufsize": -1,  # 默认缓冲（binary 模式不支持行缓冲）
+            "text": False,  # 二进制模式，手动解码
         }
     else:
-        # Unix: 新建会话/进程组
         popen_kwargs = {
             "shell": False,
             "stdout": subprocess.PIPE,
@@ -264,6 +276,8 @@ def execute_cli(
             "cwd": cwd,
             "env": env,
             "preexec_fn": os.setsid,
+            "bufsize": -1,
+            "text": False,
         }
 
     try:
@@ -273,7 +287,7 @@ def execute_cli(
         return {
             "success": False,
             "output": "",
-            "error": f"命令未找到: {command.split()[0] if command else ''}",
+            "error": f"命令未找到: {command[0] if command else ''}",
             "elapsed": elapsed,
         }
     except Exception as e:
@@ -285,56 +299,71 @@ def execute_cli(
             "elapsed": elapsed,
         }
 
-    # 等待进程完成或超时
-    try:
-        proc.wait(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        # 超时：先 terminate，等 3 秒
-        proc.terminate()
+    # 流式读取 stdout，检测完成标记
+    stdout_chunks: list[bytes] = []
+    stderr_chunks: list[bytes] = []
+    done_detected = False
+
+    def read_stderr():
+        """后台线程读取 stderr，避免管道阻塞。"""
         try:
-            proc.wait(timeout=3)
+            while True:
+                chunk = proc.stderr.read(4096)
+                if not chunk:
+                    break
+                stderr_chunks.append(chunk)
+        except Exception:
+            pass
+
+    stderr_thread = threading.Thread(target=read_stderr, daemon=True)
+    stderr_thread.start()
+
+    try:
+        while True:
+            chunk = proc.stdout.read(4096)
+            if not chunk:
+                # stdout 关闭，进程可能已退出
+                break
+
+            stdout_chunks.append(chunk)
+
+            # 检测完成标记（在原始字节中搜索 ASCII 关键词）
+            combined = b"".join(stdout_chunks[-3:])  # 只看最近几个 chunk
+            if b'"type":"done"' in combined or b'"type": "done"' in combined:
+                done_detected = True
+                break
+
+            # 检测超时
+            elapsed = time.monotonic() - start_time
+            if elapsed > timeout:
+                break
+
+        # 如果检测到完成标记，kill 进程
+        if done_detected:
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                _kill_process_tree(proc.pid)
+                proc.wait()
+
+        # 等待进程退出（如果还没退出的话）
+        try:
+            proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
-            # 还没退，kill 整个进程组
-            if os.name == "nt":
-                # Windows: taskkill /T /F 递归 kill 进程树
-                subprocess.run(
-                    ["taskkill", "/T", "/F", "/PID", str(proc.pid)],
-                    capture_output=True,
-                )
-            else:
-                # Unix: kill 整个进程组
-                try:
-                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
-                except ProcessLookupError:
-                    pass  # 进程已退出
-            # 回收僵尸进程
+            _kill_process_tree(proc.pid)
             proc.wait()
-
-        elapsed = time.monotonic() - start_time
-        # 回收已有输出
-        stdout_bytes, stderr_bytes = proc.communicate()
-        stdout = stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else ""
-        stderr = stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else ""
-
-        # 输出截断
-        max_bytes = max_output_kb * 1024
-        if len(stdout.encode("utf-8")) > max_bytes:
-            stdout = stdout.encode("utf-8")[:max_bytes].decode("utf-8", errors="replace")
-            stdout += "\n... [输出已截断]"
-
-        return {
-            "success": False,
-            "output": stdout,
-            "error": f"执行超时 (>{timeout}s)",
-            "elapsed": elapsed,
-        }
+    except subprocess.TimeoutExpired:
+        pass
 
     elapsed = time.monotonic() - start_time
 
-    # 读取输出
-    stdout_bytes, stderr_bytes = proc.communicate()
-    stdout = stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else ""
-    stderr = stderr_bytes.decode("utf-8", errors="replace") if stderr_bytes else ""
+    # 合并输出
+    stdout_bytes = b"".join(stdout_chunks)
+    stderr_bytes = b"".join(stderr_chunks)
+
+    stdout = _decode_output(stdout_bytes)
+    stderr = _decode_output(stderr_bytes)
 
     # 输出截断
     max_bytes = max_output_kb * 1024
@@ -342,8 +371,13 @@ def execute_cli(
         stdout = stdout.encode("utf-8")[:max_bytes].decode("utf-8", errors="replace")
         stdout += "\n... [输出已截断]"
 
-    success = proc.returncode == 0
+    # 判断成功：检测到完成标记 或 returncode == 0
+    success = done_detected or proc.returncode == 0
     error_msg = stderr.strip() if not success and stderr else ""
+
+    if done_detected:
+        # 去掉尾部的终端转义序列
+        stdout = re.sub(r'\]0;[^\x07]*', '', stdout)
 
     return {
         "success": success,

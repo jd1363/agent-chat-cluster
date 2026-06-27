@@ -26,14 +26,14 @@
       "enabled": true,
       "cwd": "agents/ext/ext01",
       "riskLevel": "medium",
-      "notes": "CodeWhale 执行引擎，通过 codewhale exec --auto CLI 调用。",
+      "notes": "CodeWhale 执行引擎，通过 codewhale exec --auto --output-format stream-json CLI 调用。",
       "displayName": "CodeWhale",
       "executor": {
         "type": "cli",
         "command": "codewhale",
-        "args": ["exec", "--auto", "{prompt}"],
+        "args": ["exec", "--auto", "--output-format", "stream-json", "{prompt}"],
         "workDir": "G:\\agent-chat-cluster",
-        "timeoutSeconds": 120,
+        "timeoutSeconds": 300,
         "maxOutputKB": 1024
       }
     },
@@ -105,7 +105,7 @@
         "command": "codex",
         "args": ["exec", "{prompt}"],
         "workDir": "G:\\agent-chat-cluster",
-        "timeoutSeconds": 120,
+        "timeoutSeconds": 300,
         "maxOutputKB": 1024
       }
     },
@@ -116,14 +116,14 @@
       "enabled": true,
       "cwd": "agents/ext/ext06",
       "riskLevel": "medium",
-      "notes": "CodeWhale-2 执行引擎，通过 codewhale exec --auto CLI 调用。第二实例。",
+      "notes": "CodeWhale-2 执行引擎，通过 codewhale exec --auto --output-format stream-json CLI 调用。第二实例。",
       "displayName": "CodeWhale-2",
       "executor": {
         "type": "cli",
         "command": "codewhale",
-        "args": ["exec", "--auto", "{prompt}"],
+        "args": ["exec", "--auto", "--output-format", "stream-json", "{prompt}"],
         "workDir": "G:\\agent-chat-cluster",
-        "timeoutSeconds": 120,
+        "timeoutSeconds": 300,
         "maxOutputKB": 1024
       }
     },
