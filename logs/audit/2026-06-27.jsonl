@@ -51,3 +51,8 @@
 {"timestamp": "2026-06-27T04:35:19.934101+00:00", "eventType": "executor_bridge_start", "taskId": "Task-061", "message": "agent=agent-ext-02, command=opencode, timeout=600s", "environment": "production"}
 {"timestamp": "2026-06-27T04:36:00.180936+00:00", "eventType": "executor_bridge_success", "taskId": "Task-061", "message": "agent=agent-ext-02, command=opencode, 耗时=40.2s, 输出=2344字符", "environment": "production"}
 {"timestamp": "2026-06-27T04:36:16.110459+00:00", "eventType": "executor_bridge_success", "taskId": "Task-060", "message": "agent=agent-ext-04, command=mimo, 耗时=56.2s, 输出=83字符", "environment": "production"}
+{"timestamp": "2026-06-27T05:16:54.680365+00:00", "eventType": "task_created", "taskId": "Task-062", "message": "创建任务: 测试任务: 添加工具函数 format_date", "environment": "production", "data": {"priority": "medium"}}
+{"timestamp": "2026-06-27T05:17:01.107316+00:00", "eventType": "task_dispatched", "taskId": "Task-062", "message": "任务已派发至 agent-ext-02", "environment": "production", "data": {"assignee": "agent-ext-02", "dispatchFile": "logs\\runs\\Task-062_dispatch.md"}}
+{"timestamp": "2026-06-27T05:17:01.192988+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-062", "details": "dispatch mode, prompt_file=Task-062-prompt.txt", "environment": "production"}
+{"timestamp": "2026-06-27T05:17:06.412435+00:00", "eventType": "executor_bridge_start", "taskId": "Task-062", "message": "agent=agent-ext-02, command=opencode, timeout=600s", "environment": "production"}
+{"timestamp": "2026-06-27T05:18:02.180905+00:00", "eventType": "executor_bridge_success", "taskId": "Task-062", "message": "agent=agent-ext-02, command=opencode, 耗时=55.8s, 输出=1184字符", "environment": "production"}

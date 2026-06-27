@@ -1,0 +1,47 @@
+我来查看一下工作目录，看看是否有与 Task-062 相关的任务文件或说明。
+我已了解任务要求：在项目中添加 `format_date` 工具函数。现在开始执行。
+
+**第一步：分析项目结构**
+
+项目主要使用 Python，代码位于 `scripts/` 目录下，风格统一：标准库优先、带类型注解、模块级 docstring。目前缺少通用工具模块。
+
+**第二步：创建工具模块**
+
+在 `scripts/` 下新建 `utils.py`，实现 `format_date` 函数：
+**第三步：运行自测验证**
+**第四步：按任务协议回报结果**
+
+根据 `docs/TASK_PROTOCOL.md` 第 3 节「执行 Agent → 主控 回报格式」，现提交任务回报：
+
+```json
+{
+  "summary": "已在 scripts/ 目录下新建 utils.py，实现 format_date(dt, fmt, use_utc) 工具函数，支持 datetime 对象、ISO 字符串和 None（当前时间）三种输入，并附带 parse_date 辅助函数。运行自测全部通过。",
+  "filesChanged": [
+    "scripts/utils.py"
+  ],
+  "commandsRun": [
+    "python scripts/utils.py"
+  ],
+  "risks": [
+    "未检测到风险"
+  ],
+  "statusProposal": "done",
+  "notes": "utils.py 使用 Python 标准库 datetime，无第三方依赖，风格与现有 scripts/ 代码保持一致（类型注解、模块 docstring、__main__ 自测入口）。"
+}
+```
+
+---
+
+**执行摘要**
+
+| 项目 | 内容 |
+|------|------|
+| **任务 ID** | Task-062 |
+| **任务标题** | 测试任务: 添加工具函数 format_date |
+| **新增文件** | `scripts/utils.py` |
+| **核心函数** | `format_date(dt, fmt="%Y-%m-%d %H:%M:%S", use_utc=False)` |
+| **辅助函数** | `parse_date(date_str, fmt="%Y-%m-%d %H:%M:%S")` |
+| **自测结果** | `[OK] utils.py 自测全部通过` |
+| **建议状态** | `done` |
+
+`format_date` 函数已就位，其他脚本可通过 `from utils import format_date` 直接复用。

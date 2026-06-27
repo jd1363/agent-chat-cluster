@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 62,
+  "nextId": 63,
   "tasks": [
     {
       "id": "Task-001",
@@ -671,6 +671,17 @@
       "createdAt": "2026-06-27T04:35:04.128127+00:00",
       "updatedAt": "2026-06-27T04:36:00.178433+00:00",
       "output": "已识别到 **Task-061**，详情如下：\n\n| 字段 | 内容 |\n|------|------|\n| **任务 ID** | Task-061 |\n| **标题** | 并发测试-读: 列出项目所有Python文件 |\n| **状态** | in_progress（已派发至 agent-ext-02） |\n| **优先级** | low |\n| **创建时间** | 2026-06-27 04:35:04 UTC |\n\n我现在执行任务内容：列出工作目录下所有 Python 文件。\r\n**Task-061 执行结果**\n\n共找到 **33** 个 Python 文件，分布于以下目录：\n\n| 目录 | 文件数 |\n|------|--------|\n| `scripts/` | 32 |\n| `web/` | 1 |\n\n### 完整文件列表\n\n**`scripts/` 目录（32 个）**\n\n| # | 文件名 | 大小 (bytes) | 最后修改时间 |\n|---|--------|-------------|-------------|\n| 1 | audit_log.py | 2,757 | 2026-06-17 14:38 |\n| 2 | benchmark_pipeline.py | 10,853 | 2026-06-18 11:37 |\n| 3 | broadcast.py | 1,827 | 2026-06-22 17:14 |\n| 4 | build_state.py | 18,109 | 2026-06-20 18:01 |\n| 5 | check_alerts.py | 13,302 | 2026-06-22 09:38 |\n| 6 | check_env.py | 3,625 | 2026-06-20 14:36 |\n| 7 | command_map.py | 8,782 | 2026-06-20 18:43 |\n| 8 | complete_task.py | 4,860 | 2026-06-22 17:05 |\n| 9 | create_task.py | 3,445 | 2026-06-22 17:05 |\n| 10 | dispatch_task.py | 14,667 | 2026-06-25 11:51 |\n| 11 | event_log.py | 14,588 | 2026-06-20 15:27 |\n| 12 | executor_bridge.py | 26,089 | 2026-06-27 12:31 |\n| 13 | file_lock.py | 6,112 | 2026-06-22 12:54 |\n| 14 | hermes_adapter.py | 15,946 | 2026-06-22 11:06 |\n| 15 | list_messages.py | 5,964 | 2026-06-18 11:48 |\n| 16 | list_tasks.py | 5,235 | 2026-06-22 20:04 |\n| 17 | openclaw_executor.py | 16,952 | 2026-06-22 16:39 |\n| 18 | receive_message.py | 6,058 | 2026-06-22 17:14 |\n| 19 | record_cost.py | 5,954 | 2026-06-22 17:14 |\n| 20 | resend_unacked.py | 7,942 | 2026-06-18 19:19 |\n| 21 | review_command.py | 9,484 | 2026-06-18 11:17 |\n| 22 | scheduler_tick.py | 15,169 | 2026-06-20 18:01 |\n| 23 | send_message.py | 9,712 | 2026-06-22 17:14 |\n| 24 | show_audit.py | 5,592 | 2026-06-14 17:56 |\n| 25 | show_cost.py | 7,011 | 2026-06-20 18:40 |\n| 26 | show_history.py | 14,733 | 2026-06-18 10:28 |\n| 27 | snapshot_config.py | 8,548 | 2026-06-20 18:38 |\n| 28 | suggest_assignee.py | 11,200 | 2026-06-18 10:51 |\n| 29 | test_event_id_reset.py | 6,462 | 2026-06-20 15:28 |\n| 30 | test_isolation.py | 17,102 | 2026-06-18 10:35 |\n| 31 | update_task.py | 4,250 | 2026-06-22 17:05 |\n| 32 | validate_task.py | 5,945 | 2026-06-25 11:52 |\n\n**`web/` 目录（1 个）**\n\n| # | 文件名 | 大小 (bytes) | 最后修改时间 |\n|---|--------|-------------|-------------|\n| 33 | server.py | 24,140 | 2026-06-25 12:21 |\n\n---\n\n任务已完成，所有文件均为只读列举，无任何文件变更。\r\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-062",
+      "title": "测试任务: 添加工具函数 format_date",
+      "status": "done",
+      "priority": "medium",
+      "assignee": "agent-ext-02",
+      "createdAt": "2026-06-27T05:16:54.678666+00:00",
+      "updatedAt": "2026-06-27T05:18:02.178503+00:00",
+      "output": "我来查看一下工作目录，看看是否有与 Task-062 相关的任务文件或说明。\r\n我已了解任务要求：在项目中添加 `format_date` 工具函数。现在开始执行。\n\n**第一步：分析项目结构**\n\n项目主要使用 Python，代码位于 `scripts/` 目录下，风格统一：标准库优先、带类型注解、模块级 docstring。目前缺少通用工具模块。\n\n**第二步：创建工具模块**\n\n在 `scripts/` 下新建 `utils.py`，实现 `format_date` 函数：\r\n**第三步：运行自测验证**\r\n**第四步：按任务协议回报结果**\n\n根据 `docs/TASK_PROTOCOL.md` 第 3 节「执行 Agent → 主控 回报格式」，现提交任务回报：\n\n```json\n{\n  \"summary\": \"已在 scripts/ 目录下新建 utils.py，实现 format_date(dt, fmt, use_utc) 工具函数，支持 datetime 对象、ISO 字符串和 None（当前时间）三种输入，并附带 parse_date 辅助函数。运行自测全部通过。\",\n  \"filesChanged\": [\n    \"scripts/utils.py\"\n  ],\n  \"commandsRun\": [\n    \"python scripts/utils.py\"\n  ],\n  \"risks\": [\n    \"未检测到风险\"\n  ],\n  \"statusProposal\": \"done\",\n  \"notes\": \"utils.py 使用 Python 标准库 datetime，无第三方依赖，风格与现有 scripts/ 代码保持一致（类型注解、模块 docstring、__main__ 自测入口）。\"\n}\n```\n\n---\n\n**执行摘要**\n\n| 项目 | 内容 |\n|------|------|\n| **任务 ID** | Task-062 |\n| **任务标题** | 测试任务: 添加工具函数 format_date |\n| **新增文件** | `scripts/utils.py` |\n| **核心函数** | `format_date(dt, fmt=\"%Y-%m-%d %H:%M:%S\", use_utc=False)` |\n| **辅助函数** | `parse_date(date_str, fmt=\"%Y-%m-%d %H:%M:%S\")` |\n| **自测结果** | `[OK] utils.py 自测全部通过` |\n| **建议状态** | `done` |\n\n`format_date` 函数已就位，其他脚本可通过 `from utils import format_date` 直接复用。\r\n",
       "notes": ""
     }
   ]
