@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "skills": {
+    "data-charts-visualization": {
+      "name": "Lightweight charting skill: powerful styling & direct PNG export",
+      "zip_url": "https://api.skillhub.cn/api/v1/download?slug=data-charts-visualization",
+      "source": "community",
+      "version": "1.0.13",
+      "installedAt": "2026-06-27T04:42:09Z"
+    }
+  }
+}
