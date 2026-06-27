@@ -1,0 +1,96 @@
+<div class="wrapper">
+  <!-- HEADER -->
+  <div class="header">
+    <h1><span class="logo">🤖</span> Agent Chat Cluster</h1>
+    <div class="header-right">
+      <div class="status-pill">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Connecting…</span>
+      </div>
+      <div class="last-updated" id="last-updated">—</div>
+    </div>
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-value" id="kpi-total">—</div><div class="kpi-label">总任务</div></div>
+    <div class="kpi-card"><div class="kpi-value" id="kpi-pending">—</div><div class="kpi-label">待处理</div></div>
+    <div class="kpi-card"><div class="kpi-value" id="kpi-done">—</div><div class="kpi-label">完成</div></div>
+    <div class="kpi-card"><div class="kpi-value" id="kpi-failed">—</div><div class="kpi-label">失败</div></div>
+    <div class="kpi-card kpi-cost"><div class="kpi-value" id="kpi-cost">—</div><div class="kpi-label">总成本 (USD)</div></div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="grid-main">
+    <div class="card">
+      <div class="card-title">任务状态分布</div>
+      <div class="chart-container"><canvas id="chart-tasks"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">成本按 Agent</div>
+      <div class="chart-container"><canvas id="chart-cost"></canvas></div>
+    </div>
+  </div>
+
+  <!-- AGENTS PANEL -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">Agents <span class="count" id="agents-count">—</span></div>
+    <div class="agents-grid" id="agents-grid">
+      <div class="loading">Loading agents…</div>
+    </div>
+  </div>
+
+  <!-- TASKS + LOG PANEL -->
+  <div class="grid-bottom">
+    <div class="card">
+      <div class="card-title">Tasks <span class="count" id="tasks-count">—</span></div>
+      <span class="form-toggle" onclick="toggleCreateForm()">＋ 新建任务</span>
+      <div class="create-form" id="create-form">
+        <input type="text" id="new-task-title" placeholder="任务标题" style="flex:1;min-width:180px">
+        <select id="new-task-priority">
+          <option value="low">低</option>
+          <option value="medium" selected>中</option>
+          <option value="high">高</option>
+        </select>
+        <button class="submit-btn" onclick="createTask()">创建</button>
+        <button class="cancel-btn" onclick="toggleCreateForm()">取消</button>
+      </div>
+      <div class="task-list" id="task-list">
+        <div class="loading">Loading tasks…</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">实时执行日志</div>
+      <div class="log-panel" id="log-panel">
+        <div class="log-empty">选中一个任务以查看实时日志</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIT + MESSAGES -->
+  <div class="grid-bottom">
+    <div class="card">
+      <div class="card-title">Audit 时间线</div>
+      <div class="audit-timeline" id="audit-timeline">
+        <div class="loading">Loading audit…</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Messages</div>
+      <div class="msg-list" id="msg-list">
+        <div class="loading">Loading messages…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERTS -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title">Alerts</div>
+    <div id="alerts-list">
+      <div class="loading">Loading alerts…</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer" id="footer">—</div>
+</div>
