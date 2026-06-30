@@ -1,0 +1,1 @@
+List all directories in the current project root and count how many Python files are in each. Present results as a simple list.

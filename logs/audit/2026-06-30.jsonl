@@ -13,3 +13,14 @@
 {"timestamp": "2026-06-30T04:06:36.507119+00:00", "eventType": "executor_bridge_start", "taskId": "Task-064", "message": "agent=agent-ext-02, command=opencode, timeout=120s", "environment": "production"}
 {"timestamp": "2026-06-30T04:07:00.789708+00:00", "eventType": "executor_bridge_success", "taskId": "Task-064", "message": "agent=agent-ext-02, command=opencode, 耗时=24.3s, 输出=1044字符", "environment": "production"}
 {"timestamp": "2026-06-30T04:07:11.582977+00:00", "eventType": "task_updated", "taskId": "Task-063", "message": "更新任务字段: status, notes", "environment": "production", "data": {"status": "cancelled", "notes": "test cleanup"}}
+{"timestamp": "2026-06-30T04:39:25.532373+00:00", "eventType": "task_created", "taskId": "Task-065", "message": "创建任务: List all directories in the current proj...", "environment": "production", "data": {"priority": "medium"}}
+{"timestamp": "2026-06-30T04:40:04.378326+00:00", "eventType": "task_created", "taskId": "Task-066", "message": "创建任务: List all directories in the current proj...", "environment": "production", "data": {"priority": "medium"}}
+{"timestamp": "2026-06-30T04:40:22.651704+00:00", "eventType": "task_created", "taskId": "Task-067", "message": "创建任务: List all directories in the current proj...", "environment": "production", "data": {"priority": "medium"}}
+{"timestamp": "2026-06-30T04:40:22.819956+00:00", "eventType": "task_dispatched", "taskId": "Task-067", "message": "任务已派发至 agent-ext-02", "environment": "production", "data": {"assignee": "agent-ext-02", "dispatchFile": "logs\\runs\\Task-067_dispatch.md"}}
+{"timestamp": "2026-06-30T04:40:22.910932+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-067", "details": "dispatch mode, prompt_file=Task-067-prompt.txt", "environment": "production"}
+{"timestamp": "2026-06-30T04:40:23.006738+00:00", "eventType": "executor_bridge_start", "taskId": "Task-067", "message": "agent=agent-ext-02, command=opencode, timeout=120s", "environment": "production"}
+{"timestamp": "2026-06-30T04:40:38.475046+00:00", "eventType": "executor_bridge_success", "taskId": "Task-067", "message": "agent=agent-ext-02, command=opencode, 耗时=15.5s, 输出=437字符", "environment": "production"}
+{"timestamp": "2026-06-30T04:40:45.533020+00:00", "eventType": "task_updated", "taskId": "Task-064", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}
+{"timestamp": "2026-06-30T04:40:45.632841+00:00", "eventType": "task_updated", "taskId": "Task-065", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}
+{"timestamp": "2026-06-30T04:40:45.737251+00:00", "eventType": "task_updated", "taskId": "Task-066", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}
+{"timestamp": "2026-06-30T04:40:45.842835+00:00", "eventType": "task_updated", "taskId": "Task-067", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}

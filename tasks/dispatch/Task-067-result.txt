@@ -1,0 +1,14 @@
+Here are the directories in the project root and their Python file counts:
+
+- `.codewhale` : 0 Python file(s)
+- `agents` : 0 Python file(s)
+- `config` : 0 Python file(s)
+- `docs` : 0 Python file(s)
+- `logs` : 0 Python file(s)
+- `memory` : 0 Python file(s)
+- `scripts` : 34 Python file(s)
+- `skills` : 0 Python file(s)
+- `snapshots` : 0 Python file(s)
+- `state` : 0 Python file(s)
+- `tasks` : 0 Python file(s)
+- `web` : 1 Python file(s)
