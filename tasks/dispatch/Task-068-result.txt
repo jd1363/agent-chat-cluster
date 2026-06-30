@@ -1,0 +1,15 @@
+Done. I appended the `health_check()` function to the end of `app.py` without touching any existing code:
+
+```python
+def health_check() -> dict[str, str]:
+    import datetime
+    return {"status": "ok", "timestamp": datetime.datetime.now().isoformat()}
+```
+
+
+--- git status ---
+M app.py
+
+--- git diff --stat ---
+app.py | 5 +++++
+ 1 file changed, 5 insertions(+)

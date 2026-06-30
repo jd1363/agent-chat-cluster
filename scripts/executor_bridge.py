@@ -721,6 +721,32 @@ def main() -> int:
         error_line = f"[EXECUTION FAILED] {error}" if error else "[EXECUTION FAILED]"
         result_text = error_line + "\n" + output
 
+    # ── 5.5 项目模式：附加 git 变更摘要 ──
+    if args.project and success:
+        try:
+            git_status = subprocess.run(
+                ["git", "status", "--short"],
+                cwd=args.project,
+                capture_output=True, text=True, encoding="utf-8", errors="replace"
+            )
+            git_diff_stat = subprocess.run(
+                ["git", "diff", "--stat"],
+                cwd=args.project,
+                capture_output=True, text=True, encoding="utf-8", errors="replace"
+            )
+            if git_status.stdout.strip() or git_diff_stat.stdout.strip():
+                result_text += "\n\n--- git status ---\n"
+                result_text += git_status.stdout.strip() or "(no changes)"
+                result_text += "\n\n--- git diff --stat ---\n"
+                result_text += git_diff_stat.stdout.strip() or "(no diff)"
+                _utf8_print(f"[INFO] git 变更摘要已附加到结果")
+            else:
+                result_text += "\n\n--- git status ---\n(no changes)"
+                _utf8_print(f"[INFO] 项目无 git 变更")
+        except Exception as e:
+            result_text += f"\n\n--- git status ---\n(git error: {e})"
+            _utf8_print(f"[WARN] git 变更摘要失败: {e}")
+
     result_file = write_result_file(task_id, result_text)
     _utf8_print(f"[OK] 结果文件已写入: {result_file}")
 

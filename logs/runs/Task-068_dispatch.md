@@ -1,0 +1,1 @@
+Add a simple health_check() function to app.py that returns a dict with status='ok' and current timestamp. Just add the function, don't modify existing code.
