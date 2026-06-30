@@ -12,6 +12,12 @@ create_task.py — 向 tasks/tasks.json 添加任务
 import argparse
 import json
 import sys
+
+# 强制 UTF-8 输出，避免 GBK 乱码
+from pathlib import Path as _Path
+sys.path.insert(0, str(_Path(__file__).resolve().parent))
+from fix_encoding import setup_utf8_stdout
+setup_utf8_stdout()
 from datetime import datetime, timezone
 from pathlib import Path
 

@@ -29,3 +29,12 @@
 {"timestamp": "2026-06-30T04:44:06.459895+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-068", "details": "dispatch mode, prompt_file=Task-068-prompt.txt", "environment": "production"}
 {"timestamp": "2026-06-30T04:44:06.557326+00:00", "eventType": "executor_bridge_start", "taskId": "Task-068", "message": "agent=agent-ext-02, command=opencode, timeout=600s", "environment": "production"}
 {"timestamp": "2026-06-30T04:44:36.261723+00:00", "eventType": "executor_bridge_success", "taskId": "Task-068", "message": "agent=agent-ext-02, command=opencode, 耗时=29.6s, 输出=258字符", "environment": "production"}
+{"timestamp": "2026-06-30T04:45:48.217374+00:00", "eventType": "task_created", "taskId": "Task-069", "message": "创建任务: 编码测试", "environment": "production", "data": {"priority": "low"}}
+{"timestamp": "2026-06-30T04:45:53.380604+00:00", "eventType": "task_created", "taskId": "Task-070", "message": "创建任务: Say hello in Chinese, just one sentence.", "environment": "production", "data": {"priority": "medium"}}
+{"timestamp": "2026-06-30T04:45:53.550663+00:00", "eventType": "task_dispatched", "taskId": "Task-070", "message": "任务已派发至 agent-ext-02", "environment": "production", "data": {"assignee": "agent-ext-02", "dispatchFile": "logs\\runs\\Task-070_dispatch.md"}}
+{"timestamp": "2026-06-30T04:45:53.643780+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-070", "details": "dispatch mode, prompt_file=Task-070-prompt.txt", "environment": "production"}
+{"timestamp": "2026-06-30T04:45:53.740080+00:00", "eventType": "executor_bridge_start", "taskId": "Task-070", "message": "agent=agent-ext-02, command=opencode, timeout=120s", "environment": "production"}
+{"timestamp": "2026-06-30T04:45:59.533593+00:00", "eventType": "executor_bridge_success", "taskId": "Task-070", "message": "agent=agent-ext-02, command=opencode, 耗时=5.8s, 输出=12字符", "environment": "production"}
+{"timestamp": "2026-06-30T04:46:05.613850+00:00", "eventType": "task_updated", "taskId": "Task-068", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}
+{"timestamp": "2026-06-30T04:46:05.709789+00:00", "eventType": "task_updated", "taskId": "Task-069", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}
+{"timestamp": "2026-06-30T04:46:05.812317+00:00", "eventType": "task_updated", "taskId": "Task-070", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 69,
+  "nextId": 71,
   "tasks": [
     {
       "id": "Task-001",
@@ -747,12 +747,36 @@
       "id": "Task-068",
       "title": "Add a simple health_check() function to ...",
       "description": "Add a simple health_check() function to app.py that returns a dict with status='ok' and current timestamp. Just add the function, don't modify existing code.",
-      "status": "done",
+      "status": "cancelled",
       "priority": "medium",
       "assignee": "agent-ext-02",
       "createdAt": "2026-06-30T04:44:06.198764+00:00",
-      "updatedAt": "2026-06-30T04:44:36.259024+00:00",
+      "updatedAt": "2026-06-30T04:46:05.611809+00:00",
       "output": "Done. I appended the `health_check()` function to the end of `app.py` without touching any existing code:\n\n```python\ndef health_check() -> dict[str, str]:\n    import datetime\n    return {\"status\": \"ok\", \"timestamp\": datetime.datetime.now().isoformat()}\n```\r\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-069",
+      "title": "编码测试",
+      "description": "test",
+      "status": "cancelled",
+      "priority": "low",
+      "assignee": null,
+      "createdAt": "2026-06-30T04:45:48.215749+00:00",
+      "updatedAt": "2026-06-30T04:46:05.707853+00:00",
+      "output": null,
+      "notes": ""
+    },
+    {
+      "id": "Task-070",
+      "title": "Say hello in Chinese, just one sentence.",
+      "description": "Say hello in Chinese, just one sentence.",
+      "status": "cancelled",
+      "priority": "medium",
+      "assignee": "agent-ext-02",
+      "createdAt": "2026-06-30T04:45:53.378292+00:00",
+      "updatedAt": "2026-06-30T04:46:05.810507+00:00",
+      "output": "你好！很高兴见到你。\r\n",
       "notes": ""
     }
   ]

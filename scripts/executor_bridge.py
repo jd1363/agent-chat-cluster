@@ -27,6 +27,12 @@ import shutil
 import signal
 import subprocess
 import sys
+
+# 强制 UTF-8 输出，避免 GBK 乱码
+from pathlib import Path as _Path
+sys.path.insert(0, str(_Path(__file__).resolve().parent))
+from fix_encoding import setup_utf8_stdout
+setup_utf8_stdout()
 import threading
 import time
 from datetime import datetime, timezone

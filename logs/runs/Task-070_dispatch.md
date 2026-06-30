@@ -1,0 +1,1 @@
+Say hello in Chinese, just one sentence.
