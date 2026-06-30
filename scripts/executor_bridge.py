@@ -248,6 +248,70 @@ def _kill_process_tree(pid: int) -> None:
             pass
 
 
+# 失败信号模式：CLI 工具“没干成事”的常见英文/中文表达
+_FAILURE_SIGNALS = [
+    # 英文
+    "i don't have enough context",
+    "i need more information",
+    "i need more context",
+    "i need a bit more context",
+    "i need some more context",
+    "i cannot ",
+    "i can't ",
+    "i am unable to",
+    "i'm unable to",
+    "i don't understand",
+    "i do not understand",
+    "please provide more",
+    "please clarify",
+    "could you provide",
+    "can you provide",
+    "not sure what",
+    "unable to determine",
+    "what specifically would you like",
+    "i'd be happy to help, but i need",
+    # 中文
+    "无法理解",
+    "不清楚",
+    "请提供更多",
+    "请补充",
+    "无法完成",
+    "不知道",
+]
+
+
+def check_output_quality(output: str, success: bool) -> str:
+    """检查输出质量，返回质量标签。
+
+    Returns:
+        "good" — 正常输出
+        "needs_review" — 检测到失败信号或输出过短，需大脑审查
+        "empty" — 输出为空
+    """
+    if not output or not output.strip():
+        return "empty"
+
+    text = output.lower()
+
+    # 检测失败信号
+    for signal in _FAILURE_SIGNALS:
+        if signal in text:
+            return "needs_review"
+
+    # 输出太短（< 50字符，大概率没干成事）
+    if len(output.strip()) < 50:
+        return "needs_review"
+
+    # 输出末尾是提问（最后 200 字符内包含问号且包含请求词）
+    tail = output[-200:].lower()
+    if "?" in tail or "？" in tail:
+        request_words = ["please tell", "let me know", "请告诉我", "请说明", "what would you", "请提供"]
+        if any(w in tail for w in request_words):
+            return "needs_review"
+
+    return "good"
+
+
 def execute_cli(
     command: List[str],
     cwd: str,
@@ -408,12 +472,16 @@ def execute_cli(
         # 去掉尾部的终端转义序列
         stdout = re.sub(r'\]0;[^\x07]*', '', stdout)
 
+    # 质量检查：检测常见的“没干成事”信号
+    quality = check_output_quality(stdout, success)
+
     return {
         "success": success,
         "output": stdout,
         "error": error_msg,
         "elapsed": elapsed,
         "killed_reason": killed_reason,
+        "quality": quality,
     }
 
 
@@ -757,7 +825,17 @@ def main() -> int:
     _utf8_print(f"[OK] 结果文件已写入: {result_file}")
 
     # ── 6. 更新任务状态 ──
-    new_status = "done" if success else "failed"
+    quality = result.get("quality", "good")
+    if not success:
+        new_status = "failed"
+    elif quality == "needs_review":
+        new_status = "needs_review"
+        _utf8_print(f"[WARN] 输出质量可疑 (needs_review)，请大脑审查")
+    elif quality == "empty":
+        new_status = "needs_review"
+        _utf8_print(f"[WARN] 输出为空 (needs_review)，请大脑审查")
+    else:
+        new_status = "done"
     update_task_status(task_id, new_status, output if success else (error or "执行失败"))
     _utf8_print(f"[OK] 任务已标记 {new_status}")
 
@@ -765,7 +843,7 @@ def main() -> int:
     if success:
         write_audit_log("executor_bridge_success", task_id,
                         f"agent={agent_id}, command={command}, "
-                        f"耗时={elapsed:.1f}s, 输出={len(output)}字符")
+                        f"耗时={elapsed:.1f}s, 输出={len(output)}字符, 质量={quality}")
     else:
         kill_info = f", kill_reason={result.get('killed_reason','')}" if result.get("killed_reason") else ""
         write_audit_log("executor_bridge_failed", task_id,

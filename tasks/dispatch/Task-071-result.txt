@@ -1,0 +1,9 @@
+I'd be happy to help, but I need a bit more context! What specifically would you like me to do? For example:
+
+- **Code**: Write, edit, debug, or review code?
+- **Files**: Create, modify, or analyze files in your project?
+- **Research**: Search the web or look up documentation?
+- **Run commands**: Execute tests, build the project, or run scripts?
+- **Something else**: Explain a concept, refactor code, set up a feature?
+
+Let me know what "the thing" is and I'll get right on it!

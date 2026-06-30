@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 71,
+  "nextId": 74,
   "tasks": [
     {
       "id": "Task-001",
@@ -777,6 +777,42 @@
       "createdAt": "2026-06-30T04:45:53.378292+00:00",
       "updatedAt": "2026-06-30T04:46:05.810507+00:00",
       "output": "你好！很高兴见到你。\r\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-071",
+      "title": "Do the thing.",
+      "description": "Do the thing.",
+      "status": "cancelled",
+      "priority": "medium",
+      "assignee": "agent-ext-02",
+      "createdAt": "2026-06-30T04:48:59.997856+00:00",
+      "updatedAt": "2026-06-30T04:50:37.708330+00:00",
+      "output": "I'd be happy to help, but I need a bit more context! What specifically would you like me to do? For example:\n\n- **Code**: Write, edit, debug, or review code?\n- **Files**: Create, modify, or analyze files in your project?\n- **Research**: Search the web or look up documentation?\n- **Run commands**: Execute tests, build the project, or run scripts?\n- **Something else**: Explain a concept, refactor code, set up a feature?\n\nLet me know what \"the thing\" is and I'll get right on it!\r\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-072",
+      "title": "Do the thing.",
+      "description": "Do the thing.",
+      "status": "cancelled",
+      "priority": "medium",
+      "assignee": "agent-ext-02",
+      "createdAt": "2026-06-30T04:49:27.856212+00:00",
+      "updatedAt": "2026-06-30T04:50:37.803307+00:00",
+      "output": "我看到 `agent-chat-cluster` 项目当前 MVP v1 已基本完结。不过 \"Do the thing\" 有点太抽象了 😄\n\n根据 `PROJECT_STATUS.md`，当前有几个**待办方向**：\n\n1. **真实项目任务端到端测试** — 用真实开发任务（非 echo hello）跑完整流程\n2. **Dashboard 浏览器实测** — 启动 web server，在浏览器里验证执行按钮\n3. **多任务队列调度** — 多个 pending 任务自动排队执行\n4. 或者你想做某个**具体的真实开发任务**（比如修改代码、修 bug、加功能）\n\n另外 `tasks.json` 里最近有几个 cancelled 的任务（Task-064 ~ Task-068），也可能你想继续其中的某个？\n\n**请告诉我具体想做哪一个：**\n- 直接说任务编号（如 \"Task-068\"）\n- 或者描述需求（如 \"启动 Dashboard 并测试执行按钮\" / \"写一个真实任务测试完整链路\"）\n- 或者你想做的其他事情\r\n",
+      "notes": ""
+    },
+    {
+      "id": "Task-073",
+      "title": "Do the thing.",
+      "description": "Do the thing.",
+      "status": "cancelled",
+      "priority": "medium",
+      "assignee": "agent-ext-02",
+      "createdAt": "2026-06-30T04:50:22.602848+00:00",
+      "updatedAt": "2026-06-30T04:50:37.909065+00:00",
+      "output": "I'd be happy to help, but I need a bit more context! What would you like me to do? For example:\n\n- **Code**: Write, edit, or debug something?\n- **Files**: Create, read, or organize files?\n- **Research**: Look something up or analyze data?\n- **System**: Run commands or configure something?\n\nLet me know what \"the thing\" is, and I'll get right on it!\r\n",
       "notes": ""
     }
   ]
