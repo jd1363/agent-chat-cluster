@@ -1,0 +1,37 @@
+Found **33 Python file(s)** in the `scripts` directory:
+
+| File Name | Size (bytes) |
+|---|---|
+| audit_log.py | 2,757 |
+| benchmark_pipeline.py | 10,853 |
+| broadcast.py | 1,827 |
+| build_state.py | 18,109 |
+| check_alerts.py | 13,302 |
+| check_env.py | 3,625 |
+| command_map.py | 8,782 |
+| complete_task.py | 4,860 |
+| create_task.py | 3,638 |
+| dispatch_task.py | 14,461 |
+| event_log.py | 14,588 |
+| executor_bridge.py | 27,135 |
+| file_lock.py | 6,112 |
+| hermes_adapter.py | 15,946 |
+| list_messages.py | 5,964 |
+| list_tasks.py | 5,235 |
+| openclaw_executor.py | 16,861 |
+| receive_message.py | 6,058 |
+| record_cost.py | 5,954 |
+| resend_unacked.py | 7,942 |
+| review_command.py | 9,484 |
+| scheduler_tick.py | 15,169 |
+| send_message.py | 9,712 |
+| show_audit.py | 5,592 |
+| show_cost.py | 7,011 |
+| show_history.py | 14,733 |
+| snapshot_config.py | 8,548 |
+| suggest_assignee.py | 11,200 |
+| test_event_id_reset.py | 6,462 |
+| test_isolation.py | 17,102 |
+| update_task.py | 4,250 |
+| utils.py | 2,581 |
+| validate_task.py | 5,945 |

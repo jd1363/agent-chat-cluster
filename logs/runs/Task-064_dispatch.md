@@ -1,0 +1,1 @@
+List all Python files in the scripts directory and count them. Show the file names and their sizes in bytes.

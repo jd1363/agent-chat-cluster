@@ -7,3 +7,9 @@
 {"timestamp": "2026-06-30T03:03:08.695810+00:00", "eventType": "executor_bridge_start", "taskId": "Task-063", "message": "agent=agent-ext-02, command=opencode, timeout=120s", "environment": "production"}
 {"timestamp": "2026-06-30T03:03:20.619532+00:00", "eventType": "executor_bridge_success", "taskId": "Task-063", "message": "agent=agent-ext-02, command=opencode, 耗时=11.9s, 输出=181字符", "environment": "production"}
 {"timestamp": "2026-06-30T03:03:27.547334+00:00", "eventType": "task_updated", "taskId": "Task-063", "message": "更新任务字段: status, notes", "environment": "production", "data": {"status": "cancelled", "notes": "E2E one-step test passed, cleaned up"}}
+{"timestamp": "2026-06-30T04:06:31.277462+00:00", "eventType": "task_created", "taskId": "Task-064", "message": "创建任务: List project structure", "environment": "production", "data": {"priority": "low"}}
+{"timestamp": "2026-06-30T04:06:36.320140+00:00", "eventType": "task_dispatched", "taskId": "Task-064", "message": "任务已派发至 agent-ext-02", "environment": "production", "data": {"assignee": "agent-ext-02", "dispatchFile": "logs\\runs\\Task-064_dispatch.md"}}
+{"timestamp": "2026-06-30T04:06:36.411903+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-064", "details": "dispatch mode, prompt_file=Task-064-prompt.txt", "environment": "production"}
+{"timestamp": "2026-06-30T04:06:36.507119+00:00", "eventType": "executor_bridge_start", "taskId": "Task-064", "message": "agent=agent-ext-02, command=opencode, timeout=120s", "environment": "production"}
+{"timestamp": "2026-06-30T04:07:00.789708+00:00", "eventType": "executor_bridge_success", "taskId": "Task-064", "message": "agent=agent-ext-02, command=opencode, 耗时=24.3s, 输出=1044字符", "environment": "production"}
+{"timestamp": "2026-06-30T04:07:11.582977+00:00", "eventType": "task_updated", "taskId": "Task-063", "message": "更新任务字段: status, notes", "environment": "production", "data": {"status": "cancelled", "notes": "test cleanup"}}

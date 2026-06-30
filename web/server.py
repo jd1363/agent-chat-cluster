@@ -452,11 +452,15 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def _post_create_task(self, body):
         title = body.get("title", "").strip()
+        description = body.get("description", "").strip()
         priority = body.get("priority", "medium")
         if not title:
             self._json({"ok": False, "error": "title is required"})
             return
-        ok, output = run_script("create_task.py", ["--title", title, "--priority", priority])
+        args = ["--title", title, "--priority", priority]
+        if description:
+            args += ["--description", description]
+        ok, output = run_script("create_task.py", args)
         if ok:
             tasks_data = get_tasks()
             new_task = None

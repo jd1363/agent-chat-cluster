@@ -192,6 +192,7 @@ body::after{width:650px;height:650px;bottom:-200px;right:-100px;background:radia
       <span class="form-toggle" onclick="toggleCreateForm()">＋ 新建任务</span>
       <div class="create-form" id="create-form">
         <input type="text" id="new-task-title" placeholder="任务标题" style="flex:1;min-width:180px">
+        <textarea id="new-task-desc" placeholder="任务详细描述（会原样传给执行Agent）" style="width:100%;min-height:60px;padding:6px 12px;border-radius:8px;border:1px solid var(--border-soft);background:rgba(255,255,255,.6);font-size:13px;color:var(--text);outline:none;resize:vertical;font-family:inherit"></textarea>
         <select id="new-task-priority">
           <option value="low">低</option>
           <option value="medium" selected>中</option>
@@ -406,13 +407,14 @@ function toggleCreateForm() {
 
 async function createTask() {
   const title = document.getElementById('new-task-title').value.trim();
+  const desc = document.getElementById('new-task-desc').value.trim();
   const priority = document.getElementById('new-task-priority').value;
   if (!title) { alert('请输入任务标题'); return; }
   try {
     const res = await fetch('/api/tasks/create', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({title, priority})
+      body: JSON.stringify({title, description: desc, priority})
     });
     const data = await res.json();
     if (data.ok) {

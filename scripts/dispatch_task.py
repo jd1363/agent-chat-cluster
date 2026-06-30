@@ -129,73 +129,16 @@ def preflight(task_id: str | None, assignee: str) -> dict:
 
 
 def generate_dispatch_prompt(task: dict, assignee: str, policies: dict) -> str:
-    """生成 Markdown 格式的派工提示，约束从 policies.json 读取。"""
-    now = datetime.now(timezone.utc).isoformat()
+    """生成给 CLI 工具的执行 prompt。"""
+    title = task.get('title', '')
+    description = task.get('description', '').strip()
 
-    exec_pol = policies.get("execution", {})
-    comm_pol = policies.get("communication", {})
-    audit_pol = policies.get("audit", {})
-
-    max_runtime = exec_pol.get("maxRuntimeMinutes", {}).get("value", 30)
-    max_output = exec_pol.get("maxOutputKB", {}).get("value", 1024)
-    allowed_paths = exec_pol.get("allowedPaths", {}).get("value", ["scripts/", "tasks/", "logs/", "config/", "docs/"])
-    max_concurrency = exec_pol.get("maxConcurrency", {}).get("value", 1)
-    max_retries = exec_pol.get("maxRetries", {}).get("value", 1)
-
-    auto_outbound = comm_pol.get("autoOutbound", {})
-    dangerous_cmds = exec_pol.get("dangerousCommands", {})
-    log_retention = audit_pol.get("logRetentionDays", 30)
-
-    # 构建禁止行为列表
-    prohibitions = []
-    if not auto_outbound.get("allowed", False):
-        prohibitions.append("1. 不得私自外发网络请求。")
-    prohibitions.append("2. 不得启动其他 Agent。")
-    prohibitions.append("3. 不得修改文件或目录权限。")
-    if not dangerous_cmds.get("allowed", False):
-        prohibitions.append("4. 不得执行 `rm -rf`、`format`、`fdisk`、`regedit` 等危险命令。")
-    prohibitions.append("5. 不得访问 `G:\\agent chat` 原方案目录。")
-
-    prohibit_block = "\n".join(prohibitions)
-    allowed_paths_str = ", ".join(f"`{p}`" for p in allowed_paths)
-
-    prompt = f"""# 派工提示 — {task['id']}
-
-> 生成时间: {now}
-> 指派给: {assignee}
-
-## 任务信息
-
-- **任务 ID**: {task['id']}
-- **标题**: {task['title']}
-- **优先级**: {task.get('priority', 'medium')}
-- **状态**: in_progress（已派发）
-
-## 执行约束（来源: config/policies.json）
-
-- **最大运行时间**: {max_runtime} 分钟
-- **最大输出大小**: {max_output} KB
-- **最大并发**: {max_concurrency}
-- **最大重试次数**: {max_retries}
-- **工作目录**: `G:\\agent-chat-cluster`
-- **允许路径**: {allowed_paths_str}
-
-## 禁止行为
-
-{prohibit_block}
-
-## 期望输出
-
-请按 docs/TASK_PROTOCOL.md 中定义的执行 Agent → 主控回报格式提供结果。
-
-## 审计要求
-
-- 记录所有执行的命令。
-- 记录所有变更的文件。
-- 主动报告识别到的风险。
-- 日志保留天数: {log_retention} 天。
-"""
-    return prompt
+    # 如果有详细描述，直接透传（这是 CLI 工具真正需要的）
+    # 如果没有，用标题兜底
+    if description:
+        return description
+    else:
+        return f"{title}"
 
 
 def load_agents() -> dict:

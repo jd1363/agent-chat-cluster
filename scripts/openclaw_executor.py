@@ -127,15 +127,13 @@ def write_audit(event_type: str, task_id: str, details: str,
 # ── Prompt 构建 ───────────────────────────────────────────
 
 def build_prompt(task: Dict[str, Any], agent: Optional[Dict[str, Any]]) -> str:
-    parts = []
-    parts.append(f"任务 ID: {task.get('id', 'unknown')}")
-    parts.append(f"任务标题: {task.get('title', '')}")
-    notes = task.get("notes", "")
-    if notes:
-        parts.append(f"任务说明: {notes}")
-    parts.append("")
-    parts.append("请在项目目录下执行上述任务，给出详细的执行过程和结果。")
-    return "\n".join(parts)
+    """构建给 CLI 工具的执行 prompt。"""
+    # 优先用 description 字段（用户创建任务时写的详细描述）
+    description = task.get("description", "").strip()
+    if description:
+        return description
+    # 兜底：用标题
+    return task.get("title", "")
 
 
 # ── Dispatch 文件 ─────────────────────────────────────────

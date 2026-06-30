@@ -58,6 +58,11 @@ def main():
     parser = argparse.ArgumentParser(description="创建新任务")
     parser.add_argument("--title", required=True, help="任务标题")
     parser.add_argument(
+        "--description",
+        default="",
+        help="任务详细描述（会原样传给执行 Agent）",
+    )
+    parser.add_argument(
         "--priority",
         choices=["low", "medium", "high"],
         default="medium",
@@ -76,6 +81,7 @@ def main():
             task = {
                 "id": task_id,
                 "title": args.title,
+                "description": args.description,
                 "status": "pending",
                 "priority": args.priority,
                 "assignee": None,
