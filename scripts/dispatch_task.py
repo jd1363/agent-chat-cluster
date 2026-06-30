@@ -246,7 +246,11 @@ def main():
     parser.add_argument("--assignee", default="agent-exec-01", help="指派给哪个 Agent（默认: agent-exec-01）")
     parser.add_argument("--execute", action="store_true", help="派工后自动调用 openclaw_executor 生成执行 prompt 文件")
     parser.add_argument("--execute-real", action="store_true",
-                        help="派工后直接调用 executor_bridge 执行真实 CLI（需先 --execute 生成 prompt）")
+                        help="派工后自动生成 prompt + 调用 executor_bridge 执行真实 CLI（一步到位）")
+    parser.add_argument("--project", default=None,
+                        help="目标项目路径，透传给 executor_bridge（如 G:\\weather\\weather-ai-project）")
+    parser.add_argument("--write-output", action="store_true",
+                        help="透传给 executor_bridge：解析 Agent 输出中的 file: 代码块写入目标文件")
     parser.add_argument("--dry-run", action="store_true", help="只打印提示，不修改任务状态")
     args = parser.parse_args()
 
@@ -355,24 +359,59 @@ def main():
             except Exception as e:
                 print(f"[WARN] 调用 openclaw_executor 异常: {e}")
 
-    # === --execute-real: 调用 executor_bridge 执行真实 CLI ===
+    # === --execute-real: 自动生成 prompt + 调用 executor_bridge 执行真实 CLI（一步到位） ===
     if args.execute_real:
         executor_bridge_script = PROJECT_ROOT / "scripts" / "executor_bridge.py"
         if not executor_bridge_script.is_file():
             print(f"[FAIL] --execute-real 指定但 executor_bridge.py 未找到: {executor_bridge_script}")
             sys.exit(1)
 
-        # 检查 prompt 文件是否存在
+        # 步骤 1: 检查 prompt 文件是否存在，不存在则自动生成
         prompt_file = PROJECT_ROOT / "tasks" / "dispatch" / f"{task_id}-prompt.txt"
         if not prompt_file.is_file():
-            print(f"[FAIL] 未找到 prompt 文件: {prompt_file}")
-            print(f"[INFO] 请先运行 --execute 生成 prompt 文件: python scripts/dispatch_task.py --id {task_id} --execute")
-            sys.exit(1)
+            print(f"[INFO] prompt 文件不存在，自动生成...")
+            executor_script = PROJECT_ROOT / "scripts" / "openclaw_executor.py"
+            if not executor_script.is_file():
+                print(f"[FAIL] openclaw_executor.py 未找到，无法生成 prompt")
+                sys.exit(1)
+            exec_cmd = [sys.executable, str(executor_script), "--task-id", task_id]
+            if args.dry_run:
+                exec_cmd.append("--dry-run")
+            try:
+                result = subprocess.run(
+                    exec_cmd,
+                    cwd=PROJECT_ROOT,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                )
+                print(result.stdout, end="")
+                if result.stderr:
+                    print(result.stderr, end="", file=sys.stderr)
+                if result.returncode != 0:
+                    print(f"[FAIL] openclaw_executor 退出码 {result.returncode}")
+                    sys.exit(1)
+                print(f"[OK] prompt 文件已生成: {prompt_file}")
+            except Exception as e:
+                print(f"[FAIL] 调用 openclaw_executor 异常: {e}")
+                sys.exit(1)
+        else:
+            print(f"[INFO] prompt 文件已存在: {prompt_file}")
 
-        # 构建 executor_bridge 调用命令
-        bridge_cmd = [sys.executable, str(executor_bridge_script), "--task-id", task_id, "--assignee", args.assignee]
+        # 步骤 2: 调用 executor_bridge 执行
+        bridge_cmd = [sys.executable, str(executor_bridge_script),
+                      "--task-id", task_id, "--assignee", args.assignee]
+
+        # 透传 --project
+        if args.project:
+            bridge_cmd += ["--project", args.project]
+        # 透传 --write-output
+        if args.write_output:
+            bridge_cmd.append("--write-output")
 
         if args.dry_run:
+            bridge_cmd.append("--dry-run")
             print(f"[DRY-RUN] 将执行: {' '.join(bridge_cmd)}")
         else:
             print(f"[INFO] --execute-real: 调用 executor_bridge 执行真实 CLI...")

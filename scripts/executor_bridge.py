@@ -303,6 +303,7 @@ def execute_cli(
     stdout_chunks: list[bytes] = []
     stderr_chunks: list[bytes] = []
     done_detected = False
+    killed_reason = ""  # 记录 kill 原因
 
     def read_stderr():
         """后台线程读取 stderr，避免管道阻塞。"""
@@ -331,14 +332,16 @@ def execute_cli(
             combined = b"".join(stdout_chunks[-3:])  # 只看最近几个 chunk
             if b'"type":"done"' in combined or b'"type": "done"' in combined:
                 done_detected = True
+                killed_reason = "done_marker_detected"
                 break
 
             # 检测超时
             elapsed = time.monotonic() - start_time
             if elapsed > timeout:
+                killed_reason = f"timeout_{elapsed:.0f}s"
                 break
 
-        # 如果检测到完成标记，kill 进程
+        # 如果检测到完成标记，先 terminate 再 kill 进程树
         if done_detected:
             proc.terminate()
             try:
@@ -346,15 +349,35 @@ def execute_cli(
             except subprocess.TimeoutExpired:
                 _kill_process_tree(proc.pid)
                 proc.wait()
+        elif killed_reason.startswith("timeout"):
+            # 超时：直接 kill 进程树
+            _kill_process_tree(proc.pid)
+            proc.wait()
 
         # 等待进程退出（如果还没退出的话）
         try:
             proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
+            killed_reason = killed_reason or "wait_timeout_10s"
             _kill_process_tree(proc.pid)
             proc.wait()
     except subprocess.TimeoutExpired:
         pass
+
+    # 关闭 stdout pipe，确保 stderr 线程能正常退出
+    try:
+        if proc.stdout:
+            proc.stdout.close()
+    except Exception:
+        pass
+    try:
+        if proc.stderr:
+            proc.stderr.close()
+    except Exception:
+        pass
+
+    # join stderr 线程，最多等 3 秒
+    stderr_thread.join(timeout=3)
 
     elapsed = time.monotonic() - start_time
 
@@ -384,6 +407,7 @@ def execute_cli(
         "output": stdout,
         "error": error_msg,
         "elapsed": elapsed,
+        "killed_reason": killed_reason,
     }
 
 
@@ -685,6 +709,8 @@ def main() -> int:
         _utf8_print(f"[OK] 执行完成 ({elapsed:.1f}s)")
     else:
         _utf8_print(f"[FAIL] 执行失败 ({elapsed:.1f}s): {error}")
+        if result.get("killed_reason"):
+            _utf8_print(f"[INFO] kill 原因: {result['killed_reason']}")
 
     # ── 5. 写结果文件 ──
     if success:
@@ -709,9 +735,10 @@ def main() -> int:
                         f"agent={agent_id}, command={command}, "
                         f"耗时={elapsed:.1f}s, 输出={len(output)}字符")
     else:
+        kill_info = f", kill_reason={result.get('killed_reason','')}" if result.get("killed_reason") else ""
         write_audit_log("executor_bridge_failed", task_id,
                         f"agent={agent_id}, command={command}, "
-                        f"耗时={elapsed:.1f}s, 错误={error[:200]}")
+                        f"耗时={elapsed:.1f}s, 错误={error[:200]}{kill_info}")
 
     # ── 输出预览 ──
     if output:

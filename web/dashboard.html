@@ -388,9 +388,9 @@ function renderTasks(data) {
     let right = '<div class="task-right">';
     if (isPending) {
       right += '<select class="agent-select" id="sel-'+tid+'">' +
-        agentsCache.map(a => '<option value="'+escapeHtml(a.id)+'">'+escapeHtml(a.displayName||a.id)+'</option>').join('') +
+        agentsCache.filter(a=>a.enabled!==false).map(a => '<option value="'+escapeHtml(a.id)+'">'+escapeHtml(a.displayName||a.id)+'</option>').join('') +
         '</select>';
-      right += '<button class="exec-btn" onclick="executeTask(\''+tid+'\')">▶ Execute</button>';
+      right += '<button class="exec-btn" id="btn-'+tid+'" onclick="executeTask(\''+tid+'\')">▶ Execute</button>';
     }
     right += '<span class="task-status status-'+status+'">'+pulseHtml+status+'</span></div>';
     return '<div class="task-item'+sel+'" onclick="selectTask(\''+tid+'\')">' +
@@ -430,8 +430,12 @@ async function createTask() {
 // === Execute Task ===
 async function executeTask(taskId) {
   const sel = document.getElementById('sel-'+taskId);
+  const btn = document.getElementById('btn-'+taskId);
   const assignee = sel ? sel.value : 'agent-exec-01';
-  if (!confirm('Start execution of '+taskId+' with '+assignee+'?')) return;
+  if (!confirm('Start execution of '+taskId+' with '+assignee+'?\\nThis will dispatch + generate prompt + execute real CLI.')) return;
+  // 禁用按钮，显示执行中
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Running...'; }
+  if (sel) sel.disabled = true;
   try {
     const res = await fetch('/api/tasks/execute', {
       method: 'POST',
@@ -441,12 +445,23 @@ async function executeTask(taskId) {
     const data = await res.json();
     if (data.ok) {
       selectTask(taskId);
+      // 按钮显示启动成功，等 SSE 更新状态
+      if (btn) { btn.textContent = '✓ Started'; btn.style.borderColor = 'var(--green)'; btn.style.color = 'var(--green)'; }
       setTimeout(loadAll, 2000);
+      // 10秒后恢复按钮（任务可能还在跑，但按钮可以恢复让用户再试）
+      setTimeout(() => {
+        if (btn) { btn.disabled = false; btn.textContent = '▶ Execute'; btn.style.borderColor = ''; btn.style.color = ''; }
+        if (sel) sel.disabled = false;
+      }, 10000);
     } else {
       alert('Execution failed: ' + (data.error || 'Unknown'));
+      if (btn) { btn.disabled = false; btn.textContent = '▶ Execute'; }
+      if (sel) sel.disabled = false;
     }
   } catch(e) {
     alert('Request failed: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '▶ Execute'; }
+    if (sel) sel.disabled = false;
   }
 }
 

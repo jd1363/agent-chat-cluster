@@ -515,12 +515,15 @@ class DashboardHandler(BaseHTTPRequestHandler):
     def _post_execute_task(self, body):
         task_id = body.get("id", "").strip()
         assignee = body.get("assignee", "agent-exec-01").strip()
+        project = body.get("project", "").strip()
         if not task_id:
             self._json({"ok": False, "error": "id is required"})
             return
-        # executor_bridge 执行真实 CLI 可能需要几分钟，用 Popen 异步执行，立即返回
+        # dispatch_task --execute-real 一步到位：派工+生成prompt+执行CLI
         script_path = SCRIPTS_DIR / "dispatch_task.py"
-        cmd = [sys.executable, str(script_path), "--id", task_id, "--assignee", assignee, "--execute", "--execute-real"]
+        cmd = [sys.executable, str(script_path), "--id", task_id, "--assignee", assignee, "--execute-real"]
+        if project:
+            cmd += ["--project", project]
         try:
             proc = subprocess.Popen(
                 cmd,
