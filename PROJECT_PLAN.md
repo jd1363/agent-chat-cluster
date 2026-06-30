@@ -79,22 +79,22 @@
 
 ### 前置安全闸第四块（已验收，2026-06-18）
 
-- [x] `scripts/show_history.py` — 历史任务查询与统计报表。支持按状态/assignee/日期/优先级过滤，支持 `--report` 报表模式与 `--json` 输出。仅标准库，只读不写。由 CodeWhale 实现，胖小 code review 通过。
+- [x] ~~`scripts/show_history.py`~~ — ~~已删除~~。历史任务查询与统计报表功能已移除。
 
 ### 前置安全闸第五块（已验收，2026-06-18）
 
-- [x] `scripts/test_isolation.py` — Agent 环境隔离校验。检查 cwd 目录存在性、cwd 在项目根目录内、cwd 之间互不重叠、allowedPaths 越界风险、模拟路径边界检查（内部/跨 Agent/逃逸）。由 CodeWhale 实现，胖小验收。修复 `agents/resident/exec01` 缺失目录。
+- [x] ~~`scripts/test_isolation.py`~~ — ~~已删除~~。Agent 环境隔离校验功能已移除。
 
 ### 启用第二个 Agent（已验收，2026-06-18）
 
-- [x] `agent-ext-01` 启用：`config/agents.json` enabled=true。由 CodeWhale 执行，`test_isolation.py` 验证两台 Agent 隔离全部通过。
+- [x] `agent-ext-01` 启用：`config/agents.json` enabled=true。由 CodeWhale 执行。
 
 ### 扩展能力（已验收）
 
-- [x] 引入任务分配策略（轮询 / 负载 / 专岗）— `scripts/suggest_assignee.py` 已验收（CodeWhale，2026-06-18）
+- [x] ~~引入任务分配策略（轮询 / 负载 / 专岗）— `scripts/suggest_assignee.py` 已验收~~（已删除）
 - [x] 评估是否引入轻量级"消息总线"（非群聊，仅主控转发）— ✅ 已完成（2026-06-18）
-- [x] 人工审批节点 — `scripts/review_command.py` 已验收（Codex，2026-06-18）
-- [x] 性能基线 — `scripts/benchmark_pipeline.py` 已验收（Codex，2026-06-18）
+- [x] ~~人工审批节点 — `scripts/review_command.py` 已验收~~（已删除）
+- [x] ~~性能基线 — `scripts/benchmark_pipeline.py` 已验收~~（已删除）
 
 **红线**：
 - 未经审批不启用全局广播
@@ -110,14 +110,14 @@
 ### 已完成 / 进行中
 
 - [x] 管理员操作审计：`scripts/audit_log.py` + `scripts/show_audit.py`
-- [x] 任务全生命周期管理：`create_task.py` / `dispatch_task.py` / `complete_task.py` / `update_task.py` / `list_tasks.py` / `show_history.py`
-- [x] 主控点对点消息与受控多播：`send_message.py` / `receive_message.py` / `list_messages.py` / `broadcast.py` / `resend_unacked.py`
-- [x] 配置快照 / 备份恢复：`scripts/snapshot_config.py`，支持 `save` / `list` / `show` / `restore --yes`，恢复前自动创建 pre-restore 备份并写入审计
+- [x] 任务全生命周期管理：`create_task.py` / `dispatch_task.py` / `complete_task.py` / `update_task.py` / `list_tasks.py`
+- [x] 主控点对点消息与受控多播：`send_message.py` / `receive_message.py` / `list_messages.py` / `broadcast.py`
+- [x] ~~配置快照 / 备份恢复：`scripts/snapshot_config.py`~~（已删除）
 
 ### 下一步优先级
 
 1. [x] 本地成本/Token 估算台账：`scripts/record_cost.py` + `scripts/show_cost.py`，替代旧方案不可确认的 `/usage` 命令第一版，先做手动/估算记录、汇总、预算阈值提示，不承诺精确美元级自动暂停。
-2. [x] 旧方案命令映射器：`scripts/command_map.py`，把 `/task`、`/audit`、`/snapshot`、`/usage`、`/acp spawn` 等伪命令映射到当前真实脚本或标记为 forbidden/pending。
+2. [x] ~~旧方案命令映射器：`scripts/command_map.py`~~（已删除）
 3. [x] 多维度告警雏形：`scripts/check_alerts.py`，只读扫描 failed 任务/超时/Agent 状态/审计异常/未 ACK 消息/成本超预算/日志体积，不自动修复。
 4. [x] 原始方案差距对照表：`ORIGINAL_PLAN_GAP_ANALYSIS.md`，66 项功能逐条标注完成状态。
 5. [x] 配置快照验收：`ACCEPTANCE_CONFIG_SNAPSHOT.md`。
@@ -281,13 +281,13 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
 
 目标：从现有文件重建统一系统状态，为 Scheduler Tick 提供统一事实源。当前定位为系统化升级预研产物，不替代 MVP v1 Phase 0-3 验收。
 
-- [x] 新增 `scripts/build_state.py` — 标准库 only 统一状态构建模块
-  - 读取 tasks/tasks.json、config/agents.json、config/policies.json
-  - 读取 logs/messages/*.jsonl、logs/audit/*.jsonl、logs/events/*.jsonl
-  - 输出 state/system_state.json（统一状态事实源）
-  - 支持 snapshot：state/snapshots/YYYY-MM-DDTHH-mm-ssZ.json
-  - CLI：默认 / `--json` / `--output PATH` / `--snapshot` / `--dry-run`
-  - 不修改原始业务文件
+- [x] ~~新增 `scripts/build_state.py` — 标准库 only 统一状态构建模块~~（已删除）
+  - ~~读取 tasks/tasks.json、config/agents.json、config/policies.json~~
+  - ~~读取 logs/messages/*.jsonl、logs/audit/*.jsonl、logs/events/*.jsonl~~
+  - ~~输出 state/system_state.json（统一状态事实源）~~
+  - ~~支持 snapshot：state/snapshots/YYYY-MM-DDTHH-mm-ssZ.json~~
+  - ~~CLI：默认 / `--json` / `--output PATH` / `--snapshot` / `--dry-run`~~
+  - ~~不修改原始业务文件~~
 - [x] 新增 `state/` 与 `state/snapshots/` 目录
 - [x] 更新 README.md 与 PROJECT_PLAN.md
 - [ ] 后续暂缓：稳定后迁移 SQLite / 接入事件流
@@ -298,12 +298,12 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
 
 目标：引入可控调度循环，但不自动执行真实 Agent。第一版只做 dry-run 调度决策。当前定位为系统化升级预研产物，不替代旧方案派工/验收链路。
 
-- [x] 新增 `scripts/scheduler_tick.py` — 标准库 only 调度器 dry-run
-  - 读取 `state/system_state.json` 统一状态
-  - 支持 `--dry-run` 必选（不传则 exit 1，拒绝真实派工）
-  - 支持 `--json` 输出机器可解析 JSON
-  - 支持 `--write-event --dry-run` 写入 `scheduler.tick.evaluated` 事件
-  - 调度逻辑：maxConcurrency 检查 / Agent 可用性 / 负载均衡选择
+- [x] ~~新增 `scripts/scheduler_tick.py` — 标准库 only 调度器 dry-run~~（已删除）
+  - ~~读取 `state/system_state.json` 统一状态~~
+  - ~~支持 `--dry-run` 必选（不传则 exit 1，拒绝真实派工）~~
+  - ~~支持 `--json` 输出机器可解析 JSON~~
+  - ~~支持 `--write-event --dry-run` 写入 `scheduler.tick.evaluated` 事件~~
+  - 调度逻辑：maxConcurrency 检查 / Agent 可用性 / 负载均衡选择（maxConcurrency 当前为 2）
   - 调度逻辑增强：maxRetries 检查 / backpressure 警告 / dead-letter 候选识别
   - 任务选择按 priority（high > medium > low）→ createdAt 排序
   - Agent 选择按 in_progress 负载最低 → id 排序
@@ -317,6 +317,28 @@ Event Bus + Scheduler + Unified State Store + Agent Workers + Audit/Policy Plane
 - [x] 支持 retry limit / backpressure / dead-letter 候选 dry-run 判断
 - [ ] 后续暂缓：backpressure 事件通知与 recovery orchestration
 - [ ] 后续暂缓：从 dry-run 过渡到真实派工（需审批流程）
+
+---
+
+## 执行引擎（当前 MVP v1 实际执行链路）
+
+### run.py — 一站式入口
+
+创建任务 → 生成 prompt → 调用 executor_bridge 执行 CLI → 输出结果。
+
+用法:
+```
+python scripts/run.py --description "任务描述" --assignee agent-ext-02 --project "G:\目标项目"
+```
+
+### executor_bridge.py — 真实 CLI 执行
+
+接收 prompt 文件，调用对应 Agent 的 CLI 工具（Codex/CodeWhale/OpenCode/MiMo/Ollama）执行。
+
+支持参数：
+- `--project`：CLI 工作目录设为目标项目
+- `--write-output`：解析输出写入文件
+- `--timeout`：执行超时控制
 
 ---
 

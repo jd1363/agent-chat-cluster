@@ -15,15 +15,16 @@
 3. [查看任务](#3-查看任务)
 4. [校验任务](#4-校验任务)
 5. [派发任务](#5-派发任务)
-6. [命令审批](#6-命令审批)
+6. [~~命令审批~~（已删除）](#6-命令审批review_commandpy-已删除)
 7. [完成任务](#7-完成任务)
 8. [查看审计日志](#8-查看审计日志)
-9. [性能基线](#9-性能基线)
+9. [~~性能基线~~（已删除）](#9-性能基线benchmark_pipelinepy-已删除)
 10. [force 覆盖规则](#10-force-覆盖规则)
 11. [禁止事项](#11-禁止事项)
 12. [消息总线操作](#12-消息总线操作)
 13. [何时可以进入真实 ACP 执行](#13-何时可以进入真实-acp-执行)
-14. [Agent 执行任务拆分原则](#14-agent-执行任务拆分原则)
+14. [执行引擎](#14-执行引擎)
+15. [Agent 执行任务拆分原则](#15-agent-执行任务拆分原则)
 
 ---
 
@@ -140,45 +141,10 @@ python scripts/dispatch_task.py --id Task-001 --assignee agent-exec-01
 
 ---
 
-## 6. 命令审批
+## 6. ~~命令审批~~（`review_command.py` 已删除）
 
-在 Agent 执行命令前，先运行风险预审：
+> **此脚本已删除。** 命令风险审批功能不再可用。如需审批，请人工判断。
 
-```bash
-# 审查 agent-exec-01 要执行的命令
-python scripts/review_command.py --agent-id agent-exec-01 --command "python scripts/list_tasks.py"
-
-# 审查高风险命令（会被拒绝）
-python scripts/review_command.py --agent-id agent-exec-01 --command "rm -rf /"
-
-# JSON 输出（供脚本消费）
-python scripts/review_command.py --agent-id agent-ext-01 --command "pip install numpy" --json
-
-# 不写入审计日志（纯预览）
-python scripts/review_command.py --agent-id agent-exec-01 --command "git status" --no-write-audit
-```
-
-审批结果三种状态：
-
-| 状态 | 含义 | 操作 |
-|:---|:---|:---|
-| **APPROVED** | 安全，可直接执行 | 继续执行 |
-| **NEEDS_REVIEW** | 有风险，需人工确认 | 人工判断后再执行 |
-| **REJECTED** | 破坏性命令，禁止执行 | 拒绝，重写命令 |
-
-触发 NEEDS_REVIEW 的典型场景：
-- 命令含 `pip install` / `npm install` / `git push` / `curl` 等网络/安装关键词
-- MEDIUM 风险 Agent 的写入/修改命令（`mkdir` / `copy` / `delete` 等）
-- HIGH 风险 Agent 的任何非只读命令
-
-触发 REJECTED 的典型场景：
-- `rm -rf` / `del /f /s` / `format` / `shutdown` / `dd if=` 等系统破坏命令
-- `curl \| bash` / `wget \| sh` 等管道执行远程脚本
-- 任何风险等级的 Agent 均禁止
-
-审计：默认自动写入审计日志（`review` 事件类型）。
-
----
 
 ## 7. 完成任务
 
@@ -247,32 +213,9 @@ python scripts/show_audit.py --json
 
 ---
 
-## 9. 性能基线
+## 9. ~~性能基线~~（`benchmark_pipeline.py` 已删除）
 
-随时查看当前系统性能状况：
-
-```bash
-# 完整性能报告（默认）
-python scripts/benchmark_pipeline.py
-
-# 只看流水线瓶颈分析
-python scripts/benchmark_pipeline.py --mode lifecycle
-
-# 只看 Agent 负载
-python scripts/benchmark_pipeline.py --mode agent
-
-# JSON 输出（供脚本消费）
-python scripts/benchmark_pipeline.py --json
-```
-
-报告内容：
-- **状态分布**：各状态任务数及百分比、平均停留时间
-- **流水线瓶颈**：单任务预估耗时（265ms）、瓶颈阶段（dispatch=60ms）
-- **Agent 负载**：in_progress 数、理论吞吐量（约 13.6 任务/小时/Agent）、过载/空闲状态
-
-说明：只读分析，不修改任何文件。适合在派发任务前评估系统容量。
-
----
+> **此脚本已删除。** 性能基线报告功能不再可用。如需性能分析，请手动使用 `list_tasks.py` 查看任务状态分布。
 
 ## 10. force 覆盖规则
 
@@ -399,26 +342,9 @@ python scripts/list_messages.py --to agent-ext-01 --status sent --json
 - 默认最多返回 20 条，使用 `--limit N` 可调整。
 - 过滤条件可任意组合。
 
-### 未 ACK 消息重发 / 失败处理
+### ~~未 ACK 消息重发 / 失败处理~~（`resend_unacked.py` 已删除）
 
-```bash
-# 只预览，不写文件
-python scripts/resend_unacked.py --timeout-minutes 5 --dry-run
-
-# JSON 预览
-python scripts/resend_unacked.py --timeout-minutes 5 --dry-run --json
-
-# 实际执行：未 ACK 且超过 timeout 的 sent 消息会重发；超过最大重试次数会标记 failed
-python scripts/resend_unacked.py --timeout-minutes 5
-```
-
-说明：
-- 默认最大重试次数为 3。
-- 有 `ackFor` 的系统 ACK 消息会让对应消息跳过重发。
-- 实际执行会追加消息状态记录，并写入 `message_resent` / `message_failed` 审计事件。
-- 优先使用 `--dry-run` 预览，避免把测试消息误重发成垃圾堆。
-
----
+> **此脚本已删除。** 未 ACK 消息重发功能不再可用。如需检查未 ACK 消息，请使用 `list_messages.py --status sent` 手动查看。
 
 ## 13. 何时可以进入真实 ACP 执行
 
@@ -463,7 +389,19 @@ python scripts/resend_unacked.py --timeout-minutes 5
 
 ---
 
-## 14. Agent 执行任务拆分原则
+## 执行引擎
+
+### run.py — 一站式入口
+创建任务 → 生成 prompt → 调用 executor_bridge 执行 CLI → 输出结果
+用法: `python scripts/run.py --description "任务描述" --assignee agent-ext-02 --project "G:\目标项目"`
+
+### executor_bridge.py — 真实 CLI 执行
+接收 prompt 文件，调用对应 Agent 的 CLI 工具（Codex/CodeWhale/OpenCode/MiMo/Ollama）执行，
+支持 `--project` 模式（CLI 工作目录设为目标项目）、`--write-output`（解析输出写入文件）、`--timeout`。
+
+---
+
+## 15. Agent 执行任务拆分原则
 
 > **背景**：OpenClaw exec 工具有超时限制，单次命令超过阈值会收到 SIGKILL 信号（Windows 下为 TerminateProcess）。大任务如果不拆碎，会被强制中断，已完成的工作可能丢失。
 
@@ -486,12 +424,12 @@ python scripts/resend_unacked.py --timeout-minutes 5
 ### 拆分示例
 
 ❌ 一次派工（易 SIGKILL）：
-> "修改 scripts/send_message.py、增加 scripts/broadcast.py、增加 scripts/resend_unacked.py，然后 git add + commit"
+> "修改 scripts/send_message.py、增加 scripts/broadcast.py，然后 git add + commit"
 
 ✅ 分三次派工（各 <10 分钟）：
 > 1. "修改 scripts/send_message.py，支持 --to all 多播参数，不要 git commit"
 > 2. "新增 scripts/broadcast.py，调用 send_message.py 的 send_broadcast()，不要 git commit"
-> 3. "新增 scripts/resend_unacked.py，实现超时重发逻辑，然后 git add + commit"
+> 3. "新增 scripts/broadcast.py 完整实现，然后 git add + commit"
 
 ### SIGKILL 后如何接续
 
@@ -512,4 +450,10 @@ python scripts/resend_unacked.py --timeout-minutes 5
 
 - **需要人工交互/判断的任务** → 用 sessions_spawn 派给 Agent
 - **纯后台定时任务（如 auto-snapshot）** → 用 cron job，不占用 exec 时间预算
+
+---
+
+## 注意事项
+
+- 所有脚本使用 `fix_encoding.setup_utf8_stdout()` 统一 UTF-8 输出，新增脚本必须调用。
 

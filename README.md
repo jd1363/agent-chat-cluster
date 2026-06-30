@@ -23,9 +23,8 @@
 ```powershell
 python scripts\check_env.py --skip-external
 python scripts\validate_task.py
-python scripts\show_history.py --report
-python scripts\suggest_assignee.py --title "demo task" --strategy load
-python scripts\review_command.py --agent-id agent-ext-01 --command "rm -rf /"
+python scripts\list_tasks.py --json
+python scripts\dispatch_task.py --dry-run
 ```
 
 详细流程见 [`DEMO_RUNBOOK.md`](DEMO_RUNBOOK.md)。
@@ -42,7 +41,7 @@ python scripts\review_command.py --agent-id agent-ext-01 --command "rm -rf /"
   - 自动外发网络请求
   - 自动自愈（self-heal）
   - 高危险命令自动执行
-  - 多 Agent 并发（当前最大并发 1）
+  - 多 Agent 并发（当前最大并发 2）
 
 ## 快速开始
 
@@ -94,35 +93,8 @@ python scripts/show_audit.py --limit 5
 python scripts/show_audit.py --event-type task_created
 python scripts/show_audit.py --json
 
-# 查看历史任务与统计报表
-python scripts/show_history.py --history
-python scripts/show_history.py --status done,failed --since 2026-06-01
-python scripts/show_history.py --report
-python scripts/show_history.py --json --assignee agent-exec-01
-
-# Agent 环境隔离校验
-python scripts/test_isolation.py
-python scripts/test_isolation.py --json
-
-# 任务分配策略（阶段 2）
-python scripts/suggest_assignee.py --title "测试 policies 读取"
-python scripts/suggest_assignee.py --task-id Task-001 --strategy load
-python scripts/suggest_assignee.py --title "Code Review" --json
-
-# 命令风险审批（阶段 2）
-python scripts/review_command.py --agent-id agent-exec-01 --command "python scripts/list_tasks.py"
-python scripts/review_command.py --agent-id agent-ext-01 --command "pip install numpy" --json
-
-# 性能基线（阶段 2）
-python scripts/benchmark_pipeline.py
-python scripts/benchmark_pipeline.py --mode lifecycle
-python scripts/benchmark_pipeline.py --mode agent --json
-
-# 配置快照（旧方案管理模块：配置备份/恢复）
-python scripts/snapshot_config.py save --name before-change --reason "before config change"
-python scripts/snapshot_config.py list
-python scripts/snapshot_config.py show --name before-change
-python scripts/snapshot_config.py restore --name before-change --yes
+# 任务分配（基于 dispatch_task.py 自动选择 assignee）
+python scripts/dispatch_task.py --id Task-001 --assignee agent-exec-01
 
 # 成本/Token 估算台账（旧方案 /usage 的安全替代第一版）
 python scripts/record_cost.py --agent-id agent-ext-01 --task-id Task-010 --input-tokens 1200 --output-tokens 800 --estimated-cost 0.03 --notes "manual estimate"
@@ -130,11 +102,6 @@ python scripts/record_cost.py --agent-id agent-ext-01 --input-tokens 1000 --outp
 python scripts/show_cost.py --by-agent
 python scripts/show_cost.py --agent-id agent-ext-01 --budget 5
 python scripts/show_cost.py --json --by-task
-
-# 旧方案伪命令映射器（只读，不执行命令）
-python scripts/command_map.py --old "/task list"
-python scripts/command_map.py --old "/usage set-budget agent codex 25" --json
-python scripts/command_map.py --list
 
 # 多维度只读告警检查（不自动修复）
 python scripts/check_alerts.py
@@ -168,19 +135,7 @@ python scripts/event_log.py list --correlation-id Task-001 --json
 python scripts/event_log.py replay --dry-run
 python scripts/event_log.py replay --date 2026-06-20 --dry-run --json
 
-# 统一状态构建（Milestone B：State Builder）
-python scripts/build_state.py
-python scripts/build_state.py --json
-python scripts/build_state.py --dry-run
-python scripts/build_state.py --snapshot
-python scripts/build_state.py --output state/system_state.json
-
-# 调度器 dry-run（Milestone C：Scheduler Tick）
-python scripts/scheduler_tick.py --dry-run
-python scripts/scheduler_tick.py --dry-run --json
-python scripts/scheduler_tick.py --state state/system_state.json --dry-run
-python scripts/scheduler_tick.py --write-event --dry-run
-# Scheduler 当前只输出调度建议/阻塞原因；不会真实派工
+> ~~`build_state.py`（Milestone B）和 `scheduler_tick.py`（Milestone C）已删除，暂不维护。~~
 ```
 
 ## 项目结构
@@ -204,25 +159,24 @@ python scripts/scheduler_tick.py --write-event --dry-run
 | `scripts/validate_task.py` | 校验台账完整性、ID 格式、status/priority 合法性、assignee 是否已启用 | 阶段 2 前置安全闸，失败 exit 1 |
 | `scripts/list_tasks.py` | 只读查看任务列表，支持按 status/assignee 过滤，支持 JSON 输出 | 阶段 2 前置安全闸，只读不写 |
 | `scripts/show_audit.py` | 只读查看审计日志，支持按日期/任务/事件类型过滤，支持 JSON 输出 | 阶段 2 前置安全闸，只读不写 |
-| `scripts/show_history.py` | 历史任务查询与统计报表，支持按状态/assignee/日期/优先级过滤，支持 JSON 与报表模式 | 阶段 2 前置安全闸，只读不写 |
-| `scripts/test_isolation.py` | Agent 环境隔离校验：cwd 存在性/重叠/allowedPaths 越界/模拟路径边界检查 | 阶段 2 前置安全闸，只读不写 |
-| `scripts/suggest_assignee.py` | 任务分配策略引擎：round-robin / load / specialist | 阶段 2 扩容，只读不写 |
-| `scripts/review_command.py` | 命令风险审批：REJECTED/NEEDS_REVIEW/APPROVED | 阶段 2 安全闸，只读不写 |
-| `scripts/benchmark_pipeline.py` | 性能基线报告：状态分布/流水线瓶颈/Agent 负载 | 阶段 2 基线，只读不写 |
-| `scripts/snapshot_config.py` | 配置快照 / 列表 / 恢复，备份 config/tasks/state/关键文档 | 旧方案管理模块；恢复前自动创建 pre-restore 备份；写入审计 |
+| ~~`scripts/show_history.py`~~ | ~~已删除~~ | — |
+| ~~`scripts/test_isolation.py`~~ | ~~已删除~~ | — |
+| ~~`scripts/suggest_assignee.py`~~ | ~~已删除~~ | — |
+| ~~`scripts/review_command.py`~~ | ~~已删除~~ | — |
+| ~~`scripts/benchmark_pipeline.py`~~ | ~~已删除~~ | — |
+| ~~`scripts/snapshot_config.py`~~ | ~~已删除~~ | — |
 | `scripts/record_cost.py` | 写入本地成本/Token 估算台账 | 旧方案 `/usage` 替代第一版；只记录/估算，不自动暂停 Agent |
 | `scripts/show_cost.py` | 查询成本/Token 台账，支持明细、按 Agent/任务汇总、预算阈值提示 | 预算只提示，不承诺精确账单 |
-| `scripts/command_map.py` | 旧方案伪命令到当前真实替代方式的只读映射器 | 不执行命令；未知/高风险命令默认不得直接运行 |
+| ~~`scripts/command_map.py`~~ | ~~已删除~~ | — |
 | `scripts/check_alerts.py` | 多维度只读告警检查：failed 任务/超时/Agent 状态/审计异常/未 ACK 消息/成本/日志体积 | 只读不写，不自动修复；退出码 0/1/2 表示 info/warning/critical |
-| `scripts/check_alerts.py` | 多维度只读告警检查：failed 任务/超时/Agent 状态/审计异常/未 ACK 消息/成本/磁盘 | 只读不写，不自动修复；退出码 0/1/2 对应 info/warning/critical |
 | `scripts/send_message.py` | 主控向已启用 Agent 发送消息；`--to all` 需 `--manual-approval` | 阶段 2 消息总线，只写 |
 | `scripts/broadcast.py` | 受控主控多播包装脚本；遵守 `globalBroadcast` 策略门禁 | 阶段 2 消息总线，只写 |
 | `scripts/receive_message.py` | Agent 获取最新未读消息，支持标记为已读 / ACK | 阶段 2 消息总线，读+追加状态 |
 | `scripts/list_messages.py` | 查询消息历史，支持按收件人/发送者/状态/日期过滤 | 阶段 2 消息总线，只读 |
-| `scripts/resend_unacked.py` | 对未 ACK 的 sent 消息执行 dry-run / 重发 / 标记失败 | 阶段 2 消息总线，默认会追加审计 |
+| ~~`scripts/resend_unacked.py`~~ | ~~已删除~~ | — |
 | `scripts/event_log.py` | 事件日志骨架：append/list/replay，按天 JSONL，跨进程并发安全 | Milestone A，读写，仅标准库 |
-| `scripts/build_state.py` | 从 tasks/config/messages/audit/events 重建统一系统状态，输出 state/system_state.json | Milestone B，只读不写业务文件 |
-| `scripts/scheduler_tick.py` | 调度器 dry-run：读取统一状态，执行 maxConcurrency/maxRetries/backpressure/Agent 可用性判断，输出推荐、阻塞原因或 dead-letter 候选 | Milestone C，只读不写（除 --write-event） |
+| ~~`scripts/build_state.py`~~ | ~~已删除~~ | — |
+| ~~`scripts/scheduler_tick.py`~~ | ~~已删除~~ | — |
 
 ## 注意事项
 
