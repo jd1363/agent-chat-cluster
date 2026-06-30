@@ -1,0 +1,1 @@
+在 app.py 中添加一个新的 API 端点 GET /api/stats，返回 JSON 格式的服务统计信息，包括：uptime_seconds（运行时长）、endpoints_count（已注册路由数）、api_version（固定值 '1.0'）、timestamp（当前时间 ISO 格式）。不要修改其他文件，只改 app.py。在现有路由之后添加新路由。

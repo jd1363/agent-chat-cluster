@@ -58,3 +58,8 @@
 {"timestamp": "2026-06-30T04:50:37.710341+00:00", "eventType": "task_updated", "taskId": "Task-071", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}
 {"timestamp": "2026-06-30T04:50:37.805210+00:00", "eventType": "task_updated", "taskId": "Task-072", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}
 {"timestamp": "2026-06-30T04:50:37.911048+00:00", "eventType": "task_updated", "taskId": "Task-073", "message": "更新任务字段: status", "environment": "production", "data": {"status": "cancelled"}}
+{"timestamp": "2026-06-30T05:36:49.876467+00:00", "eventType": "task_created", "taskId": "Task-074", "message": "创建任务: 在 app.py 中添加一个新的 API 端点 GET /api/stats，返...", "environment": "production", "data": {"priority": "medium"}}
+{"timestamp": "2026-06-30T05:37:35.112570+00:00", "eventType": "task_dispatched", "taskId": "Task-074", "message": "任务已派发至 agent-ext-02", "environment": "production", "data": {"assignee": "agent-ext-02", "dispatchFile": "logs\\runs\\Task-074_dispatch.md"}}
+{"timestamp": "2026-06-30T05:37:35.201329+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-074", "details": "dispatch mode, prompt_file=Task-074-prompt.txt", "environment": "production"}
+{"timestamp": "2026-06-30T05:37:35.292203+00:00", "eventType": "executor_bridge_start", "taskId": "Task-074", "message": "agent=agent-ext-02, command=opencode, timeout=120s", "environment": "production"}
+{"timestamp": "2026-06-30T05:38:34.136341+00:00", "eventType": "executor_bridge_success", "taskId": "Task-074", "message": "agent=agent-ext-02, command=opencode, 耗时=58.7s, 输出=345字符, 质量=good", "environment": "production"}
