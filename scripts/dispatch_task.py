@@ -200,6 +200,8 @@ def main():
                         help="目标项目路径，透传给 executor_bridge（如 G:\\weather\\weather-ai-project）")
     parser.add_argument("--write-output", action="store_true",
                         help="透传给 executor_bridge：解析 Agent 输出中的 file: 代码块写入目标文件")
+    parser.add_argument("--timeout", type=int, default=None,
+                        help="超时秒数，透传给 executor_bridge")
     parser.add_argument("--dry-run", action="store_true", help="只打印提示，不修改任务状态")
     args = parser.parse_args()
 
@@ -235,6 +237,14 @@ def main():
 
             task_id = target["id"]
 
+            # 生成 prompt（dry-run 时需要打印）
+            prompt = generate_dispatch_prompt(target, args.assignee, policies)
+
+            if args.dry_run:
+                print(f"[DRY-RUN] 任务 {task_id} 状态未修改")
+                print(f"[DRY-RUN] prompt: {prompt}")
+                return
+
             # 更新任务状态
             target["status"] = "in_progress"
             target["assignee"] = args.assignee
@@ -247,7 +257,6 @@ def main():
     # 生成派工提示文件
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
     dispatch_path = RUNS_DIR / f"{task_id}_dispatch.md"
-    prompt = generate_dispatch_prompt(target, args.assignee, policies)
     try:
         with open(dispatch_path, "w", encoding="utf-8") as fh:
             fh.write(prompt)
@@ -358,6 +367,9 @@ def main():
         # 透传 --write-output
         if args.write_output:
             bridge_cmd.append("--write-output")
+        # 透传 --timeout
+        if args.timeout:
+            bridge_cmd += ["--timeout", str(args.timeout)]
 
         if args.dry_run:
             bridge_cmd.append("--dry-run")

@@ -46,6 +46,8 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="只打印不执行")
     args = parser.parse_args()
 
+    task_id = None
+
     title = args.title or args.description[:40]
     if len(args.description) > 40 and not args.title:
         title += "..."
@@ -80,6 +82,7 @@ def main():
             task_id = tasks_list[-1].get("id")
     except Exception as e:
         print(f"[FAIL] 读取 tasks.json 失败: {e}", file=sys.stderr)
+        sys.exit(1)
 
     print(f"[OK] task_id={task_id}", flush=True)
 

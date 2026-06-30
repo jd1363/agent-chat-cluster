@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Executor Bridge — 把派工 prompt 转发给真实 CLI 执行引擎。
+"""Executor Bridge - 把派工 prompt 转发给真实 CLI 执行引擎。
 
-读取 Agent 的 executor 配置，调用真实 CLI 工具（codex/codewhale/opencode/mimo/ollama）
-执行任务，捕获输出，写结果文件，更新任务状态，记录审计日志。
+读取 Agent 的 executor 配置,调用真实 CLI 工具(codex/codewhale/opencode/mimo/ollama)
+执行任务,捕获输出,写结果文件,更新任务状态,记录审计日志。
 
 用法:
   # 执行指定任务
   python scripts/executor_bridge.py --task-id Task-XXX --assignee agent-exec-01
 
-  # dry-run 模式（只打印命令，不执行）
+  # dry-run 模式(只打印命令,不执行)
   python scripts/executor_bridge.py --task-id Task-XXX --assignee agent-exec-01 --dry-run
 
   # 自定义超时
@@ -28,7 +28,7 @@ import signal
 import subprocess
 import sys
 
-# 强制 UTF-8 输出，避免 GBK 乱码
+# 强制 UTF-8 输出,避免 GBK 乱码
 from pathlib import Path as _Path
 sys.path.insert(0, str(_Path(__file__).resolve().parent))
 from fix_encoding import setup_utf8_stdout
@@ -57,7 +57,7 @@ os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 
 
 def _utf8_print(msg: str) -> None:
-    """安全 print：直接写 stdout.buffer，避免 Windows 控制台编码问题。"""
+    """安全 print:直接写 stdout.buffer,避免 Windows 控制台编码问题。"""
     try:
         sys.stdout.buffer.write((msg + "\n").encode("utf-8"))
         sys.stdout.buffer.flush()
@@ -82,7 +82,7 @@ def load_json(path: Path) -> Dict[str, Any]:
 
 
 def save_json(path: Path, data: Dict[str, Any]) -> None:
-    """写入 JSON 文件（utf-8，缩进 2 空格）。"""
+    """写入 JSON 文件(utf-8,缩进 2 空格)。"""
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
@@ -109,10 +109,10 @@ def load_agent_executor(agent_id: str) -> Dict[str, Any]:
     """从 agents.json 读取指定 Agent 的 executor 配置。
 
     返回:
-        executor 配置字典，包含 command, args, workDir, timeoutSeconds, maxOutputKB
+        executor 配置字典,包含 command, args, workDir, timeoutSeconds, maxOutputKB
 
     异常:
-        SystemExit — Agent 不存在、未启用、或缺少 executor 配置时退出
+        SystemExit - Agent 不存在、未启用、或缺少 executor 配置时退出
     """
     if not AGENTS_FILE.is_file():
         _utf8_print(f"[FAIL] 找不到文件: {AGENTS_FILE}")
@@ -136,7 +136,7 @@ def load_agent_executor(agent_id: str) -> Dict[str, Any]:
         _utf8_print(f"[FAIL] Agent '{agent_id}' 未启用 (enabled=false)")
         sys.exit(1)
 
-    # 优先取 executor 字段，兼容 backend 字段（hermes 等）
+    # 优先取 executor 字段,兼容 backend 字段(hermes 等)
     executor_config = agent.get("executor") or agent.get("backend")
     if not executor_config:
         _utf8_print(f"[FAIL] Agent '{agent_id}' 缺少 executor/backend 配置")
@@ -154,7 +154,7 @@ def read_prompt_file(task_id: str) -> str:
     """读取 tasks/dispatch/{task_id}-prompt.txt 文件内容。
 
     异常:
-        SystemExit — 文件不存在或读取失败时退出
+        SystemExit - 文件不存在或读取失败时退出
     """
     prompt_file = DISPATCH_DIR / f"{task_id}-prompt.txt"
     if not prompt_file.is_file():
@@ -174,7 +174,7 @@ def read_prompt_file(task_id: str) -> str:
 def _resolve_windows_command(command: str) -> str:
     """在 Windows 上解析 CLI 命令的完整路径。
 
-    npm 全局安装的 CLI 通常是 .ps1/.cmd 脚本，
+    npm 全局安装的 CLI 通常是 .ps1/.cmd 脚本,
     shell=False 时需要用 .cmd 路径才能直接执行。
     """
     import shutil
@@ -193,10 +193,10 @@ def _resolve_windows_command(command: str) -> str:
 def build_command_args(
     executor_config: Dict[str, Any], prompt: str
 ) -> List[str]:
-    """构建 CLI 命令参数列表（不经过 shell 解析）。
+    """构建 CLI 命令参数列表(不经过 shell 解析)。
 
-    将 executor_config 中的 {prompt} 占位符替换为真实 prompt 内容，
-    返回 [command, arg1, arg2, ...] 列表，直接传给 subprocess.Popen，
+    将 executor_config 中的 {prompt} 占位符替换为真实 prompt 内容,
+    返回 [command, arg1, arg2, ...] 列表,直接传给 subprocess.Popen,
     避免 shell=True 解析特殊字符导致 prompt 被截断。
 
     Args:
@@ -204,7 +204,7 @@ def build_command_args(
         prompt: 真实 prompt 文本
 
     Returns:
-        命令参数列表，如 ['codex', 'exec', 'prompt content...']
+        命令参数列表,如 ['codex', 'exec', 'prompt content...']
     """
     command = executor_config.get("command", "")
     args = executor_config.get("args", [])
@@ -222,7 +222,7 @@ def build_command_args(
 
 
 def _decode_output(data: bytes) -> str:
-    """安全解码 CLI 输出：先 UTF-8，失败回退 GBK，再失败用 replace。"""
+    """安全解码 CLI 输出:先 UTF-8,失败回退 GBK,再失败用 replace。"""
     if not data:
         return ""
     try:
@@ -237,10 +237,17 @@ def _decode_output(data: bytes) -> str:
 def _kill_process_tree(pid: int) -> None:
     """跨平台 kill 进程树。"""
     if os.name == "nt":
-        subprocess.run(
+        proc = subprocess.Popen(
             ["taskkill", "/T", "/F", "/PID", str(pid)],
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
+        proc.wait()
+        # kill 后检查进程是否已退出
+        if proc.poll() is not None:
+            pass  # 已退出
+        else:
+            print(f"[WARN] kill 后进程仍然存活 pid={proc.pid}")
     else:
         try:
             os.killpg(os.getpgid(pid), signal.SIGKILL)
@@ -248,63 +255,38 @@ def _kill_process_tree(pid: int) -> None:
             pass
 
 
-# 失败信号模式：CLI 工具“没干成事”的常见英文/中文表达
-_FAILURE_SIGNALS = [
-    # 英文
-    "i don't have enough context",
-    "i need more information",
-    "i need more context",
-    "i need a bit more context",
-    "i need some more context",
-    "i cannot ",
-    "i can't ",
-    "i am unable to",
-    "i'm unable to",
-    "i don't understand",
-    "i do not understand",
-    "please provide more",
-    "please clarify",
-    "could you provide",
-    "can you provide",
-    "not sure what",
-    "unable to determine",
-    "what specifically would you like",
-    "i'd be happy to help, but i need",
-    # 中文
-    "无法理解",
-    "不清楚",
-    "请提供更多",
-    "请补充",
-    "无法完成",
-    "不知道",
-]
+# 失败信号模式：CLI 工具"没干成事"的常见英文/中文表达
+# 使用正则整行匹配，避免子串误匹配
+_FAILURE_SIGNALS_REGEX = re.compile(
+    r'^(I cannot|I can\'t|I\'m unable|As an AI|I am not able|无法理解|不清楚|无法完成|不知道|请提供更多|请补充)',
+    re.IGNORECASE | re.MULTILINE
+)
 
 
 def check_output_quality(output: str, success: bool) -> str:
-    """检查输出质量，返回质量标签。
+    """检查输出质量,返回质量标签。
 
     Returns:
-        "good" — 正常输出
-        "needs_review" — 检测到失败信号或输出过短，需大脑审查
-        "empty" — 输出为空
+        "good" - 正常输出
+        "needs_review" - 检测到失败信号或输出过短,需大脑审查
+        "empty" - 输出为空
     """
     if not output or not output.strip():
         return "empty"
 
     text = output.lower()
 
-    # 检测失败信号
-    for signal in _FAILURE_SIGNALS:
-        if signal in text:
-            return "needs_review"
-
-    # 输出太短（< 50字符，大概率没干成事）
-    if len(output.strip()) < 50:
+    # 检测失败信号(正则整行匹配)
+    if _FAILURE_SIGNALS_REGEX.search(output):
         return "needs_review"
 
-    # 输出末尾是提问（最后 200 字符内包含问号且包含请求词）
+    # 输出太短(< 20字符,大概率没干成事)
+    if len(output.strip()) < 20:
+        return "needs_review"
+
+    # 输出末尾是提问(最后 200 字符内包含问号且包含请求词)
     tail = output[-200:].lower()
-    if "?" in tail or "？" in tail:
+    if "?" in tail or "?" in tail:
         request_words = ["please tell", "let me know", "请告诉我", "请说明", "what would you", "请提供"]
         if any(w in tail for w in request_words):
             return "needs_review"
@@ -318,9 +300,9 @@ def execute_cli(
     timeout: int,
     max_output_kb: int,
 ) -> Dict[str, Any]:
-    """用 subprocess 执行 CLI 命令（不经过 shell），捕获输出。
+    """用 subprocess 执行 CLI 命令(不经过 shell),捕获输出。
 
-    支持"提前完成检测"：当 stdout 输出中包含 {"type":"done"} 时，
+    支持"提前完成检测":当 stdout 输出中包含 {"type":"done"} 时,
     主动 kill 进程并返回结果。适用于 CodeWhale stream-json 模式。
     """
     start_time = time.monotonic()
@@ -335,8 +317,8 @@ def execute_cli(
             "cwd": cwd,
             "env": env,
             "creationflags": subprocess.CREATE_NEW_PROCESS_GROUP,
-            "bufsize": -1,  # 默认缓冲（binary 模式不支持行缓冲）
-            "text": False,  # 二进制模式，手动解码
+            "bufsize": -1,  # 默认缓冲(binary 模式不支持行缓冲)
+            "text": False,  # 二进制模式,手动解码
         }
     else:
         popen_kwargs = {
@@ -369,14 +351,14 @@ def execute_cli(
             "elapsed": elapsed,
         }
 
-    # 流式读取 stdout，检测完成标记
+    # 流式读取 stdout,检测完成标记
     stdout_chunks: list[bytes] = []
     stderr_chunks: list[bytes] = []
     done_detected = False
     killed_reason = ""  # 记录 kill 原因
 
     def read_stderr():
-        """后台线程读取 stderr，避免管道阻塞。"""
+        """后台线程读取 stderr,避免管道阻塞。"""
         try:
             while True:
                 chunk = proc.stderr.read(4096)
@@ -393,12 +375,12 @@ def execute_cli(
         while True:
             chunk = proc.stdout.read(4096)
             if not chunk:
-                # stdout 关闭，进程可能已退出
+                # stdout 关闭,进程可能已退出
                 break
 
             stdout_chunks.append(chunk)
 
-            # 检测完成标记（在原始字节中搜索 ASCII 关键词）
+            # 检测完成标记(在原始字节中搜索 ASCII 关键词)
             combined = b"".join(stdout_chunks[-3:])  # 只看最近几个 chunk
             if b'"type":"done"' in combined or b'"type": "done"' in combined:
                 done_detected = True
@@ -411,7 +393,7 @@ def execute_cli(
                 killed_reason = f"timeout_{elapsed:.0f}s"
                 break
 
-        # 如果检测到完成标记，先 terminate 再 kill 进程树
+        # 如果检测到完成标记,先 terminate 再 kill 进程树
         if done_detected:
             proc.terminate()
             try:
@@ -420,11 +402,11 @@ def execute_cli(
                 _kill_process_tree(proc.pid)
                 proc.wait()
         elif killed_reason.startswith("timeout"):
-            # 超时：直接 kill 进程树
+            # 超时:直接 kill 进程树
             _kill_process_tree(proc.pid)
             proc.wait()
 
-        # 等待进程退出（如果还没退出的话）
+        # 等待进程退出(如果还没退出的话)
         try:
             proc.wait(timeout=10)
         except subprocess.TimeoutExpired:
@@ -434,7 +416,7 @@ def execute_cli(
     except subprocess.TimeoutExpired:
         pass
 
-    # 关闭 stdout pipe，确保 stderr 线程能正常退出
+    # 关闭 stdout pipe,确保 stderr 线程能正常退出
     try:
         if proc.stdout:
             proc.stdout.close()
@@ -446,7 +428,7 @@ def execute_cli(
     except Exception:
         pass
 
-    # join stderr 线程，最多等 3 秒
+    # join stderr 线程,最多等 3 秒
     stderr_thread.join(timeout=3)
 
     elapsed = time.monotonic() - start_time
@@ -464,7 +446,7 @@ def execute_cli(
         stdout = stdout.encode("utf-8")[:max_bytes].decode("utf-8", errors="replace")
         stdout += "\n... [输出已截断]"
 
-    # 判断成功：检测到完成标记 或 returncode == 0
+    # 判断成功:检测到完成标记 或 returncode == 0
     success = done_detected or proc.returncode == 0
     error_msg = stderr.strip() if not success and stderr else ""
 
@@ -472,7 +454,7 @@ def execute_cli(
         # 去掉尾部的终端转义序列
         stdout = re.sub(r'\]0;[^\x07]*', '', stdout)
 
-    # 质量检查：检测常见的“没干成事”信号
+    # 质量检查:检测常见的"没干成事"信号
     quality = check_output_quality(stdout, success)
 
     return {
@@ -488,7 +470,7 @@ def execute_cli(
 def write_result_file(task_id: str, result_text: str) -> Path:
     """将执行结果写入 tasks/dispatch/{task_id}-result.txt。
 
-    如果执行失败，结果开头标记 [EXECUTION FAILED]，
+    如果执行失败,结果开头标记 [EXECUTION FAILED],
     openclaw_executor --collect 会据此标记任务为 failed。
 
     Args:
@@ -505,18 +487,18 @@ def write_result_file(task_id: str, result_text: str) -> Path:
     return result_file
 
 
-def update_task_status(task_id: str, status: str, output: str) -> None:
+def update_task_status(task_id: str, status: str, output: str, notes: str = "") -> None:
     """加排他锁更新 tasks.json 中任务状态。
 
-    read-modify-write 原子操作：
+    read-modify-write 原子操作:
       1. 加排他锁
       2. 重新加载最新 tasks.json
-      3. 找到目标任务，更新 status/output/updatedAt
+      3. 找到目标任务,更新 status/output/updatedAt
       4. 写回文件
 
     Args:
         task_id: 任务 ID
-        status: 新状态（done / failed）
+        status: 新状态(done / blocked / failed)
         output: 执行输出
     """
     try:
@@ -524,10 +506,12 @@ def update_task_status(task_id: str, status: str, output: str) -> None:
             data = load_json(TASKS_FILE)
             task = find_task(data, task_id)
             if not task:
-                _utf8_print(f"[ERROR] 任务 {task_id} 不存在（重载后）")
+                _utf8_print(f"[ERROR] 任务 {task_id} 不存在(重载后)")
                 return
             task["status"] = status
             task["output"] = output[:1024 * 1024]  # 限制 1MB
+            if notes:
+                task["notes"] = notes
             task["updatedAt"] = _now_iso()
             save_json(TASKS_FILE, data)
     except TimeoutError as e:
@@ -537,7 +521,7 @@ def update_task_status(task_id: str, status: str, output: str) -> None:
 def write_audit_log(event_type: str, task_id: str, details: str) -> None:
     """写审计日志到 logs/audit/{date}.jsonl。
 
-    使用 audit_log.append_audit 函数，保持与项目其他脚本一致的日志格式。
+    使用 audit_log.append_audit 函数,保持与项目其他脚本一致的日志格式。
 
     Args:
         event_type: 事件类型
@@ -558,20 +542,20 @@ _EXCLUDE_DIRS = {'.git', '__pycache__', 'node_modules', '.pytest_cache', '.venv'
 _EXCLUDE_SUFFIXES = {'.pyc', '.pyo', '.so', '.dll', '.exe'}
 
 # 单文件最大字符数 & 总字符上限
-_MAX_FILE_CHARS = 2000  # 单文件最多 2000 字符（从 4000 降低）
-_MAX_TOTAL_CHARS = 5000  # 总上下文最多 5000 字符（从 20000 降低）
+_MAX_FILE_CHARS = 2000  # 单文件最多 2000 字符(从 4000 降低)
+_MAX_TOTAL_CHARS = 5000  # 总上下文最多 5000 字符(从 20000 降低)
 
 
 def build_project_context(project_path: str, max_chars: int = _MAX_TOTAL_CHARS) -> str:
-    """遍历项目目录，构建上下文字符串供 CLI Agent 参考。
+    """遍历项目目录,构建上下文字符串供 CLI Agent 参考。
 
-    生成文件树（排除 .git/__pycache__/node_modules 等），
-    读取所有 .py 和 .md 文件内容（每文件限 _MAX_FILE_CHARS 字符，总计 max_chars），
+    生成文件树(排除 .git/__pycache__/node_modules 等),
+    读取所有 .py 和 .md 文件内容(每文件限 _MAX_FILE_CHARS 字符,总计 max_chars),
     拼成 Markdown 格式的上下文字符串。
 
     Args:
         project_path: 项目根目录的绝对路径
-        max_chars: 上下文最大字符数，默认 _MAX_TOTAL_CHARS (5000)
+        max_chars: 上下文最大字符数,默认 _MAX_TOTAL_CHARS (5000)
 
     Returns:
         Markdown 格式的项目上下文字符串
@@ -647,7 +631,7 @@ def build_project_context(project_path: str, max_chars: int = _MAX_TOTAL_CHARS) 
 
 
 def parse_and_write_output(output: str, project_path: str) -> list[str]:
-    """解析 Agent 输出中的 ```file:路径 代码块，写入目标文件。
+    """解析 Agent 输出中的 ```file:路径 代码块,写入目标文件。
 
     代码块格式约定::
 
@@ -655,11 +639,11 @@ def parse_and_write_output(output: str, project_path: str) -> list[str]:
         # 文件内容
         ```
 
-    安全检查：跳过包含 ``..`` 或绝对路径的文件路径。
+    安全检查:跳过包含 ``..`` 或绝对路径的文件路径。
 
     Args:
         output: Agent 的完整输出文本
-        project_path: 项目根目录路径，文件将写入此路径下
+        project_path: 项目根目录路径,文件将写入此路径下
 
     Returns:
         成功写入的文件相对路径列表
@@ -672,9 +656,9 @@ def parse_and_write_output(output: str, project_path: str) -> list[str]:
         rel_path = m.group(1).strip()
         content = m.group(2)
 
-        # 安全检查：跳过路径遍历和绝对路径
+        # 安全检查:跳过路径遍历和绝对路径
         if ".." in rel_path:
-            _utf8_print(f"[WARN] 跳过不安全路径（含 ..）: {rel_path}")
+            _utf8_print(f"[WARN] 跳过不安全路径(含 ..): {rel_path}")
             continue
         if os.path.isabs(rel_path):
             _utf8_print(f"[WARN] 跳过绝对路径: {rel_path}")
@@ -695,18 +679,18 @@ def parse_and_write_output(output: str, project_path: str) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Executor Bridge — 把派工 prompt 转发给真实 CLI 执行引擎"
+        description="Executor Bridge - 把派工 prompt 转发给真实 CLI 执行引擎"
     )
     parser.add_argument("--task-id", required=True, help="要执行的任务 ID (如 Task-001)")
     parser.add_argument("--assignee", required=True, help="执行 Agent ID (如 agent-exec-01)")
     parser.add_argument("--timeout", type=int, default=None,
-                        help="超时秒数（默认从 Agent executor 配置读取）")
+                        help="超时秒数(默认从 Agent executor 配置读取)")
     parser.add_argument("--dry-run", action="store_true",
-                        help="只打印命令，不真实执行")
+                        help="只打印命令,不真实执行")
     parser.add_argument("--project", default=None,
-                        help="目标项目路径，启用上下文注入和输出写入（如 G:\\\\weather\\\\weather-ai-project）")
+                        help="目标项目路径,启用上下文注入和输出写入(如 G:\\\\weather\\\\weather-ai-project)")
     parser.add_argument("--write-output", action="store_true",
-                        help="解析 Agent 输出中的 ```file:路径 代码块，写入目标文件")
+                        help="解析 Agent 输出中的 ```file:路径 代码块,写入目标文件")
     args = parser.parse_args()
 
     task_id = args.task_id
@@ -725,7 +709,7 @@ def main() -> int:
     timeout = args.timeout or config_timeout
     max_output_kb = config_max_output
 
-    # 项目模式：超时至少 600 秒
+    # 项目模式:超时至少 600 秒
     if args.project:
         if not args.timeout:
             timeout = max(config_timeout, 600)
@@ -741,8 +725,8 @@ def main() -> int:
     prompt = read_prompt_file(task_id)
     _utf8_print(f"[INFO] prompt 长度: {len(prompt)} 字符")
 
-    # ── 2.5 项目模式：workDir 已改为项目目录，CLI 工具会自己扫描文件 ──
-    # 注：不手动注入上下文。CLI 工具（mimo/opencode/codewhale）在 TUI/run 模式下
+    # ── 2.5 项目模式:workDir 已改为项目目录,CLI 工具会自己扫描文件 ──
+    # 注:不手动注入上下文。CLI 工具(mimo/opencode/codewhale)在 TUI/run 模式下
     # 会自动读取 cwd 下的文件。手动注入会导致 prompt 过长被截断。
     if args.project:
         _utf8_print(f"[INFO] 项目模式: workDir={work_dir}, CLI 将自动扫描项目文件")
@@ -795,7 +779,7 @@ def main() -> int:
         error_line = f"[EXECUTION FAILED] {error}" if error else "[EXECUTION FAILED]"
         result_text = error_line + "\n" + output
 
-    # ── 5.5 项目模式：附加 git 变更摘要 ──
+    # ── 5.5 项目模式:附加 git 变更摘要 ──
     if args.project and success:
         try:
             git_status = subprocess.run(
@@ -827,16 +811,21 @@ def main() -> int:
     # ── 6. 更新任务状态 ──
     quality = result.get("quality", "good")
     if not success:
-        new_status = "failed"
+        new_status = "blocked"
+        quality_note = "quality_check=failed"
+        _utf8_print(f"[WARN] 执行失败 (blocked),请大脑审查")
     elif quality == "needs_review":
-        new_status = "needs_review"
-        _utf8_print(f"[WARN] 输出质量可疑 (needs_review)，请大脑审查")
+        new_status = "blocked"
+        quality_note = "quality_check=needs_review"
+        _utf8_print(f"[WARN] 输出质量可疑 (blocked),请大脑审查")
     elif quality == "empty":
-        new_status = "needs_review"
-        _utf8_print(f"[WARN] 输出为空 (needs_review)，请大脑审查")
+        new_status = "blocked"
+        quality_note = "quality_check=needs_review"
+        _utf8_print(f"[WARN] 输出为空 (blocked),请大脑审查")
     else:
         new_status = "done"
-    update_task_status(task_id, new_status, output if success else (error or "执行失败"))
+        quality_note = "quality_check=good"
+    update_task_status(task_id, new_status, output if success else (error or "执行失败"), quality_note)
     _utf8_print(f"[OK] 任务已标记 {new_status}")
 
     # ── 7. 写审计日志 ──

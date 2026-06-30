@@ -345,7 +345,7 @@ def main():
             "maxSeverity": max_sev,
             "alerts": [a.to_dict() for a in alerts],
         }
-        sys.stdout.buffer.write(json.dumps(output, ensure_ascii=True, indent=2).encode("utf-8"))
+        sys.stdout.buffer.write(json.dumps(output, ensure_ascii=False, indent=2).encode("utf-8"))
         sys.stdout.buffer.write(b"\n")
     else:
         lines = []

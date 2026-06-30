@@ -175,7 +175,7 @@ def main() -> None:
         group_key = "taskId"
 
     if args.json:
-        print(json.dumps({"summary": summary, "groupBy": group_key, "groups": grouped, "records": rows}, ensure_ascii=True, indent=2))
+        print(json.dumps({"summary": summary, "groupBy": group_key, "groups": grouped, "records": rows}, ensure_ascii=False, indent=2))
         return
 
     print_summary(summary, args.budget)
