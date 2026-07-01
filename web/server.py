@@ -41,6 +41,8 @@ SUB_ENV = {
     "PYTHONIOENCODING": "utf-8",
 }
 
+_RUNNING_PIDS = {}  # task_id → subprocess.Popen
+
 
 # ===================================================================
 #  Data helpers
@@ -443,6 +445,12 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self._post_cancel_task(body_data)
         elif path == "/api/tasks/execute":
             self._post_execute_task(body_data)
+        elif path == "/api/tasks/kill":
+            self._post_kill(body_data)
+        elif path == "/api/tasks/rerun":
+            self._post_rerun(body_data)
+        elif path == "/api/tasks/batch":
+            self._post_batch(body_data)
         elif path == "/api/messages/send":
             self._post_send_message(body_data)
         else:
@@ -520,14 +528,20 @@ class DashboardHandler(BaseHTTPRequestHandler):
         task_id = body.get("id", "").strip()
         assignee = body.get("assignee", "agent-exec-01").strip()
         project = body.get("project", "").strip()
+        timeout = body.get("timeout", 120)
+        dry_run = body.get("dry_run", False)
         if not task_id:
             self._json({"ok": False, "error": "id is required"})
             return
-        # dispatch_task --execute-real 一步到位：派工+生成prompt+执行CLI
+        # dispatch_task --execute-real: dispatch + generate prompt + run CLI
         script_path = SCRIPTS_DIR / "dispatch_task.py"
         cmd = [sys.executable, str(script_path), "--id", task_id, "--assignee", assignee, "--execute-real"]
         if project:
             cmd += ["--project", project]
+        if dry_run:
+            cmd += ["--dry-run"]
+        if timeout and isinstance(timeout, (int, float)) and timeout > 0:
+            cmd += ["--timeout", str(int(timeout))]
         try:
             proc = subprocess.Popen(
                 cmd,
@@ -536,9 +550,104 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 stderr=subprocess.DEVNULL,
                 env=SUB_ENV,
             )
+            _RUNNING_PIDS[task_id] = proc
             self._json({"ok": True, "message": f"Task {task_id} execution started (PID {proc.pid})", "pid": proc.pid})
         except Exception as e:
             self._json({"ok": False, "error": str(e)})
+
+    def _post_kill(self, body):
+        task_id = body.get("id", "").strip()
+        if not task_id:
+            self._json({"ok": False, "error": "id is required"})
+            return
+        proc = _RUNNING_PIDS.get(task_id)
+        killed_proc = False
+        if proc:
+            try:
+                proc.kill()
+                killed_proc = True
+            except Exception:
+                pass
+            del _RUNNING_PIDS[task_id]
+        # Update task status to cancelled
+        ok, output = run_script("update_task.py", ["--id", task_id, "--status", "cancelled", "--notes", "killed by dashboard"])
+        if ok or killed_proc:
+            self._json({"ok": True, "message": f"Task {task_id} killed"})
+        else:
+            self._json({"ok": False, "error": output})
+
+    def _post_rerun(self, body):
+        task_id = body.get("id", "").strip()
+        assignee = body.get("assignee", "agent-exec-01").strip()
+        if not task_id:
+            self._json({"ok": False, "error": "id is required"})
+            return
+        # Reset task to pending
+        ts = time.strftime("%Y-%m-%d %H:%M:%S")
+        ok, output = run_script("update_task.py", ["--id", task_id, "--status", "pending", "--notes", f"rerun at {ts}"])
+        if not ok:
+            self._json({"ok": False, "error": output})
+            return
+        # Start execution like _post_execute_task
+        script_path = SCRIPTS_DIR / "dispatch_task.py"
+        cmd = [sys.executable, str(script_path), "--id", task_id, "--assignee", assignee, "--execute-real"]
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                cwd=str(PROJECT_ROOT),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                env=SUB_ENV,
+            )
+            _RUNNING_PIDS[task_id] = proc
+            self._json({"ok": True, "pid": proc.pid, "message": f"Task {task_id} rerun started (PID {proc.pid})"})
+        except Exception as e:
+            self._json({"ok": False, "error": str(e)})
+
+    def _post_batch(self, body):
+        action = body.get("action", "").strip()
+        assignee = body.get("assignee", "agent-exec-01").strip()
+        if not action:
+            self._json({"ok": False, "error": "action is required"})
+            return
+        tasks_data = get_tasks()
+        tasks = tasks_data.get("tasks", [])
+        count = 0
+        if action == "execute_pending":
+            pending = [t for t in tasks if t.get("status") == "pending"]
+            for t in pending:
+                tid = t["id"]
+                script_path = SCRIPTS_DIR / "dispatch_task.py"
+                cmd = [sys.executable, str(script_path), "--id", tid, "--assignee", assignee, "--execute-real"]
+                try:
+                    proc = subprocess.Popen(
+                        cmd,
+                        cwd=str(PROJECT_ROOT),
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        env=SUB_ENV,
+                    )
+                    _RUNNING_PIDS[tid] = proc
+                    count += 1
+                except Exception:
+                    pass
+            self._json({"ok": True, "count": count})
+        elif action == "cancel_running":
+            running = [t for t in tasks if t.get("status") in ("in_progress", "running")]
+            for t in running:
+                tid = t["id"]
+                proc = _RUNNING_PIDS.get(tid)
+                if proc:
+                    try:
+                        proc.kill()
+                    except Exception:
+                        pass
+                    del _RUNNING_PIDS[tid]
+                run_script("update_task.py", ["--id", tid, "--status", "cancelled", "--notes", "batch cancelled by dashboard"])
+                count += 1
+            self._json({"ok": True, "count": count})
+        else:
+            self._json({"ok": False, "error": f"unknown action: {action}"})
 
     def _post_send_message(self, body):
         to = body.get("to", "").strip()
