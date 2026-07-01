@@ -1,0 +1,8 @@
+你好世界
+你好世界！
+
+当前目录包含以下文件和文件夹：
+
+**目录**：`.codewhale`、`agents`、`config`、`docs`、`logs`、`memory`、`scripts`、`skills`、`snapshots`、`state`、`tasks`、`web`
+
+**文件**：`.codewhale-task.md`、`.gitignore`、`.opencode-task.txt`、`ACCEPTANCE_*.md`、`DEMO_RUNBOOK.md`、`MVP_DELIVERY_REPORT.md`、`PROJECT_PLAN.md`、`README.md`、`start_dashboard.bat`、`stop_dashboard.bat`、`update_docs.py` 等。

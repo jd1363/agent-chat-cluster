@@ -27,3 +27,8 @@
 {"timestamp": "2026-07-01T05:20:59.609286+00:00", "eventType": "executor_bridge_start", "taskId": "Task-080", "message": "agent=agent-ext-01, command=codewhale, timeout=300s", "environment": "production"}
 {"timestamp": "2026-07-01T05:21:26.139807+00:00", "eventType": "executor_bridge_success", "taskId": "Task-080", "message": "agent=agent-ext-01, command=codewhale, 耗时=26.5s, 输出=1452字符, 质量=good", "environment": "production"}
 {"timestamp": "2026-07-01T05:22:16.206928+00:00", "eventType": "executor_bridge_success", "taskId": "Task-079", "message": "agent=agent-exec-01, command=codex, 耗时=76.6s, 输出=212字符, 质量=good", "environment": "production"}
+{"timestamp": "2026-07-01T05:37:26.360994+00:00", "eventType": "task_created", "taskId": "Task-081", "message": "创建任务: Test MiMo encoding", "environment": "production", "data": {"priority": "low"}}
+{"timestamp": "2026-07-01T05:37:34.597968+00:00", "eventType": "task_dispatched", "taskId": "Task-081", "message": "任务已派发至 agent-ext-04", "environment": "production", "data": {"assignee": "agent-ext-04", "dispatchFile": "logs\\runs\\Task-081_dispatch.md"}}
+{"timestamp": "2026-07-01T05:37:34.686173+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-081", "details": "dispatch mode, prompt_file=Task-081-prompt.txt", "environment": "production"}
+{"timestamp": "2026-07-01T05:37:34.771780+00:00", "eventType": "executor_bridge_start", "taskId": "Task-081", "message": "agent=agent-ext-04, command=mimo, timeout=120s", "environment": "production"}
+{"timestamp": "2026-07-01T05:38:42.919486+00:00", "eventType": "executor_bridge_success", "taskId": "Task-081", "message": "agent=agent-ext-04, command=mimo, 耗时=68.1s, 输出=362字符, 质量=good", "environment": "production"}

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 81,
+  "nextId": 82,
   "tasks": [
     {
       "id": "Task-001",
@@ -897,6 +897,18 @@
       "createdAt": "2026-07-01T05:20:37.764235+00:00",
       "updatedAt": "2026-07-01T05:21:26.136871+00:00",
       "output": "\u001b]9;4;1\u0007\u001b\u0007\u001b\u0007\u001b\u0007\u001b\u0007\u001b\u0007{\"type\":\"tool_use\",\"name\":\"exec_shell\",\"id\":\"call_00_KOi58SincutFVRWro3FA6567\",\"input\":{\"command\":\"powershell -Command \\\"Write-Output 'Hello from Task B'; Get-Date -Format 'yyyy-MM-dd HH:mm:ss'\\\"\"}}\n\u001b\u0007\u001b\u0007\u001b\u0007\u001b\u0007\u001b\u0007{\"type\":\"tool_result\",\"id\":\"call_00_KOi58SincutFVRWro3FA6567\",\"output\":\"Hello from Task B\\r\\n2026-07-01 13:21:16\\r\\n\",\"status\":\"success\"}\n\u001b\u0007\u001b\u0007{\"type\":\"content\",\"content\":\"Hello\"}\n{\"type\":\"content\",\"content\":\" from\"}\n{\"type\":\"content\",\"content\":\" Task\"}\n{\"type\":\"content\",\"content\":\" B\"}\n{\"type\":\"content\",\"content\":\".\\n\\n\"}\n{\"type\":\"content\",\"content\":\"当前\"}\n{\"type\":\"content\",\"content\":\"日期\"}\n{\"type\":\"content\",\"content\":\"和时间\"}\n{\"type\":\"content\",\"content\":\"：\"}\n{\"type\":\"content\",\"content\":\"**\"}\n{\"type\":\"content\",\"content\":\"202\"}\n{\"type\":\"content\",\"content\":\"6\"}\n{\"type\":\"content\",\"content\":\"-\"}\n{\"type\":\"content\",\"content\":\"07\"}\n{\"type\":\"content\",\"content\":\"-\"}\n{\"type\":\"content\",\"content\":\"01\"}\n{\"type\":\"content\",\"content\":\" \"}\n{\"type\":\"content\",\"content\":\"13\"}\n{\"type\":\"content\",\"content\":\":\"}\n{\"type\":\"content\",\"content\":\"21\"}\n{\"type\":\"content\",\"content\":\":\"}\n{\"type\":\"content\",\"content\":\"16\"}\n{\"type\":\"content\",\"content\":\"**\"}\n{\"type\":\"content\",\"content\":\"。\"}\n{\"type\":\"session_capture\",\"content\":\"1feae1af-4a24-4fd7-9314-58f4b91967ee\"}\n{\"type\":\"metadata\",\"meta\":{\"model\":\"deepseek-v4-pro\",\"input_tokens\":47521,\"output_tokens\":130,\"session_id\":\"1feae1af-4a24-4fd7-9314-58f4b91967ee\",\"status\":\"completed\"}}\n{\"type\":\"done\"}\n",
+      "notes": "quality_check=good"
+    },
+    {
+      "id": "Task-081",
+      "title": "Test MiMo encoding",
+      "description": "请用中文回复：你好世界，并列出当前目录文件",
+      "status": "done",
+      "priority": "low",
+      "assignee": "agent-ext-04",
+      "createdAt": "2026-07-01T05:37:26.359131+00:00",
+      "updatedAt": "2026-07-01T05:38:42.916199+00:00",
+      "output": "你好世界\r\n你好世界！\n\n当前目录包含以下文件和文件夹：\n\n**目录**：`.codewhale`、`agents`、`config`、`docs`、`logs`、`memory`、`scripts`、`skills`、`snapshots`、`state`、`tasks`、`web`\n\n**文件**：`.codewhale-task.md`、`.gitignore`、`.opencode-task.txt`、`ACCEPTANCE_*.md`、`DEMO_RUNBOOK.md`、`MVP_DELIVERY_REPORT.md`、`PROJECT_PLAN.md`、`README.md`、`start_dashboard.bat`、`stop_dashboard.bat`、`update_docs.py` 等。\r\n",
       "notes": "quality_check=good"
     }
   ]
