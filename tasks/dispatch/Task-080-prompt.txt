@@ -1,0 +1,1 @@
+Output the text: Hello from Task B. Then show current date and time.

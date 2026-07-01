@@ -19,3 +19,11 @@
 {"timestamp": "2026-07-01T03:59:17.541302+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-077", "details": "collect, output=805字符", "environment": "production"}
 {"timestamp": "2026-07-01T05:20:28.164735+00:00", "eventType": "task_created", "taskId": "Task-079", "message": "创建任务: Concurrent test A - echo hello", "environment": "production", "data": {"priority": "low"}}
 {"timestamp": "2026-07-01T05:20:37.766468+00:00", "eventType": "task_created", "taskId": "Task-080", "message": "创建任务: Concurrent test B - echo world", "environment": "production", "data": {"priority": "low"}}
+{"timestamp": "2026-07-01T05:20:59.408435+00:00", "eventType": "task_dispatched", "taskId": "Task-079", "message": "任务已派发至 agent-exec-01", "environment": "production", "data": {"assignee": "agent-exec-01", "dispatchFile": "logs\\runs\\Task-079_dispatch.md"}}
+{"timestamp": "2026-07-01T05:20:59.421131+00:00", "eventType": "task_dispatched", "taskId": "Task-080", "message": "任务已派发至 agent-ext-01", "environment": "production", "data": {"assignee": "agent-ext-01", "dispatchFile": "logs\\runs\\Task-080_dispatch.md"}}
+{"timestamp": "2026-07-01T05:20:59.496605+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-079", "details": "dispatch mode, prompt_file=Task-079-prompt.txt", "environment": "production"}
+{"timestamp": "2026-07-01T05:20:59.515629+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-080", "details": "dispatch mode, prompt_file=Task-080-prompt.txt", "environment": "production"}
+{"timestamp": "2026-07-01T05:20:59.592411+00:00", "eventType": "executor_bridge_start", "taskId": "Task-079", "message": "agent=agent-exec-01, command=codex, timeout=120s", "environment": "production"}
+{"timestamp": "2026-07-01T05:20:59.609286+00:00", "eventType": "executor_bridge_start", "taskId": "Task-080", "message": "agent=agent-ext-01, command=codewhale, timeout=300s", "environment": "production"}
+{"timestamp": "2026-07-01T05:21:26.139807+00:00", "eventType": "executor_bridge_success", "taskId": "Task-080", "message": "agent=agent-ext-01, command=codewhale, 耗时=26.5s, 输出=1452字符, 质量=good", "environment": "production"}
+{"timestamp": "2026-07-01T05:22:16.206928+00:00", "eventType": "executor_bridge_success", "taskId": "Task-079", "message": "agent=agent-exec-01, command=codex, 耗时=76.6s, 输出=212字符, 质量=good", "environment": "production"}

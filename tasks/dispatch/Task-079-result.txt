@@ -1,0 +1,4 @@
+Hello from Task A.
+
+Current directory contents:
+`.codewhale`, `.git`, `agents`, `config`, `docs`, `logs`, `memory`, `scripts`, `skills`, `snapshots`, `state`, `tasks`, `web`, plus the files shown in the listing.

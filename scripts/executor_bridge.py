@@ -222,16 +222,43 @@ def build_command_args(
 
 
 def _decode_output(data: bytes) -> str:
-    """安全解码 CLI 输出:先 UTF-8,失败回退 GBK,再失败用 replace。"""
+    """安全解码 CLI 输出。
+
+    核心问题: Windows 上 CLI 工具(如 MiMo)的 stdout 可能混合 UTF-8 和 GBK 字节。
+    如果用严格的 UTF-8 解码,遇到任何无效字节就会整体失败,回退到 GBK 解码
+    会导致所有正确的 UTF-8 中文变成乱码(如 "输出" → "杈撳嚭")。
+
+    策略:
+      1. 先尝试整体 UTF-8 严格解码(最常见情况,纯 UTF-8 输出)
+      2. 失败则用 UTF-8 errors='replace' 解码,保留有效 UTF-8 字符,替换无效字节
+         (比回退 GBK 好——GBK 回退会把正确的 UTF-8 中文全部变成乱码)
+      3. 如果替换后的文本中基本没有可打印内容(全是替换符),再尝试 GBK
+    """
     if not data:
         return ""
+
+    # 1. 尝试严格 UTF-8 解码
     try:
         return data.decode("utf-8")
     except UnicodeDecodeError:
+        pass
+
+    # 2. UTF-8 宽松解码: 保留有效 UTF-8 字符, 无效字节用 U+FFFD 替换
+    # 这比回退 GBK 好得多: GBK 回退会把 UTF-8 中文全部变成乱码
+    text_utf8 = data.decode("utf-8", errors="replace")
+
+    # 检查替换后的文本质量: 如果替换符占比很高(>30%), 说明可能整体是 GBK 编码
+    replace_count = text_utf8.count("\ufffd")
+    total_chars = len(text_utf8)
+    if total_chars > 0 and replace_count / total_chars > 0.3:
+        # 替换符太多, 可能整体是 GBK 编码, 尝试 GBK 解码
         try:
             return data.decode("gbk", errors="replace")
         except (UnicodeDecodeError, LookupError):
-            return data.decode("utf-8", errors="replace")
+            pass
+
+    # 3. 返回 UTF-8 宽松解码结果(无效字节已替换)
+    return text_utf8
 
 
 def _kill_process_tree(pid: int) -> None:
@@ -327,15 +354,35 @@ def execute_cli(
     cwd: str,
     timeout: int,
     max_output_kb: int,
+    extra_env: Optional[Dict[str, str]] = None,
 ) -> Dict[str, Any]:
     """用 subprocess 执行 CLI 命令(不经过 shell),捕获输出。
 
     支持"提前完成检测":当 stdout 输出中包含 {"type":"done"} 时,
     主动 kill 进程并返回结果。适用于 CodeWhale stream-json 模式。
+
+    Args:
+        command: 命令参数列表
+        cwd: 工作目录
+        timeout: 超时秒数
+        max_output_kb: 最大输出 KB
+        extra_env: 从 executor 配置中读取的额外环境变量
     """
     start_time = time.monotonic()
 
-    env = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
+    # 设置 UTF-8 环境变量, 确保 CLI 工具输出 UTF-8
+    # LANG/LC_ALL: 影响 Node.js/Python 等运行时的默认编码
+    # SYSTEMROOT: Windows 上某些 Node.js 内部模块需要
+    env = {
+        **os.environ,
+        "PYTHONUTF8": "1",
+        "PYTHONIOENCODING": "utf-8",
+        "LANG": "en_US.UTF-8",
+        "LC_ALL": "en_US.UTF-8",
+    }
+    # 合并 executor 配置中的额外环境变量(优先级最高)
+    if extra_env:
+        env.update(extra_env)
 
     if os.name == "nt":
         popen_kwargs: Dict[str, Any] = {
@@ -784,7 +831,10 @@ def main() -> int:
     write_audit_log("executor_bridge_start", task_id,
                     f"agent={agent_id}, command={command}, timeout={timeout}s")
 
-    result = execute_cli(cmd_args, work_dir, timeout, max_output_kb)
+    # 从 executor 配置读取额外环境变量
+    extra_env = executor_config.get("env", None)
+
+    result = execute_cli(cmd_args, work_dir, timeout, max_output_kb, extra_env=extra_env)
 
     elapsed = result["elapsed"]
     success = result["success"]

@@ -1,0 +1,1 @@
+Output the text: Hello from Task A. Then list files in current directory.
