@@ -235,24 +235,52 @@ def _decode_output(data: bytes) -> str:
 
 
 def _kill_process_tree(pid: int) -> None:
-    """跨平台 kill 进程树。"""
+    """跨平台 kill 进程树，并验证目标进程已退出。"""
     if os.name == "nt":
+        # Windows: taskkill /T /F 递归 kill 进程树
         proc = subprocess.Popen(
             ["taskkill", "/T", "/F", "/PID", str(pid)],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
         proc.wait()
-        # kill 后检查进程是否已退出
-        if proc.poll() is not None:
-            pass  # 已退出
-        else:
-            print(f"[WARN] kill 后进程仍然存活 pid={proc.pid}")
+
+        # 验证目标进程是否已退出
+        still_alive = False
+        try:
+            check = subprocess.run(
+                ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
+                capture_output=True, text=True, encoding="utf-8", errors="replace"
+            )
+            # 如果输出包含 PID 数字，说明进程还在
+            if str(pid) in check.stdout:
+                still_alive = True
+        except Exception:
+            pass
+
+        if still_alive:
+            # 兜底：尝试 os.kill
+            try:
+                import signal as _sig
+                os.kill(pid, _sig.SIGTERM)
+            except (ProcessLookupError, PermissionError, OSError):
+                pass
+            print(f"[WARN] taskkill 后进程仍可能存活 pid={pid}")
     else:
+        # Unix: kill 整个进程组
         try:
             os.killpg(os.getpgid(pid), signal.SIGKILL)
         except ProcessLookupError:
             pass
+
+        # 验证
+        try:
+            os.kill(pid, 0)  # signal 0 = 检查进程是否存在
+            print(f"[WARN] killpg 后进程仍存活 pid={pid}")
+        except ProcessLookupError:
+            pass  # 已退出，正常
+        except PermissionError:
+            pass  # 权限不足，忽略
 
 
 # 失败信号模式：CLI 工具"没干成事"的常见英文/中文表达
