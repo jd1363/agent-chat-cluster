@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 79,
+  "nextId": 81,
   "tasks": [
     {
       "id": "Task-001",
@@ -874,6 +874,30 @@
       "updatedAt": "2026-07-01T03:59:17.439833+00:00",
       "output": "`echo hello world` 输出：\n\n```\nhello\nworld\n```\n\n当前目录 `G:\\agent-chat-cluster` 包含：\n\n- **目录**: `.codewhale`, `agents`, `config`, `docs`, `logs`, `memory`, `scripts`, `skills`, `snapshots`, `state`, `tasks`, `web`\n- **文件**: `README.md`, `PROJECT_PLAN.md`, `PROJECT_STATUS.md`, `MVP_DELIVERY_REPORT.md`, `verify_fixes.py` 等多个项目文件\n\n",
       "notes": "quality_check=good"
+    },
+    {
+      "id": "Task-079",
+      "title": "Concurrent test A - echo hello",
+      "description": "Output the text: Hello from Task A. Then list files in current directory.",
+      "status": "pending",
+      "priority": "low",
+      "assignee": null,
+      "createdAt": "2026-07-01T05:20:28.162530+00:00",
+      "updatedAt": "2026-07-01T05:20:28.162530+00:00",
+      "output": null,
+      "notes": ""
+    },
+    {
+      "id": "Task-080",
+      "title": "Concurrent test B - echo world",
+      "description": "Output the text: Hello from Task B. Then show current date and time.",
+      "status": "pending",
+      "priority": "low",
+      "assignee": null,
+      "createdAt": "2026-07-01T05:20:37.764235+00:00",
+      "updatedAt": "2026-07-01T05:20:37.764235+00:00",
+      "output": null,
+      "notes": ""
     }
   ]
 }

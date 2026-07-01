@@ -17,3 +17,5 @@
 {"timestamp": "2026-07-01T03:59:17.429981+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-075", "details": "collect, output=13115字符", "environment": "production"}
 {"timestamp": "2026-07-01T03:59:17.442037+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-078", "details": "collect, output=323字符", "environment": "production"}
 {"timestamp": "2026-07-01T03:59:17.541302+00:00", "eventType": "openclaw_executor_success", "taskId": "Task-077", "details": "collect, output=805字符", "environment": "production"}
+{"timestamp": "2026-07-01T05:20:28.164735+00:00", "eventType": "task_created", "taskId": "Task-079", "message": "创建任务: Concurrent test A - echo hello", "environment": "production", "data": {"priority": "low"}}
+{"timestamp": "2026-07-01T05:20:37.766468+00:00", "eventType": "task_created", "taskId": "Task-080", "message": "创建任务: Concurrent test B - echo world", "environment": "production", "data": {"priority": "low"}}
