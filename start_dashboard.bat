@@ -1,7 +1,6 @@
 @echo off
 chcp 65001 >nul
 title Agent Chat Cluster - Dashboard
-
 cd /d G:\agent-chat-cluster
 
 echo ============================================
