@@ -299,9 +299,3 @@ agent-chat-cluster/
 - **CLI 工具**: Codex / CodeWhale / OpenCode / MiMo / Ollama
 
 ---
-
-<div align="center">
-
-**Made with ❤️ by [你的名字] + OpenClaw 胖小**
-
-</div>
