@@ -1,0 +1,1 @@
+Echo hello world and list current directory files

@@ -1,0 +1,11 @@
+`echo hello world` 输出：
+
+```
+hello
+world
+```
+
+当前目录 `G:\agent-chat-cluster` 包含：
+
+- **目录**: `.codewhale`, `agents`, `config`, `docs`, `logs`, `memory`, `scripts`, `skills`, `snapshots`, `state`, `tasks`, `web`
+- **文件**: `README.md`, `PROJECT_PLAN.md`, `PROJECT_STATUS.md`, `MVP_DELIVERY_REPORT.md`, `verify_fixes.py` 等多个项目文件

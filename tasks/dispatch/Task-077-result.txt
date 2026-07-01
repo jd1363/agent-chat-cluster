@@ -1,0 +1,44 @@
+hello world
+
+Current directory files (`G:\agent-chat-cluster`):
+
+**Directories:**
+- .codewhale
+- agents
+- config
+- docs
+- logs
+- memory
+- scripts
+- skills
+- snapshots
+- state
+- tasks
+- web
+
+**Files:**
+- .codewhale-task.md
+- .gitignore
+- .opencode-task.txt
+- ACCEPTANCE_COMMAND_MAP.md
+- ACCEPTANCE_CONFIG_SNAPSHOT.md
+- ACCEPTANCE_COST_LEDGER.md
+- ACCEPTANCE_STAGE0.md
+- ACCEPTANCE_STAGE1.md
+- ACCEPTANCE_STAGE2.md
+- ACCEPTANCE_STAGE2_PRECHECK.md
+- ACCEPTANCE_STAGE2_PRECHECK_BLOCK2.md
+- ACCEPTANCE_STAGE2_PRECHECK_BLOCK3.md
+- ACCEPTANCE_STAGE3.md
+- ACCEPTANCE_STAGE4.md
+- DEMO_RUNBOOK.md
+- MVP_DELIVERY_REPORT.md
+- ORIGINAL_PLAN_GAP_ANALYSIS.md
+- PROJECT_PLAN.md
+- PROJECT_STATUS.md
+- README.md
+- verify_fixes.py
+- web_server_stderr.txt
+- web_server_stdout.txt
+- web_test_stderr.txt
+- web_test_stdout.txt
