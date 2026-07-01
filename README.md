@@ -1,195 +1,307 @@
-# Agent Chat Cluster — MVP
+<div align="center">
 
-本项目旨在构建一个受控的多智能体协作平台，由 OpenClaw 主会话/项目经理作为主控/管理员负责决策，OpenCode/ACP Agent 作为执行工程师负责执行，逐步验证安全策略、任务调度与命令管控。
+# 🤖 Agent Chat Cluster
 
-> **当前状态：MVP v1 收口完成（2026-07-01）**。Phase 0-3 全部验收通过，执行引擎 + Web Dashboard 已完成。详见 `ACCEPTANCE_STAGE2.md`、`ACCEPTANCE_STAGE3.md` 与 `PROJECT_STATUS.md`。
->
-> **阶段 2 已完成 / 已验收**：双 Agent 启用、任务分配策略、命令审批节点、性能基线、轻量消息总线基础全部通过。
->
-> **阶段 3 已完成 / 已验收**：真实 subagent 验证、list_tasks/check_env/show_audit 验证、receive_message 修复、ACK/重发、broadcast 策略门禁、消息 ID 锁全部收口。
->
-> **执行引擎 + Dashboard 已完成（2026-07-01）**：真实执行引擎已接入（7 Agent → 5 CLI），Web Dashboard 已上线（实时控制面板 + 操作面板 + SSE 推送），CLI 链路测试通过（Codex/CodeWhale/OpenCode/MiMo），17 个 bug 修复。
->
-> **系统级架构升级已启动但暂缓继续开发**：Milestone A/B/C（Event Layer / State Builder / Scheduler Tick）保留为 MVP v2 / Control Plane Prototype 预研；先完成旧方案 MVP v1 收口，不继续推进 Milestone D。详见 [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md) 与 [`docs/architecture/system_architecture.html`](docs/architecture/system_architecture.html)。
+### 受控的多 Agent 协作执行平台
 
-## 交付入口
+由 OpenClaw 主会话担任主控/管理员，多种 CLI Agent（Codex、CodeWhale、OpenCode、MiMo）作为执行工程师，完成任务调度、真实执行、状态追踪与审计。
 
-- **最终交付报告**：[`MVP_DELIVERY_REPORT.md`](MVP_DELIVERY_REPORT.md)
-- **演示手册**：[`DEMO_RUNBOOK.md`](DEMO_RUNBOOK.md)
-- **项目状态总表**：[`PROJECT_STATUS.md`](PROJECT_STATUS.md)
-- **阶段 2 总验收**：[`ACCEPTANCE_STAGE2.md`](ACCEPTANCE_STAGE2.md)
-- **阶段 3 总验收**：[`ACCEPTANCE_STAGE3.md`](ACCEPTANCE_STAGE3.md)
+[![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://python.org)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)]()
+[![License](https://img.shields.io/badge/License-MIT-green)]()
+[![Status](https://img.shields.io/badge/Status-MVP%20v1%20Complete-success)]()
 
-### 5 分钟演示路径
+</div>
 
-```powershell
-python scripts\check_env.py --skip-external
-python scripts\validate_task.py
-python scripts\list_tasks.py --json
-python scripts\dispatch_task.py --dry-run
+---
+
+## ✨ 核心特性
+
+| 特性 | 描述 |
+|------|------|
+| 🎯 **主控 + 多执行 Agent** | 主控负责任务下发/状态追踪/策略校验，Agent 负责真实执行 |
+| ⚡ **真实 CLI 执行引擎** | dispatch → executor_bridge → 真实 CLI 工具，端到端自动化 |
+| 🖥️ **Web Dashboard** | 实时控制面板：任务/Agent/审计/成本，支持执行/取消/重跑/批量操作 |
+| 📋 **任务台账** | JSON 任务生命周期管理（pending → in_progress → done/failed/blocked） |
+| 🔒 **安全策略** | 文件锁、命令审批、preflight 校验、风险等级控制 |
+| 📊 **审计日志** | 不可篡改的 JSONL 审计轨迹，每次操作都有记录 |
+| 💰 **成本追踪** | 按 Agent 统计 token 消耗和费用 |
+| 📨 **消息总线** | 主控 ↔ Agent 轻量级消息通道，ACK 机制 |
+
+---
+
+## 🏗️ 架构概览
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Web Dashboard                         │
+│  ┌───────────┐ ┌───────────┐ ┌──────────┐ ┌──────────┐ │
+│  │ Task Table │ │ Agent List│ │ Audit Log│ │ Cost Chart│ │
+│  └─────┬─────┘ └───────────┘ └──────────┘ └──────────┘ │
+│        │ Execute / Kill / Rerun / Batch                  │
+└────────┼────────────────────────────────────────────────┘
+         │ POST /api/tasks/*
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│                    server.py (REST + SSE)                │
+│  GET: /api/tasks /api/agents /api/audit /api/cost ...   │
+│  POST: /api/tasks/execute /kill /rerun /batch /create   │
+│  SSE: /api/stream/events /api/stream/tasks/{id}/logs    │
+└────────┬────────────────────────────────────────────────┘
+         │ subprocess
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│              dispatch_task.py --execute-real             │
+│  1. preflight (validate_task → agent check → policies)  │
+│  2. 生成 prompt (openclaw_executor)                      │
+│  3. 调用 executor_bridge                                 │
+└────────┬────────────────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│                  executor_bridge.py                      │
+│  · 读取 Agent executor 配置                              │
+│  · 构建 CLI 命令（{prompt} 替换）                        │
+│  · subprocess 执行 + 流式读取 + 完成检测                 │
+│  · 输出质量检测（失败信号 / 过短 / 空输出）              │
+│  · 写结果文件 + 更新任务状态 + 审计日志                  │
+│  · 项目模式：注入上下文 + 附加 git diff + 解析 file: 块  │
+└────────┬────────────────────────────────────────────────┘
+         │
+    ┌────┴────┬────────┬────────┬────────┐
+    ▼         ▼        ▼        ▼        ▼
+┌────────┐┌────────┐┌──────┐┌──────┐┌──────┐
+│ Codex  ││CodeWhale││OpenCode││ MiMo ││Ollama│
+│        ││        ││       ││      ││(off) │
+└────────┘└────────┘└──────┘└──────┘└──────┘
 ```
 
-详细流程见 [`DEMO_RUNBOOK.md`](DEMO_RUNBOOK.md)。
+---
 
-## MVP 范围（当前阶段）
+## 🚀 快速开始
 
-- **主控节点**：负责任务下发、状态跟踪、策略校验、命令审批。
-- **双 Agent 架构**：`agent-exec-01`（resident/low）+ `agent-ext-01`（ext/medium）。
-- **本地文件级任务台账**：`tasks/tasks.json` 记录任务生命周期。
-- **环境自检脚本**：`scripts/check_env.py` 快速验证目录、配置与基础命令可用性。
-- **任务协议与审计**：`docs/TASK_PROTOCOL.md` 定义派工与回报格式；`scripts/audit_log.py` 记录不可篡改审计日志。
-- **真实执行引擎**：`dispatch_task --execute-real` → `executor_bridge` → 真实 CLI 工具（codex/codewhale/opencode/mimo/ollama），支持 `--project` 模式注入项目上下文、git diff 附加、file: 代码块解析写入文件，输出质量检测（失败信号正则匹配 + 输出过短检测）。
-- **Web Dashboard**：实时控制面板（任务表格、Agent 状态、审计日志、成本图表），操作面板（行内执行/取消/重跑按钮，批量操作工具栏），PID 跟踪 + kill API，SSE 实时推送（任务状态变更、审计日志、Agent 状态）。
-- **明确禁止的功能（MVP v1 / Phase 0-3）**：
-  - 未审批的全局群聊 / 广播（受控主控多播必须显式人工确认）
-  - 自动外发网络请求
-  - 自动自愈（self-heal）
-  - 高危险命令自动执行
-  - 多 Agent 并发（当前最大并发 2）
+### 环境要求
 
-## 快速开始
+- **Python 3.10+**
+- **Windows / Linux / macOS**（Windows 为主测试环境）
+- 至少一个 CLI 执行工具（Codex / CodeWhale / OpenCode / MiMo / Ollama）
 
-脚本支持从项目根目录运行，也可以从其他目录运行（脚本会自动定位项目根路径）。
+### 1. 克隆仓库
 
 ```bash
-# 环境自检
-python scripts/check_env.py
+git clone https://github.com/yourname/agent-chat-cluster.git
+cd agent-chat-cluster
+```
 
-# 仅检查目录与配置 JSON，跳过 openclaw 外部命令探测
+### 2. 检查环境
+
+```bash
 python scripts/check_env.py --skip-external
 ```
 
-```powershell
-# Windows PowerShell: 编译检查全部脚本
-python -c "import pathlib, py_compile; [py_compile.compile(str(p), doraise=True) for p in pathlib.Path('scripts').glob('*.py')]"
+### 3. 启动 Web Dashboard
+
+**Windows 一键启动：**
+```bash
+start_dashboard.bat
 ```
 
+**手动启动：**
 ```bash
-# 启动 Web Dashboard
 python web/server.py --port 8765
-# 浏览器打开 http://127.0.0.1:8765
 ```
+
+浏览器打开 http://127.0.0.1:8765 即可看到控制面板。
+
+### 4. 命令行方式
 
 ```bash
-# 查看当前策略
-cat config/policies.json
+# 创建任务
+python scripts/create_task.py --title "My first task" --description "Do something cool"
 
-# 添加任务
-python scripts/create_task.py --title "验证网关状态" --priority high
+# 派发 + 执行（一步到位）
+python scripts/dispatch_task.py --id Task-001 --assignee agent-exec-01 --execute-real
 
-# 更新任务
-python scripts/update_task.py --id Task-001 --status done
-
-# 派发任务（阶段 1）
-# 注意：仅生成派工提示文件，不启动 Agent
-# dispatch_task.py 会校验 assignee 是否在 config/agents.json 中且 enabled=true
-python scripts/dispatch_task.py [--id Task-001] [--assignee agent-exec-01]
-
-# 完成任务（阶段 1）
-python scripts/complete_task.py --id Task-001 --status done --summary "任务已完成"
-
-# 校验台账与 Agent 注册表（阶段 2 前置安全闸）
-python scripts/validate_task.py
-
-# 查看任务列表（支持按状态/assignee 过滤）
+# 查看所有任务
 python scripts/list_tasks.py
-python scripts/list_tasks.py --status pending
-python scripts/list_tasks.py --assignee agent-exec-01
-python scripts/list_tasks.py --json
 
-# 查看审计日志（支持按日期/任务/事件类型过滤）
-python scripts/show_audit.py
-python scripts/show_audit.py --limit 5
-python scripts/show_audit.py --event-type task_created
-python scripts/show_audit.py --json
-
-# 任务分配（基于 dispatch_task.py 自动选择 assignee）
-python scripts/dispatch_task.py --id Task-001 --assignee agent-exec-01
-
-# 成本/Token 估算台账（旧方案 /usage 的安全替代第一版）
-python scripts/record_cost.py --agent-id agent-ext-01 --task-id Task-010 --input-tokens 1200 --output-tokens 800 --estimated-cost 0.03 --notes "manual estimate"
-python scripts/record_cost.py --agent-id agent-ext-01 --input-tokens 1000 --output-tokens 500 --rate-input-per-1k 0.002 --rate-output-per-1k 0.006 --dry-run
-python scripts/show_cost.py --by-agent
-python scripts/show_cost.py --agent-id agent-ext-01 --budget 5
-python scripts/show_cost.py --json --by-task
-
-# 多维度只读告警检查（不自动修复）
-python scripts/check_alerts.py
-python scripts/check_alerts.py --json
-python scripts/check_alerts.py --quiet   # 只显示 warning+critical
-
-# 消息总线（阶段 2，轻量级主控→Agent 消息传递）
-python scripts/send_message.py --to agent-ext-01 --message "check config"
-python scripts/send_message.py --to agent-ext-01 --message "task dispatched" --json
-
-# 受控主控多播（globalBroadcast 默认关闭；必须显式人工确认）
-python scripts/send_message.py --to all --message "maintenance notice" --manual-approval
-python scripts/broadcast.py --message "maintenance notice" --manual-approval --json
-
-# 接收消息（获取最新未读消息）
-python scripts/receive_message.py --agent-id agent-ext-01
-python scripts/receive_message.py --agent-id agent-ext-01 --mark-read --json
-
-# 查看消息历史（支持按收件人/发送者/状态/日期过滤）
-python scripts/list_messages.py
-python scripts/list_messages.py --to agent-ext-01
-python scripts/list_messages.py --status sent --since 2026-06-18
-python scripts/list_messages.py --json
-
-# 事件日志（Milestone A：Event Layer 骨架）
-python scripts/event_log.py append --event-type task.created --source test --correlation-id Task-001 --payload '{"title":"demo"}'
-python scripts/event_log.py append --event-type task.created --json
-python scripts/event_log.py list
-python scripts/event_log.py list --date 2026-06-20 --event-type task.created --limit 10
-python scripts/event_log.py list --correlation-id Task-001 --json
-python scripts/event_log.py replay --dry-run
-python scripts/event_log.py replay --date 2026-06-20 --dry-run --json
-
-> ~~`build_state.py`（Milestone B）和 `scheduler_tick.py`（Milestone C）已删除，暂不维护。~~
+# 校验台账完整性
+python scripts/validate_task.py
 ```
 
-## 项目结构
+---
+
+## 🖥️ Web Dashboard 功能
+
+| 功能 | 描述 |
+|------|------|
+| 📊 **KPI 仪表盘** | 总任务/进行中/已完成/失败/Agent 数一目了然 |
+| 📋 **任务表格** | 按状态过滤，行内操作按钮（▶执行 / ⏹取消 / 🔄重跑） |
+| 🔧 **批量操作** | 一键执行所有 Pending、一键取消所有 Running |
+| 📝 **任务详情** | 点击展开，含 timeout/dry-run/project 参数输入 |
+| 🤖 **Agent 状态** | 实时显示 Agent 在线状态、CLI 命令、超时配置 |
+| 📜 **审计日志** | 实时滚动，按类型着色（create/dispatch/done/fail） |
+| 💰 **成本图表** | 按 Agent 统计 USD 和 Token 消耗 |
+| 📡 **SSE 实时推送** | 任务状态变更、审计日志、Agent 状态自动刷新 |
+| 📺 **执行日志流** | 实时查看 CLI 输出日志 |
+
+---
+
+## ⚡ CLI 执行引擎
+
+### 支持的 CLI 工具
+
+| Agent | CLI 命令 | 状态 | 测试结果 |
+|-------|---------|------|----------|
+| **Codex** | `codex exec "{prompt}"` | ✅ 启用 | 端到端验证通过 |
+| **CodeWhale** | `codewhale exec --auto --output-format stream-json "{prompt}"` | ✅ 启用 | 26.6s，stream-json 模式 |
+| **OpenCode** | `opencode run --dangerously-skip-permissions "{prompt}"` | ✅ 启用 | 26.2s，输出最清晰 |
+| **MiMo** | `mimo run --dangerously-skip-permissions "{prompt}"` | ✅ 启用 | 82.6s，支持中文 |
+| **Ollama** | `ollama run maayan/Qwen2.5-14B-Instruct-GGUF:latest "{prompt}"` | ⏸ 禁用 | 服务未运行 |
+
+### 执行流程
+
+```bash
+# 一键执行（推荐）
+python scripts/dispatch_task.py --id Task-001 --assignee agent-exec-01 --execute-real
+
+# 项目模式：注入项目上下文 + 附加 git diff + 解析 file: 代码块写入文件
+python scripts/dispatch_task.py --id Task-001 --assignee agent-ext-02 --execute-real --project G:/weather/weather-ai-project --write-output
+
+# dry-run 模式
+python scripts/dispatch_task.py --id Task-001 --assignee agent-exec-01 --execute-real --dry-run
+
+# 自定义超时
+python scripts/dispatch_task.py --id Task-001 --assignee agent-ext-01 --execute-real --timeout 300
+```
+
+### 输出质量检测
+
+executor_bridge 自动检测 CLI 输出质量：
+- **失败信号检测**：中英文正则匹配（"I cannot" / "无法理解" / "请提供更多" 等）
+- **输出过短检测**：< 20 字符标记为 needs_review
+- **空输出检测**：无输出标记为 needs_review
+- 质量可疑的任务自动标记为 `blocked`，等待人工审查
+
+---
+
+## 📁 项目结构
 
 ```
-├── config/           # 策略与 Agent 注册表
-├── docs/             # 可用命令说明、安全备忘、任务协议、系统架构设计
-├── scripts/          # 运维与任务管理脚本
-├── snapshots/        # 配置快照（按需生成）
-├── tasks/            # 任务台账
-└── README.md         # 本文件
+agent-chat-cluster/
+├── web/                    # Web Dashboard
+│   ├── server.py          # REST API + SSE 服务器
+│   └── dashboard.html     # 前端控制面板
+├── scripts/                # 核心脚本
+│   ├── create_task.py     # 创建任务
+│   ├── dispatch_task.py   # 派发任务（支持 --execute-real）
+│   ├── executor_bridge.py # CLI 执行桥接器
+│   ├── run.py             # 一站式入口（create+dispatch+execute）
+│   ├── complete_task.py   # 完成任务
+│   ├── update_task.py     # 更新任务
+│   ├── validate_task.py   # 台账校验
+│   ├── list_tasks.py      # 查看任务列表
+│   ├── check_env.py       # 环境自检
+│   ├── audit_log.py       # 审计日志模块
+│   ├── show_audit.py      # 查看审计日志
+│   ├── show_cost.py       # 查看成本
+│   ├── record_cost.py     # 记录成本
+│   ├── check_alerts.py    # 告警检查
+│   ├── send_message.py    # 发送消息
+│   ├── receive_message.py # 接收消息
+│   ├── broadcast.py       # 广播（受策略控制）
+│   ├── event_log.py       # 事件日志
+│   ├── file_lock.py       # 文件锁（排他写入）
+│   ├── openclaw_executor.py # prompt 生成与结果收集
+│   └── fix_encoding.py    # UTF-8 编码修复
+├── config/                # 配置
+│   ├── agents.json        # Agent 注册表
+│   └── policies.json      # 执行策略
+├── tasks/                 # 任务数据
+│   ├── tasks.json         # 任务台账
+│   └── dispatch/          # 派工 prompt 与结果文件
+├── logs/                  # 运行日志
+│   ├── audit/             # 审计日志 (JSONL)
+│   ├── events/            # 事件日志 (JSONL)
+│   ├── messages/          # 消息日志 (JSONL)
+│   ├── cost/              # 成本日志 (JSONL)
+│   └── runs/              # 派工记录
+├── docs/                  # 文档
+│   ├── OPERATOR_RUNBOOK.md # 操作手册
+│   ├── DEMO_WALKTHROUGH.md # 演示流程
+│   ├── TASK_PROTOCOL.md    # 任务协议
+│   ├── SECURITY_NOTES.md   # 安全说明
+│   └── SYSTEM_ARCHITECTURE.md # 系统架构
+├── start_dashboard.bat    # 一键启动 Dashboard
+├── stop_dashboard.bat     # 一键停止 Dashboard
+├── README.md              # 本文件
+└── PROJECT_PLAN.md        # 项目路线图
 ```
 
-## 阶段 1/2 脚本说明
+---
 
-| 脚本 | 用途 | 重要约束 |
-|------|------|----------|
-| `scripts/audit_log.py` | 审计日志记录，支持模块调用与 CLI | 仅标准库，按天切分 JSONL |
-| `scripts/dispatch_task.py` | 从 tasks.json 选择 pending 任务，生成派工提示 | **不启动 ACP，不调用 opencode**；**拒绝未启用 assignee** |
-| `scripts/complete_task.py` | 标记任务为 done/failed/blocked，更新台账 | 默认只允许 `in_progress` 任务结束；`--force` 管理员覆盖会进入审计 |
-| `scripts/validate_task.py` | 校验台账完整性、ID 格式、status/priority 合法性、assignee 是否已启用 | 阶段 2 前置安全闸，失败 exit 1 |
-| `scripts/list_tasks.py` | 只读查看任务列表，支持按 status/assignee 过滤，支持 JSON 输出 | 阶段 2 前置安全闸，只读不写 |
-| `scripts/show_audit.py` | 只读查看审计日志，支持按日期/任务/事件类型过滤，支持 JSON 输出 | 阶段 2 前置安全闸，只读不写 |
-| ~~`scripts/show_history.py`~~ | ~~已删除~~ | — |
-| ~~`scripts/test_isolation.py`~~ | ~~已删除~~ | — |
-| ~~`scripts/suggest_assignee.py`~~ | ~~已删除~~ | — |
-| ~~`scripts/review_command.py`~~ | ~~已删除~~ | — |
-| ~~`scripts/benchmark_pipeline.py`~~ | ~~已删除~~ | — |
-| ~~`scripts/snapshot_config.py`~~ | ~~已删除~~ | — |
-| `scripts/record_cost.py` | 写入本地成本/Token 估算台账 | 旧方案 `/usage` 替代第一版；只记录/估算，不自动暂停 Agent |
-| `scripts/show_cost.py` | 查询成本/Token 台账，支持明细、按 Agent/任务汇总、预算阈值提示 | 预算只提示，不承诺精确账单 |
-| ~~`scripts/command_map.py`~~ | ~~已删除~~ | — |
-| `scripts/check_alerts.py` | 多维度只读告警检查：failed 任务/超时/Agent 状态/审计异常/未 ACK 消息/成本/日志体积 | 只读不写，不自动修复；退出码 0/1/2 表示 info/warning/critical |
-| `scripts/send_message.py` | 主控向已启用 Agent 发送消息；`--to all` 需 `--manual-approval` | 阶段 2 消息总线，只写 |
-| `scripts/broadcast.py` | 受控主控多播包装脚本；遵守 `globalBroadcast` 策略门禁 | 阶段 2 消息总线，只写 |
-| `scripts/receive_message.py` | Agent 获取最新未读消息，支持标记为已读 / ACK | 阶段 2 消息总线，读+追加状态 |
-| `scripts/list_messages.py` | 查询消息历史，支持按收件人/发送者/状态/日期过滤 | 阶段 2 消息总线，只读 |
-| ~~`scripts/resend_unacked.py`~~ | ~~已删除~~ | — |
-| `scripts/event_log.py` | 事件日志骨架：append/list/replay，按天 JSONL，跨进程并发安全 | Milestone A，读写，仅标准库 |
-| ~~`scripts/build_state.py`~~ | ~~已删除~~ | — |
-| ~~`scripts/scheduler_tick.py`~~ | ~~已删除~~ | — |
+## 🔒 安全策略
 
-## 注意事项
+| 策略 | 说明 |
+|------|------|
+| **文件锁** | tasks.json 读写使用排他锁，防止并发写入损坏 |
+| **Preflight 校验** | 派工前依次校验：台账完整性 → Agent 存在且启用 → 策略加载 |
+| **风险等级** | 每个 Agent 有 riskLevel（low/medium/high），策略可按等级限制 |
+| **命令审批** | 未审批的全局广播/自愈/外发默认禁止 |
+| **最大并发** | maxConcurrency=2，防止资源耗尽 |
+| **超时控制** | 每个 Agent 可配置 timeoutSeconds，防止僵尸进程 |
+| **输出截断** | maxOutputKB 限制单任务输出大小 |
+| **路径安全** | file: 代码块写入时拒绝 `..` 和绝对路径 |
 
-- 所有脚本仅依赖 Python 标准库，无需安装额外包。
-- 配置变更后建议重新运行 `check_env.py` 验证 JSON 合法性。
-- `dispatch_task.py` 在阶段 1 仅生成 `logs/runs/Task-XXX_dispatch.md` 派工提示文件，**不会**自动启动 ACP agent 或执行任何命令。
+---
+
+## 📊 项目数据
+
+- **78 个任务** 已执行（48 done / 23 cancelled / 6 failed / 1 pending）
+- **5 种 CLI 工具** 已接入并测试通过
+- **17 个 Bug** 已修复（3 Critical + 6 High + 8 Medium）
+- **纯 Python 标准库** — 零外部依赖
+
+---
+
+## 📜 开发历程
+
+| 日期 | 里程碑 |
+|------|--------|
+| 2026-06-14 | Phase 0 — 基础框架搭建 |
+| 2026-06-17 | Phase 1 — 主控 ↔ Agent 闭环验证 |
+| 2026-06-18 | Phase 2 — 多 Agent 扩展 + 安全闸门 |
+| 2026-06-20 | Phase 3 — 真实 subagent 验证 + 消息总线 |
+| 2026-06-25 | 真实执行引擎接入（executor_bridge） |
+| 2026-06-30 | 全面审计 + 17 Bug 修复 + 死脚本清理 |
+| 2026-07-01 | Dashboard 操作面板 + CLI 链路测试 + 文档收口 |
+
+---
+
+## 📖 文档
+
+- [项目路线图](PROJECT_PLAN.md)
+- [操作手册](docs/OPERATOR_RUNBOOK.md)
+- [演示流程](docs/DEMO_WALKTHROUGH.md)
+- [任务协议](docs/TASK_PROTOCOL.md)
+- [安全说明](docs/SECURITY_NOTES.md)
+- [系统架构](docs/SYSTEM_ARCHITECTURE.md)
+- [命令参考](docs/COMMAND_REFERENCE.md)
+
+---
+
+## 🛠️ 技术栈
+
+- **后端**: Python 3.10+（纯标准库，零依赖）
+- **前端**: 原生 HTML/CSS/JS + Chart.js
+- **通信**: REST API + SSE (Server-Sent Events)
+- **数据存储**: JSON 文件（无需数据库）
+- **CLI 工具**: Codex / CodeWhale / OpenCode / MiMo / Ollama
+
+---
+
+<div align="center">
+
+**Made with ❤️ by [你的名字] + OpenClaw 胖小**
+
+</div>

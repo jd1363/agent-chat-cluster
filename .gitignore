@@ -11,4 +11,25 @@ docs/_tmp_old_scheme_extract/
 snapshots/
 logs/cost/
 
+# Temp output files
 web_server_*.txt
+web_test_*.txt
+
+# Lock files
+tasks/.tasks.json.lock
+
+# Codewhale/opencode task files
+.codewhale-task.md
+.codewhale/
+.opencode-task.txt
+
+# Skills store lock
+skills/.skills_store_lock.json
+
+# Event state
+logs/events/.state
+logs/messages/.state
+
+# Update scripts (one-off)
+update_docs.py
+verify_fixes.py
