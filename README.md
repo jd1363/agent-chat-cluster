@@ -2,11 +2,13 @@
 
 本项目旨在构建一个受控的多智能体协作平台，由 OpenClaw 主会话/项目经理作为主控/管理员负责决策，OpenCode/ACP Agent 作为执行工程师负责执行，逐步验证安全策略、任务调度与命令管控。
 
-> **当前状态：MVP v1 收口中**。旧方案 Phase 0-3 是当前主线，阶段 2 已完成并验收，阶段 3 已完成并验收；详见 `ACCEPTANCE_STAGE2.md`、`ACCEPTANCE_STAGE3.md` 与 `PROJECT_STATUS.md`。
+> **当前状态：MVP v1 收口完成（2026-07-01）**。Phase 0-3 全部验收通过，执行引擎 + Web Dashboard 已完成。详见 `ACCEPTANCE_STAGE2.md`、`ACCEPTANCE_STAGE3.md` 与 `PROJECT_STATUS.md`。
 >
 > **阶段 2 已完成 / 已验收**：双 Agent 启用、任务分配策略、命令审批节点、性能基线、轻量消息总线基础全部通过。
 >
 > **阶段 3 已完成 / 已验收**：真实 subagent 验证、list_tasks/check_env/show_audit 验证、receive_message 修复、ACK/重发、broadcast 策略门禁、消息 ID 锁全部收口。
+>
+> **执行引擎 + Dashboard 已完成（2026-07-01）**：真实执行引擎已接入（7 Agent → 5 CLI），Web Dashboard 已上线（实时控制面板 + 操作面板 + SSE 推送），CLI 链路测试通过（Codex/CodeWhale/OpenCode/MiMo），17 个 bug 修复。
 >
 > **系统级架构升级已启动但暂缓继续开发**：Milestone A/B/C（Event Layer / State Builder / Scheduler Tick）保留为 MVP v2 / Control Plane Prototype 预研；先完成旧方案 MVP v1 收口，不继续推进 Milestone D。详见 [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md) 与 [`docs/architecture/system_architecture.html`](docs/architecture/system_architecture.html)。
 
@@ -36,6 +38,8 @@ python scripts\dispatch_task.py --dry-run
 - **本地文件级任务台账**：`tasks/tasks.json` 记录任务生命周期。
 - **环境自检脚本**：`scripts/check_env.py` 快速验证目录、配置与基础命令可用性。
 - **任务协议与审计**：`docs/TASK_PROTOCOL.md` 定义派工与回报格式；`scripts/audit_log.py` 记录不可篡改审计日志。
+- **真实执行引擎**：`dispatch_task --execute-real` → `executor_bridge` → 真实 CLI 工具（codex/codewhale/opencode/mimo/ollama），支持 `--project` 模式注入项目上下文、git diff 附加、file: 代码块解析写入文件，输出质量检测（失败信号正则匹配 + 输出过短检测）。
+- **Web Dashboard**：实时控制面板（任务表格、Agent 状态、审计日志、成本图表），操作面板（行内执行/取消/重跑按钮，批量操作工具栏），PID 跟踪 + kill API，SSE 实时推送（任务状态变更、审计日志、Agent 状态）。
 - **明确禁止的功能（MVP v1 / Phase 0-3）**：
   - 未审批的全局群聊 / 广播（受控主控多播必须显式人工确认）
   - 自动外发网络请求
@@ -58,6 +62,12 @@ python scripts/check_env.py --skip-external
 ```powershell
 # Windows PowerShell: 编译检查全部脚本
 python -c "import pathlib, py_compile; [py_compile.compile(str(p), doraise=True) for p in pathlib.Path('scripts').glob('*.py')]"
+```
+
+```bash
+# 启动 Web Dashboard
+python web/server.py --port 8765
+# 浏览器打开 http://127.0.0.1:8765
 ```
 
 ```bash

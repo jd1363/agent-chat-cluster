@@ -9,11 +9,41 @@
 ---
 
 
-## 当前总状态（2026-06-20）
+## 当前总状态（2026-07-01）
 
-- **MVP v1 主线**：Phase 0-3，已完成并进入收口；详见 `ACCEPTANCE_STAGE0.md`、`ACCEPTANCE_STAGE1.md`、`ACCEPTANCE_STAGE2.md`、`ACCEPTANCE_STAGE3.md`。
+- **MVP v1 主线**：Phase 0-3 全部验收通过，执行引擎 + Web Dashboard 已完成。详见 `ACCEPTANCE_STAGE0.md`、`ACCEPTANCE_STAGE1.md`、`ACCEPTANCE_STAGE2.md`、`ACCEPTANCE_STAGE3.md`。
 - **MVP v2 / Control Plane Prototype 预研线**：Milestone A/B/C（Event Layer / State Builder / Scheduler Tick）已启动并有骨架产物，但当前暂缓继续开发，不替代旧方案验收。
-- **当前下一步**：先完成 MVP v1 文档、验收与项目状态收口；不要继续开发 Milestone D 或新增系统化功能。
+- **当前下一步**：MVP v1 已收口；后续按需迭代。
+
+---
+
+## 2026-07-01 更新
+
+### 执行引擎
+- executor_bridge.py：把派工 prompt 转发给真实 CLI（codex/codewhale/opencode/mimo/ollama）
+- run.py：一键 create+dispatch+execute+result
+- 支持 --project 模式：自动注入项目上下文、附加 git diff、解析 file: 代码块写入文件
+- 输出质量检测：失败信号正则匹配（中英文），输出过短检测
+
+### Web Dashboard
+- 实时控制面板：任务表格、Agent 状态、审计日志、成本图表
+- 操作面板：行内执行/取消/重跑按钮，批量操作工具栏
+- PID 跟踪 + kill API
+- SSE 实时推送：任务状态变更、审计日志、Agent 状态
+
+### CLI 链路测试结果
+| Agent | CLI | 状态 | 备注 |
+|-------|-----|------|------|
+| Codex | codex exec | ✅ | 端到端验证通过 |
+| CodeWhale | codewhale exec --auto | ✅ | stream-json 模式，26.6s |
+| OpenCode | opencode run | ✅ | 26.2s，输出最清晰 |
+| MiMo | mimo run | ✅ | 82.6s，有编码问题 |
+| Ollama | ollama run | ⏸ | disabled，服务未运行 |
+
+### Bug 修复（2026-06-30）
+- 17 个问题修复（3 Critical + 6 High + 8 Medium）
+- 12 个死脚本清理
+- tasks.json 数据修正（cancelled/failed 任务补 notes）
 
 ---
 
