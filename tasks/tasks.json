@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 82,
+  "nextId": 84,
   "tasks": [
     {
       "id": "Task-001",
@@ -910,6 +910,30 @@
       "updatedAt": "2026-07-01T05:38:42.916199+00:00",
       "output": "你好世界\r\n你好世界！\n\n当前目录包含以下文件和文件夹：\n\n**目录**：`.codewhale`、`agents`、`config`、`docs`、`logs`、`memory`、`scripts`、`skills`、`snapshots`、`state`、`tasks`、`web`\n\n**文件**：`.codewhale-task.md`、`.gitignore`、`.opencode-task.txt`、`ACCEPTANCE_*.md`、`DEMO_RUNBOOK.md`、`MVP_DELIVERY_REPORT.md`、`PROJECT_PLAN.md`、`README.md`、`start_dashboard.bat`、`stop_dashboard.bat`、`update_docs.py` 等。\r\n",
       "notes": "quality_check=good"
+    },
+    {
+      "id": "Task-082",
+      "title": "SQLite dual-write test",
+      "description": "Testing db.py integration",
+      "status": "pending",
+      "priority": "low",
+      "assignee": null,
+      "createdAt": "2026-07-06T06:07:26.584893+00:00",
+      "updatedAt": "2026-07-06T06:07:26.584893+00:00",
+      "output": null,
+      "notes": ""
+    },
+    {
+      "id": "Task-083",
+      "title": "E2E SQLite test",
+      "description": "Created via Dashboard API",
+      "status": "pending",
+      "priority": "low",
+      "assignee": null,
+      "createdAt": "2026-07-06T06:10:02.294487+00:00",
+      "updatedAt": "2026-07-06T06:10:02.294487+00:00",
+      "output": null,
+      "notes": ""
     }
   ]
 }

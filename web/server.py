@@ -34,6 +34,22 @@ COST_DIR = PROJECT_ROOT / "logs" / "cost"
 EVENTS_DIR = PROJECT_ROOT / "logs" / "events"
 RUNS_DIR = PROJECT_ROOT / "logs" / "runs"
 
+# Import SQLite data layer
+sys.path.insert(0, str(SCRIPTS_DIR))
+try:
+    from db import (
+        list_tasks as db_list_tasks,
+        get_task_stats as db_get_task_stats,
+        search_tasks as db_search_tasks,
+        list_audit as db_list_audit,
+        get_cost_summary as db_get_cost_summary,
+        list_events as db_list_events,
+        list_messages as db_list_messages,
+    )
+    DB_AVAILABLE = True
+except Exception:
+    DB_AVAILABLE = False
+
 # --- Subprocess env for POST handlers ---
 SUB_ENV = {
     **os.environ,
@@ -83,6 +99,26 @@ def read_jsonl_dir(dirpath, limit=50):
 # ===================================================================
 
 def get_tasks():
+    if DB_AVAILABLE:
+        tasks = db_list_tasks(limit=500)
+        # Map snake_case to camelCase for frontend compat
+        mapped = []
+        for t in tasks:
+            mapped.append({
+                "id": t["id"],
+                "title": t["title"],
+                "description": t.get("description", ""),
+                "status": t["status"],
+                "priority": t["priority"],
+                "assignee": t.get("assignee"),
+                "createdAt": t.get("created_at", ""),
+                "updatedAt": t.get("updated_at", ""),
+                "output": t.get("output"),
+                "notes": t.get("notes", ""),
+            })
+        stats = db_get_task_stats()
+        return {"tasks": mapped, "stats": stats}
+    # Fallback: JSON file
     data = read_json(TASKS_FILE, {"tasks": []})
     tasks = data.get("tasks", [])
     stats = {}
@@ -110,18 +146,38 @@ def get_agents():
 
 
 def get_audit(limit=50):
+    if DB_AVAILABLE:
+        entries = db_list_audit(limit=limit)
+        # Map snake_case to camelCase
+        for e in entries:
+            e["eventType"] = e.pop("event_type", "")
+            e["taskId"] = e.pop("task_id", None)
+        return {"entries": entries}
+    # Fallback: JSONL
     entries = read_jsonl_dir(AUDIT_DIR, limit)
     entries.reverse()
     return {"entries": entries[:limit]}
 
 
 def get_messages(limit=30):
+    if DB_AVAILABLE:
+        entries = db_list_messages(limit=limit)
+        # Map snake_case to camelCase
+        for e in entries:
+            e["from"] = e.pop("from_user", "")
+            e["to"] = e.pop("to_user", "")
+            e["type"] = e.pop("msg_type", None)
+        return {"entries": entries}
+    # Fallback: JSONL
     entries = read_jsonl_dir(MESSAGES_DIR, limit)
     entries.reverse()
     return {"entries": entries[:limit]}
 
 
 def get_cost():
+    if DB_AVAILABLE:
+        return db_get_cost_summary()
+    # Fallback: JSONL
     entries = read_jsonl_dir(COST_DIR, 10000)
     total_cost = 0.0
     total_tokens = 0
@@ -145,6 +201,16 @@ def get_cost():
 
 
 def get_events(limit=50):
+    if DB_AVAILABLE:
+        entries = db_list_events(limit=limit)
+        # Map snake_case to camelCase
+        for e in entries:
+            e["eventType"] = e.pop("event_type", "")
+            e["correlationId"] = e.pop("correlation_id", None)
+            e["causationId"] = e.pop("causation_id", None)
+            e["eventId"] = e.pop("event_id", "")
+        return {"entries": entries}
+    # Fallback: JSONL
     entries = read_jsonl_dir(EVENTS_DIR, limit)
     entries.reverse()
     return {"entries": entries[:limit]}

@@ -191,13 +191,29 @@ def build_event(
 
 
 def append_event(event: dict) -> None:
-    """向当天事件日志追加一条事件（JSONL 一行）。"""
+    """向当天事件日志追加一条事件（JSONL 一行）+ SQLite 双写。"""
     ensure_events_dir()
     try:
         with open(today_log_path(), "a", encoding="utf-8") as fh:
             fh.write(json.dumps(event, ensure_ascii=False) + "\n")
     except OSError as e:
         fail(f"无法写入事件日志: {e}")
+
+    # SQLite 双写
+    try:
+        sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+        from db import append_event as db_append_event
+        db_append_event(
+            event_type=event.get("eventType", "unknown"),
+            source=event.get("source", "control-plane"),
+            correlation_id=event.get("correlationId"),
+            causation_id=event.get("causationId"),
+            payload=event.get("payload"),
+            policy_snapshot=event.get("policySnapshot"),
+            status=event.get("status", "pending"),
+        )
+    except Exception as e:
+        print(f"[WARN] SQLite 事件日志写入失败: {e}", file=sys.stderr)
 
 # ---------------------------------------------------------------------------
 # 事件读取

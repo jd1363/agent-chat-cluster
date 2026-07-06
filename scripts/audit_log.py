@@ -61,12 +61,21 @@ def append_audit(event_type: str, message: str, task_id: str | None = None, data
     # 移除值为 None 的键，保持日志紧凑
     record = {k: v for k, v in record.items() if v is not None}
 
+    # 写 JSONL (向后兼容)
     try:
         with open(log_path, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
     except OSError as e:
         print(f"[FAIL] 无法写入审计日志: {e}", file=sys.stderr)
         sys.exit(1)
+
+    # 写 SQLite
+    try:
+        sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+        from db import append_audit as db_append_audit
+        db_append_audit(event_type, message, task_id=task_id, data=data, environment=env)
+    except Exception as e:
+        print(f"[WARN] SQLite 审计日志写入失败: {e}", file=sys.stderr)
 
 
 def main():

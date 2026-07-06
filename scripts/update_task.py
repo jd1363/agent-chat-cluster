@@ -132,6 +132,15 @@ def main():
     else:
         print(f"[INFO] 未提供任何更新字段，{args.id} 保持不变")
 
+    # SQLite 双写
+    if updated:
+        try:
+            sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+            from db import update_task as db_update_task
+            db_update_task(args.id, **changes)
+        except Exception as e:
+            print(f"[WARN] SQLite 任务更新失败: {e}")
+
 
 if __name__ == "__main__":
     main()

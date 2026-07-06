@@ -92,6 +92,24 @@ def append_record(record: Dict[str, Any]) -> Path:
     path = today_path()
     with open(path, "a", encoding="utf-8") as fh:
         fh.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    # SQLite 双写
+    try:
+        sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+        from db import record_cost as db_record_cost
+        db_record_cost(
+            agent_id=record.get("agentId", "unknown"),
+            task_id=record.get("taskId"),
+            input_tokens=record.get("inputTokens", 0),
+            output_tokens=record.get("outputTokens", 0),
+            estimated_cost=record.get("estimatedCost", 0.0) or 0.0,
+            currency=record.get("currency", "USD"),
+            source=record.get("source", "manual"),
+            notes=record.get("notes", ""),
+        )
+    except Exception as e:
+        print(f"[WARN] SQLite 成本日志写入失败: {e}", file=sys.stderr)
+
     return path
 
 

@@ -127,6 +127,14 @@ def main():
 
     print(f"[OK] 已创建 {task_id}: {args.title} (priority={args.priority})")
 
+    # SQLite 双写
+    try:
+        sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+        from db import create_task as db_create_task
+        db_create_task(title=args.title, priority=args.priority, description=args.description)
+    except Exception as e:
+        print(f"[WARN] SQLite 任务写入失败: {e}")
+
 
 if __name__ == "__main__":
     main()

@@ -170,6 +170,35 @@ def append_message(record: dict) -> None:
     except OSError as e:
         fail(f"Unable to write message log: {e}")
 
+    # SQLite 双写
+    try:
+        sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
+        from db import get_conn
+        conn = get_conn()
+        msg_id = record.get("id", f"MSG-X-{record.get('timestamp','')}")
+        conn.execute(
+            """INSERT OR IGNORE INTO messages
+               (id, parent_id, from_user, to_user, content, timestamp, status, msg_type, recipient_count, read_at, expired_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                msg_id,
+                record.get("parentId"),
+                record.get("from", "master"),
+                record.get("to", "all"),
+                record.get("content", ""),
+                record.get("timestamp", ""),
+                record.get("status", "sent"),
+                record.get("type"),
+                record.get("recipientCount"),
+                record.get("readAt"),
+                record.get("expiredAt"),
+            ),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"[WARN] SQLite 消息写入失败: {e}", file=sys.stderr)
+
 
 def allocate_message_id() -> str:
     lock_fd = acquire_state_lock()
