@@ -132,28 +132,6 @@
         "timeoutSeconds": 300,
         "maxOutputKB": 1024
       }
-    },
-    {
-      "id": "agent-hermes-01",
-      "role": "executor",
-      "type": "hermes",
-      "enabled": false,
-      "cwd": "agents/hermes/hermes01",
-      "riskLevel": "medium",
-      "notes": "Hermes Agent v0.10.0 真实执行后端。通过 hermes chat --quiet CLI 调用。模型: doubao-seed-2-0-code-preview-260215。",
-      "executor": {
-        "type": "hermes-cli",
-        "command": "hermes",
-        "args": [
-          "chat",
-          "-q",
-          "{prompt}",
-          "--quiet",
-          "--max-turns",
-          "30"
-        ],
-        "workDir": "."
-      }
     }
   ]
 }
