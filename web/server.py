@@ -345,6 +345,24 @@ def run_script(script_name, args_list):
 
 
 def find_task_by_id(task_id):
+    # 与 API get_tasks() 保持同一数据源（优先 SQLite），避免 SSE 与 REST 状态不一致
+    if DB_AVAILABLE:
+        try:
+            for t in db_list_tasks(limit=1000):
+                if t.get("id") == task_id:
+                    return {
+                        "id": t["id"],
+                        "title": t.get("title"),
+                        "status": t.get("status"),
+                        "priority": t.get("priority"),
+                        "assignee": t.get("assignee"),
+                        "createdAt": t.get("created_at", ""),
+                        "updatedAt": t.get("updated_at", ""),
+                        "output": t.get("output"),
+                        "notes": t.get("notes", ""),
+                    }
+        except Exception:
+            pass
     data = read_json(TASKS_FILE, {"tasks": []})
     for t in data.get("tasks", []):
         if t.get("id") == task_id:
@@ -810,7 +828,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self._sse_write("status", task)
 
         # Check if task is already in a terminal state
-        terminal_statuses = {"done", "failed", "cancelled"}
+        terminal_statuses = {"done", "failed", "cancelled", "blocked"}
         if task and task.get("status") in terminal_statuses:
             self._sse_write("end", {"task": task_id, "status": task["status"]})
             return
