@@ -1,0 +1,5 @@
+{"timestamp": "2026-07-13T03:12:44.719214+00:00", "eventType": "task_created", "taskId": "Task-084", "message": "创建任务: E2E真实任务: 创建 text_utils.py slugify 工具", "environment": "production", "data": {"priority": "medium"}}
+{"timestamp": "2026-07-13T03:12:57.235881+00:00", "eventType": "task_dispatched", "taskId": "Task-084", "message": "任务已派发至 agent-ext-02", "environment": "production", "data": {"assignee": "agent-ext-02", "dispatchFile": "logs\\runs\\Task-084_dispatch.md"}}
+{"timestamp": "2026-07-13T03:12:57.363020+00:00", "eventType": "openclaw_executor_start", "taskId": "Task-084", "details": "dispatch mode, prompt_file=Task-084-prompt.txt", "environment": "production"}
+{"timestamp": "2026-07-13T03:12:57.471280+00:00", "eventType": "executor_bridge_start", "taskId": "Task-084", "message": "agent=agent-ext-02, command=opencode, timeout=180s", "environment": "production"}
+{"timestamp": "2026-07-13T03:13:54.175512+00:00", "eventType": "executor_bridge_success", "taskId": "Task-084", "message": "agent=agent-ext-02, command=opencode, 耗时=56.7s, 输出=863字符, 质量=good", "environment": "production"}

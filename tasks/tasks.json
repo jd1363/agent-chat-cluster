@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "nextId": 84,
+  "nextId": 85,
   "tasks": [
     {
       "id": "Task-001",
@@ -934,6 +934,18 @@
       "updatedAt": "2026-07-06T06:10:02.294487+00:00",
       "output": null,
       "notes": ""
+    },
+    {
+      "id": "Task-084",
+      "title": "E2E真实任务: 创建 text_utils.py slugify 工具",
+      "description": "在 scripts/ 目录下创建新文件 text_utils.py，实现一个 slugify(text: str) -> str 工具函数：将输入字符串转为 URL 友好的 slug（小写、空格和下划线转连字符、去除非字母数字连字符的字符、合并多个连字符、去首尾连字符）。要求：纯 Python 标准库；带类型注解和 docstring；文件末尾加 if __name__ == '__main__' 自测块，至少测试 3 个用例（如 'Hello World' -> 'hello-world'）并打印结果。写完后运行 python scripts/text_utils.py 确认自测通过。",
+      "status": "done",
+      "priority": "medium",
+      "assignee": "agent-ext-02",
+      "createdAt": "2026-07-13T03:12:44.715519+00:00",
+      "updatedAt": "2026-07-13T03:13:54.172029+00:00",
+      "output": "已完成。在 `scripts/text_utils.py` 中创建了 `slugify` 工具函数，满足以下要求：\n\n- **纯标准库**：仅使用 `re` 模块\n- **处理逻辑**：小写 → 空格/下划线转连字符 → 去除非字母数字及连字符外字符 → 合并多个连字符 → 去首尾连字符\n- **类型注解与 docstring**：签名 `def slugify(text: str) -> str`，附带完整文档\n- **自测块**：`if __name__ == \"__main__\"` 中测试了 6 个用例，覆盖常规空格、下划线、前后多余连字符、大写、连续符号等场景\n\n运行结果：\n\n```\n[PASS] slugify('Hello World') -> 'hello-world' (expected 'hello-world')\n[PASS] slugify('This is a test_string!') -> 'this-is-a-test-string' (expected 'this-is-a-test-string')\n[PASS] slugify('---Multiple___Spaces and Symbols!!!---') -> 'multiple-spaces-and-symbols' (expected 'multiple-spaces-and-symbols')\n[PASS] slugify('UPPER lower 123') -> 'upper-lower-123' (expected 'upper-lower-123')\n[PASS] slugify('__leading_trailing__') -> 'leading-trailing' (expected 'leading-trailing')\n[PASS] slugify('a---b___c') -> 'a-b-c' (expected 'a-b-c')\n\nAll tests passed.\n```\r\n",
+      "notes": "quality_check=good"
     }
   ]
 }

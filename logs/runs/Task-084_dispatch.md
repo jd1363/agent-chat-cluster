@@ -1,0 +1,1 @@
+在 scripts/ 目录下创建新文件 text_utils.py，实现一个 slugify(text: str) -> str 工具函数：将输入字符串转为 URL 友好的 slug（小写、空格和下划线转连字符、去除非字母数字连字符的字符、合并多个连字符、去首尾连字符）。要求：纯 Python 标准库；带类型注解和 docstring；文件末尾加 if __name__ == '__main__' 自测块，至少测试 3 个用例（如 'Hello World' -> 'hello-world'）并打印结果。写完后运行 python scripts/text_utils.py 确认自测通过。
