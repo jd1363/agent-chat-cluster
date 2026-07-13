@@ -33,3 +33,7 @@ logs/messages/.state
 # Update scripts (one-off)
 update_docs.py
 verify_fixes.py
+
+web/_*.log
+web/_e2e*.py
+web/_sse*.py
