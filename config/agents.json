@@ -13,7 +13,10 @@
       "executor": {
         "type": "cli",
         "command": "codex",
-        "args": ["exec", "{prompt}"],
+        "args": [
+          "exec",
+          "{prompt}"
+        ],
         "workDir": ".",
         "timeoutSeconds": 120,
         "maxOutputKB": 1024
@@ -31,7 +34,13 @@
       "executor": {
         "type": "cli",
         "command": "codewhale",
-        "args": ["exec", "--auto", "--output-format", "stream-json", "{prompt}"],
+        "args": [
+          "exec",
+          "--auto",
+          "--output-format",
+          "stream-json",
+          "{prompt}"
+        ],
         "workDir": ".",
         "timeoutSeconds": 300,
         "maxOutputKB": 1024
@@ -49,7 +58,11 @@
       "executor": {
         "type": "cli",
         "command": "opencode",
-        "args": ["run", "--dangerously-skip-permissions", "{prompt}"],
+        "args": [
+          "run",
+          "--dangerously-skip-permissions",
+          "{prompt}"
+        ],
         "workDir": ".",
         "timeoutSeconds": 120,
         "maxOutputKB": 1024
@@ -62,12 +75,16 @@
       "enabled": false,
       "cwd": "agents/ext/ext03",
       "riskLevel": "medium",
-      "notes": "Ollama 执行引擎，通过 ollama run CLI 调用，模型: maayan/Qwen2.5-14B-Instruct-GGUF:latest。",
+      "notes": "Ollama 执行引擎，通过 ollama run CLI 调用，模型 maayan/Qwen2.5-14B-Instruct-GGUF:latest。",
       "displayName": "Ollama",
       "executor": {
         "type": "cli",
         "command": "ollama",
-        "args": ["run", "maayan/Qwen2.5-14B-Instruct-GGUF:latest", "{prompt}"],
+        "args": [
+          "run",
+          "maayan/Qwen2.5-14B-Instruct-GGUF:latest",
+          "{prompt}"
+        ],
         "workDir": ".",
         "timeoutSeconds": 120,
         "maxOutputKB": 1024
@@ -85,7 +102,11 @@
       "executor": {
         "type": "cli",
         "command": "mimo",
-        "args": ["run", "--dangerously-skip-permissions", "{prompt}"],
+        "args": [
+          "run",
+          "--dangerously-skip-permissions",
+          "{prompt}"
+        ],
         "workDir": ".",
         "timeoutSeconds": 120,
         "maxOutputKB": 1024,
@@ -109,7 +130,10 @@
       "executor": {
         "type": "cli",
         "command": "codex",
-        "args": ["exec", "{prompt}"],
+        "args": [
+          "exec",
+          "{prompt}"
+        ],
         "workDir": ".",
         "timeoutSeconds": 300,
         "maxOutputKB": 1024
@@ -127,7 +151,13 @@
       "executor": {
         "type": "cli",
         "command": "codewhale",
-        "args": ["exec", "--auto", "--output-format", "stream-json", "{prompt}"],
+        "args": [
+          "exec",
+          "--auto",
+          "--output-format",
+          "stream-json",
+          "{prompt}"
+        ],
         "workDir": ".",
         "timeoutSeconds": 300,
         "maxOutputKB": 1024
