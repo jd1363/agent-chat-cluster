@@ -192,7 +192,7 @@ def validate_assignee(assignee: str, agents_map: dict) -> None:
 def main():
     parser = argparse.ArgumentParser(description="派发 pending 任务")
     parser.add_argument("--id", help="指定任务 ID，如 Task-001")
-    parser.add_argument("--assignee", default="agent-exec-01", help="指派给哪个 Agent（默认: agent-exec-01）")
+    parser.add_argument("--assignee", default="agent-ext-02", help="指派给哪个 Agent（默认: agent-exec-01）")
     parser.add_argument("--execute", action="store_true", help="派工后自动调用 openclaw_executor 生成执行 prompt 文件")
     parser.add_argument("--execute-real", action="store_true",
                         help="派工后自动生成 prompt + 调用 executor_bridge 执行真实 CLI（一步到位）")

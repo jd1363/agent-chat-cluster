@@ -1,0 +1,1 @@
+Write a Python function named add(a, b) that returns their sum. Include a one-line docstring. Output only the code.

@@ -112,7 +112,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="多任务队列调度器：串行派发全部 pending 任务")
     parser.add_argument(
         "--assignee",
-        default="agent-exec-01",
+        default="agent-ext-02",
         help="指定统一 assignee（默认: agent-exec-01）",
     )
     parser.add_argument(

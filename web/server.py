@@ -566,7 +566,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def _post_dispatch_task(self, body):
         task_id = body.get("id", "").strip()
-        assignee = body.get("assignee", "agent-exec-01").strip()
+        assignee = body.get("assignee", "agent-ext-02").strip()
         if not task_id:
             self._json({"ok": False, "error": "id is required"})
             return
@@ -610,7 +610,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def _post_execute_task(self, body):
         task_id = body.get("id", "").strip()
-        assignee = body.get("assignee", "agent-exec-01").strip()
+        assignee = body.get("assignee", "agent-ext-02").strip()
         project = body.get("project", "").strip()
         timeout = body.get("timeout", 120)
         dry_run = body.get("dry_run", False)
@@ -662,7 +662,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def _post_rerun(self, body):
         task_id = body.get("id", "").strip()
-        assignee = body.get("assignee", "agent-exec-01").strip()
+        assignee = body.get("assignee", "agent-ext-02").strip()
         if not task_id:
             self._json({"ok": False, "error": "id is required"})
             return
@@ -690,7 +690,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
     def _post_batch(self, body):
         action = body.get("action", "").strip()
-        assignee = body.get("assignee", "agent-exec-01").strip()
+        assignee = body.get("assignee", "agent-ext-02").strip()
         if not action:
             self._json({"ok": False, "error": "action is required"})
             return

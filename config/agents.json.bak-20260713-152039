@@ -5,10 +5,10 @@
       "id": "agent-exec-01",
       "role": "executor",
       "type": "execution",
-      "enabled": false,
+      "enabled": true,
       "cwd": "agents/resident/exec01",
       "riskLevel": "low",
-      "notes": "[已禁用 2026-07-13] Codex 执行引擎。中转站 yuesecoding.top 已失效（Cloudflare 403），待重新配可用 base_url/key 后再启用。方案 C：绕开 codex。",
+      "notes": "Codex 执行引擎，通过 codex exec CLI 调用。主控→Agent 命令通道验证。",
       "displayName": "Codex",
       "executor": {
         "type": "cli",
@@ -72,21 +72,21 @@
       "id": "agent-ext-03",
       "role": "external",
       "type": "extension",
-      "enabled": true,
+      "enabled": false,
       "cwd": "agents/ext/ext03",
       "riskLevel": "medium",
-      "notes": "[本地兑底 2026-07-13] Ollama 执行引擎，模型 qwen2.5:7b（本地已存在）。作为 codex 失效后的本地兑底启用。",
+      "notes": "Ollama 执行引擎，通过 ollama run CLI 调用，模型 maayan/Qwen2.5-14B-Instruct-GGUF:latest。",
       "displayName": "Ollama",
       "executor": {
         "type": "cli",
         "command": "ollama",
         "args": [
           "run",
-          "qwen2.5:7b",
+          "maayan/Qwen2.5-14B-Instruct-GGUF:latest",
           "{prompt}"
         ],
         "workDir": ".",
-        "timeoutSeconds": 300,
+        "timeoutSeconds": 120,
         "maxOutputKB": 1024
       }
     },
@@ -122,10 +122,10 @@
       "id": "agent-ext-05",
       "role": "external",
       "type": "extension",
-      "enabled": false,
+      "enabled": true,
       "cwd": "agents/ext/ext05",
       "riskLevel": "medium",
-      "notes": "[已禁用 2026-07-13] Codex-2 执行引擎。同 agent-exec-01，中转站 yuesecoding.top 失效，方案 C 绕开 codex。",
+      "notes": "Codex-2 执行引擎，通过 codex exec CLI 调用。第二实例。",
       "displayName": "Codex-2",
       "executor": {
         "type": "cli",
