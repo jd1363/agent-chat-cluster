@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Cluster // Control Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d1117;--bg2:#0a0d12;--card:#161b22;--card-hover:#1c232c;--border:#30363d;--border-soft:#21262d;--text:#e6edf3;--text2:#8b949e;--text3:#6e7681;--accent:#58a6ff;--accent-dim:#1f6feb;--success:#3fb950;--warning:#d29922;--danger:#f85149;--orange:#db6d28;--purple:#bc8cff;--gray:#6e7681}
+html,body{height:100%}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5;overflow-x:auto;min-width:1200px}
+.mono{font-family:'JetBrains Mono','IBM Plex Mono','Fira Code','Consolas',monospace}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:#30363d;border-radius:0}
+::-webkit-scrollbar-thumb:hover{background:#484f58}
+.app{display:flex;flex-direction:column;min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:44px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar-title{font-size:14px;font-weight:600;letter-spacing:0.5px}
+.topbar-title .accent{color:var(--accent)}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.status-indicator{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 6px currentColor}
+.status-dot.warn{background:var(--warning)}
+.status-dot.err{background:var(--danger)}
+.status-dot.off{background:var(--gray);box-shadow:none}
+.last-update{font-size:11px;color:var(--text3)}
+.auto-refresh{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);cursor:pointer;user-select:none}
+.auto-refresh input{cursor:pointer}
+.divider-v{width:1px;height:20px;background:var(--border)}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0}
+.kpi{background:var(--bg);padding:12px 16px;display:flex;flex-direction:column;gap:2px}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:500}
+.kpi-value{font-size:26px;font-weight:700;font-family:'JetBrains Mono','IBM Plex Mono',monospace;line-height:1.2}
+.kpi-value.clr-blue{color:var(--accent)}
+.kpi-value.clr-green{color:var(--success)}
+.kpi-value.clr-red{color:var(--danger)}
+.kpi-value.clr-yellow{color:var(--warning)}
+.kpi-value.clr-purple{color:var(--purple)}
+.main{display:grid;grid-template-columns:1fr 340px;flex:1;min-height:0}
+.main-left{border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+.main-right{display:flex;flex-direction:column;min-height:0;background:var(--bg)}
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text2)}
+.section-actions{display:flex;align-items:center;gap:8px}
+.filter-tabs{display:flex;gap:0}
+.filter-tab{padding:3px 10px;font-size:11px;background:transparent;border:none;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:inherit}
+.filter-tab:hover{color:var(--text2)}
+.filter-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.filter-tab .count{font-size:10px;color:var(--text3);margin-left:4px}
+.filter-tab.active .count{color:var(--accent)}
+.task-table-wrap{flex:1;overflow:auto;min-height:0}
+table.task-table{width:100%;border-collapse:collapse;font-size:12px}
+.task-table thead{position:sticky;top:0;z-index:5;background:var(--bg2)}
+.task-table th{text-align:left;padding:6px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+.task-table td{padding:6px 12px;border-bottom:1px solid var(--border-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.task-table tbody tr{cursor:pointer;transition:background .1s}
+.task-table tbody tr:hover{background:var(--card)}
+.task-table tbody tr.selected{background:rgba(88,166,255,.08);box-shadow:inset 3px 0 0 var(--accent)}
+.col-id{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);width:90px}
+.col-status{width:80px}
+.col-assignee{width:100px;font-size:11px}
+.col-priority{width:70px}
+.col-updated{width:130px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)}
+.badge{display:inline-block;padding:1px 8px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;border-radius:3px;border:1px solid transparent}
+.badge-pending{background:rgba(88,166,255,.12);color:var(--accent);border-color:rgba(88,166,255,.3)}
+.badge-in_progress,.badge-running{background:rgba(210,153,34,.12);color:var(--warning);border-color:rgba(210,153,34,.3)}
+.badge-done{background:rgba(63,185,80,.12);color:var(--success);border-color:rgba(63,185,80,.3)}
+.badge-failed{background:rgba(248,81,73,.12);color:var(--danger);border-color:rgba(248,81,73,.3)}
+.badge-cancelled{background:rgba(110,118,129,.12);color:var(--gray);border-color:rgba(110,118,129,.3)}
+.badge-blocked{background:rgba(219,109,40,.12);color:var(--orange);border-color:rgba(219,109,40,.3)}
+.prio{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px}
+.prio-high{color:var(--danger)}
+.prio-medium{color:var(--warning)}
+.prio-low{color:var(--text3)}
+.task-detail{border-top:1px solid var(--border);background:var(--bg2);max-height:240px;overflow-y:auto;flex-shrink:0}
+.task-detail.hidden{display:none}
+.task-detail-inner{padding:12px 16px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.detail-field{display:flex;flex-direction:column;gap:2px}
+.detail-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);font-weight:500}
+.detail-value{font-size:12px;color:var(--text)}
+.detail-value.mono{font-family:'JetBrains Mono',monospace;font-size:11px}
+.detail-notes{grid-column:1/-1;font-size:12px;color:var(--text2);margin-top:4px;padding:8px;background:var(--bg);border:1px solid var(--border-soft);border-radius:4px;white-space:pre-wrap;word-break:break-word}
+.detail-actions{grid-column:1/-1;display:flex;gap:8px;margin-top:4px;align-items:center}
+.btn{padding:4px 12px;font-size:11px;font-weight:500;background:var(--card);border:1px solid var(--border);color:var(--text);cursor:pointer;border-radius:4px;transition:all .15s;font-family:inherit;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{background:var(--card-hover);border-color:#484f58}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-accent{background:var(--accent-dim);border-color:var(--accent-dim);color:#fff}
+.btn-accent:hover{background:#388bfd;border-color:#388bfd}
+.btn-success{background:rgba(63,185,80,.15);border-color:rgba(63,185,80,.4);color:var(--success)}
+.btn-danger{background:rgba(248,81,73,.15);border-color:rgba(248,81,73,.4);color:var(--danger)}
+.btn-sm{padding:2px 8px;font-size:10px}
+.exec-status{font-size:10px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:3px;margin-left:8px}
+.exec-status.idle{background:rgba(110,118,129,.15);color:var(--text3)}
+.exec-status.running{background:rgba(210,153,34,.15);color:var(--warning)}
+.exec-status.done{background:rgba(63,185,80,.15);color:var(--success)}
+.exec-status.failed{background:rgba(248,81,73,.15);color:var(--danger)}
+.spin{display:inline-block;width:10px;height:10px;border:1.5px solid var(--text3);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.agent-list{flex:1;overflow-y:auto;min-height:0}
+.agent-card{padding:10px 14px;border-bottom:1px solid var(--border-soft);transition:background .15s}
+.agent-card:hover{background:var(--card)}
+.agent-card.disabled{opacity:.4}
+.agent-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.agent-name{font-size:12px;font-weight:600}
+.agent-id{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:1px}
+.agent-status{display:flex;align-items:center;gap:4px}
+.agent-status .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+.agent-status .dot.off{background:var(--gray)}
+.agent-status .txt{color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;font-size:9px}
+.agent-status .txt.on{color:var(--success)}
+.agent-meta{display:flex;gap:12px;margin-top:4px;font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace}
+.agent-meta span{white-space:nowrap}
+.quick-action{border-top:1px solid var(--border);background:var(--bg2);padding:12px 14px;flex-shrink:0}
+.qa-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text2);margin-bottom:8px}
+.qa-field{margin-bottom:8px}
+.qa-field label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:3px;font-weight:500}
+.qa-field input,.qa-field select,.qa-field textarea{width:100%;padding:5px 8px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:12px;font-family:inherit;border-radius:4px;outline:none}
+.qa-field input:focus,.qa-field select:focus,.qa-field textarea:focus{border-color:var(--accent)}
+.qa-field textarea{resize:vertical;min-height:48px;font-size:11px}
+.qa-field select{cursor:pointer}
+.qa-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qa-submit{width:100%;padding:6px;font-size:12px;font-weight:600;background:var(--accent-dim);color:#fff;border:1px solid var(--accent-dim);border-radius:4px;cursor:pointer;transition:background .15s}
+.qa-submit:hover{background:#388bfd}
+.qa-submit:disabled{opacity:.4;cursor:not-allowed}
+.bottom{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border);flex-shrink:0}
+.bottom-left{border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0;max-height:280px}
+.bottom-right{display:flex;flex-direction:column;min-height:0;max-height:280px}
+.audit-list{flex:1;overflow-y:auto;padding:0}
+.audit-entry{padding:4px 14px;border-bottom:1px solid var(--border-soft);font-size:11px;display:flex;align-items:baseline;gap:8px;transition:background .1s}
+.audit-entry:hover{background:var(--card)}
+.audit-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);white-space:nowrap;flex-shrink:0;width:65px}
+.audit-type{font-family:'JetBrains Mono',monospace;font-size:10px;padding:0 6px;border-radius:2px;white-space:nowrap;flex-shrink:0;text-transform:uppercase;letter-spacing:0.5px}
+.audit-type-create,.audit-type-complete,.audit-type-done{background:rgba(63,185,80,.15);color:var(--success)}
+.audit-type-fail,.audit-type-error{background:rgba(248,81,73,.15);color:var(--danger)}
+.audit-type-cancel{background:rgba(110,118,129,.15);color:var(--gray)}
+.audit-type-dispatch{background:rgba(210,153,34,.15);color:var(--warning)}
+.audit-type-message,.audit-type-send{background:rgba(88,166,255,.15);color:var(--accent)}
+.audit-type-update{background:rgba(188,140,255,.15);color:var(--purple)}
+.audit-type-info{background:rgba(110,118,129,.1);color:var(--text3)}
+.audit-msg{color:var(--text2);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.audit-taskid{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-left:4px}
+.chart-wrap{flex:1;padding:8px 12px;min-height:0;position:relative}
+.log-panel{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:8px;max-height:120px;overflow-y:auto;font-family:'JetBrains Mono','IBM Plex Mono',monospace;font-size:10px;line-height:1.5;color:var(--text2);margin-top:8px}
+.log-panel:empty::before{content:'Select a task to view logs.';color:var(--text3)}
+.log-line{white-space:pre-wrap;word-break:break-all}
+.log-line.log-error{color:var(--danger)}
+.log-line.log-warn{color:var(--warning)}
+.log-line.log-info{color:var(--accent)}
+.empty-state{padding:24px;text-align:center;color:var(--text3);font-size:12px}
+select.input-sm{padding:3px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:11px;border-radius:3px;outline:none;cursor:pointer;font-family:inherit}
+.col-actions{width:100px;text-align:center;white-space:nowrap}
+.col-actions .btn{margin:0 2px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
+.toast{position:fixed;bottom:20px;right:20px;padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:4px;font-size:12px;z-index:200;transition:opacity .3s;opacity:0}
+.toast.show{opacity:1}
+.toast.success{border-color:rgba(63,185,80,.5)}
+.toast.error{border-color:rgba(248,81,73,.5)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">AGENT CLUSTER <span class="accent">// CONTROL PANEL</span></span>
+      <span class="divider-v"></span>
+      <span class="status-indicator"><span class="status-dot off" id="status-dot"></span><span id="status-text">CONNECTING</span></span>
+    </div>
+    <div class="topbar-right">
+      <span class="last-update" id="last-update">--</span>
+      <span class="divider-v"></span>
+      <label class="auto-refresh"><input type="checkbox" id="auto-refresh-toggle" checked><span>AUTO REFRESH</span></label>
+    </div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label">总任务</div><div class="kpi-value clr-blue" id="kpi-total">--</div></div>
+    <div class="kpi"><div class="kpi-label">进行中</div><div class="kpi-value clr-yellow" id="kpi-running">--</div></div>
+    <div class="kpi"><div class="kpi-label">已完成</div><div class="kpi-value clr-green" id="kpi-done">--</div></div>
+    <div class="kpi"><div class="kpi-label">失败</div><div class="kpi-value clr-red" id="kpi-failed">--</div></div>
+    <div class="kpi"><div class="kpi-label">AGENTS</div><div class="kpi-value clr-purple" id="kpi-agents">--</div></div>
+  </div>
+  <div class="main">
+    <div class="main-left">
+      <div class="section-header">
+        <span class="section-title">TASKS</span>
+        <div class="section-actions">
+          <div class="filter-tabs" id="filter-tabs">
+            <button class="filter-tab active" data-filter="all">ALL <span class="count" id="cnt-all"></span></button>
+            <button class="filter-tab" data-filter="pending">PENDING <span class="count" id="cnt-pending"></span></button>
+            <button class="filter-tab" data-filter="in_progress">IN PROGRESS <span class="count" id="cnt-in_progress"></span></button>
+            <button class="filter-tab" data-filter="done">DONE <span class="count" id="cnt-done"></span></button>
+            <button class="filter-tab" data-filter="failed">FAILED <span class="count" id="cnt-failed"></span></button>
+            <button class="filter-tab" data-filter="cancelled">CANCELLED <span class="count" id="cnt-cancelled"></span></button>
+          </div>
+        </div>
+      </div>
+      <div class="toolbar" style="display:flex;justify-content:space-between;align-items:center;padding:6px 16px;background:var(--bg);border-bottom:1px solid var(--border-soft);">
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-sm btn-accent" onclick="batchExecute()">▶ 执行所有 Pending</button>
+          <button class="btn btn-sm btn-danger" onclick="batchCancel()">⏹ 取消所有 Running</button>
+        </div>
+        <span id="batch-info" style="font-size:10px;color:var(--text3);"></span>
+      </div>
+      <div class="task-table-wrap">
+        <table class="task-table">
+          <thead><tr><th>ID</th><th>标题</th><th>状态</th><th>指派</th><th>优先级</th><th>更新时间</th><th>操作</th></tr></thead>
+          <tbody id="task-tbody"><tr><td colspan="7" class="empty-state">Loading tasks...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="task-detail hidden" id="task-detail"><div class="task-detail-inner" id="task-detail-content"></div></div>
+    </div>
+    <div class="main-right">
+      <div class="section-header"><span class="section-title">AGENTS</span><span class="section-actions" id="agents-count" style="font-size:10px;color:var(--text3)"></span></div>
+      <div class="agent-list" id="agent-list"><div class="empty-state">Loading agents...</div></div>
+      <div class="quick-action">
+        <div class="qa-title">⚡ 快速操作</div>
+        <div class="qa-field"><label>任务标题</label><input type="text" id="qa-title-input" placeholder="输入任务标题..."></div>
+        <div class="qa-field"><label>任务描述</label><textarea id="qa-desc-input" placeholder="详细描述（传给执行Agent）"></textarea></div>
+        <div class="qa-row">
+          <div class="qa-field"><label>指派给</label><select id="qa-assignee"></select></div>
+          <div class="qa-field"><label>优先级</label><select id="qa-priority"><option value="low">低</option><option value="medium" selected>中</option><option value="high">高</option></select></div>
+        </div>
+        <div class="qa-field"><label>项目路径</label><input type="text" id="qa-project-input" placeholder="G:/agent-chat-cluster"></div>
+        <button class="qa-submit" id="qa-submit" onclick="createTask()">创建并执行</button>
+      </div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="bottom-left">
+      <div class="section-header"><span class="section-title">AUDIT LOG</span><span class="section-actions" style="font-size:10px;color:var(--text3)">实时滚动</span></div>
+      <div class="audit-list" id="audit-list"><div class="empty-state">Loading audit...</div></div>
+    </div>
+    <div class="bottom-right">
+      <div class="section-header"><span class="section-title">COST BY AGENT</span><span class="section-actions" id="cost-summary" style="font-size:10px;color:var(--text3)"></span></div>
+      <div class="chart-wrap"><canvas id="cost-chart"></canvas></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+// === STATE ===
+let agentsCache=[],tasksCache=[],auditCache=[],selectedTaskId=null,currentFilter='all',logSSE=null,eventSSE=null,costChart=null,autoRefresh=true;
+async function fjson(u){const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+function esc(s){if(s==null)return'';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmtTime(ts){if(!ts)return'\u2014';const d=new Date(ts);if(isNaN(d))return'\u2014';return d.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function showToast(msg,type){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type==='success'?' success':type==='error'?' error':'');setTimeout(()=>t.className='toast',2500)}
+function renderKPIs(tasks){const stats=tasks.stats||{};const total=(tasks.tasks||[]).length;document.getElementById('kpi-total').textContent=total;document.getElementById('kpi-running').textContent=(stats.in_progress||0)+(stats.running||0);document.getElementById('kpi-done').textContent=stats.done||0;document.getElementById('kpi-failed').textContent=stats.failed||0;document.getElementById('kpi-agents').textContent=agentsCache.length;document.getElementById('last-update').textContent='更新: '+new Date().toLocaleTimeString('zh-CN');updateFilterCounts(stats)}
+function setupFilters(){document.querySelectorAll('.filter-tab').forEach(tab=>{tab.addEventListener('click',()=>{document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');currentFilter=tab.dataset.filter;renderTasks()})})}
+function updateFilterCounts(stats){if(!stats)return;const total=Object.values(stats).reduce((a,b)=>a+b,0);document.getElementById('cnt-all').textContent='('+total+')';document.getElementById('cnt-pending').textContent='('+(stats.pending||0)+')';document.getElementById('cnt-in_progress').textContent='('+(stats.in_progress||0)+')';document.getElementById('cnt-done').textContent='('+(stats.done||0)+')';document.getElementById('cnt-failed').textContent='('+(stats.failed||0)+')';document.getElementById('cnt-cancelled').textContent='('+(stats.cancelled||0)+')'}
+function renderTasks(){const tbody=document.getElementById('task-tbody');let tasks=tasksCache;if(currentFilter!=='all')tasks=tasks.filter(t=>t.status===currentFilter||(currentFilter==='in_progress'&&t.status==='running'));if(!tasks.length){tbody.innerHTML='<tr><td colspan="7" class="empty-state">No tasks found.</td></tr>';return}tasks=tasks.slice().reverse();tbody.innerHTML=tasks.map(t=>{const sel=t.id===selectedTaskId?' selected':'';const st=t.status||'unknown';const assignee=t.assignee||'—';const prio=t.priority||'medium';const updated=fmtTime(t.updatedAt||t.createdAt);var actionHtml='';if(st==='pending'||st==='cancelled'||st==='blocked'){actionHtml='<button class="btn btn-sm btn-accent" onclick="event.stopPropagation();quickExecute(\''+esc(t.id)+'\')">▶</button>'}else if(st==='in_progress'||st==='running'){actionHtml='<button class="btn btn-sm btn-danger" onclick="event.stopPropagation();killTask(\''+esc(t.id)+'\')">⏹</button>'}else if(st==='failed'||st==='done'){actionHtml='<button class="btn btn-sm" onclick="event.stopPropagation();rerunTask(\''+esc(t.id)+'\')">🔄</button>'}return '<tr class="'+sel+'" onclick="selectTask(\''+esc(t.id)+'\')">'+'<td class="col-id">'+esc(t.id)+'</td>'+'<td>'+esc(t.title||t.id)+'</td>'+'<td class="col-status"><span class="badge badge-'+st+'">'+st+'</span></td>'+'<td class="col-assignee">'+esc(assignee)+'</td>'+'<td class="col-priority"><span class="prio prio-'+prio+'">'+prio+'</span></td>'+'<td class="col-updated">'+updated+'</td>'+'<td>'+actionHtml+'</td></tr>'}).join('')}
+function selectTask(taskId){selectedTaskId=taskId;renderTasks();const detail=document.getElementById('task-detail');const content=document.getElementById('task-detail-content');const task=tasksCache.find(t=>t.id===taskId);if(!task){detail.classList.add('hidden');return}detail.classList.remove('hidden');const status=task.status||'unknown';let actions='<div class="detail-actions">';if(status==='pending'){actions+='<select class="input-sm" id="exec-assignee">'+agentsCache.filter(a=>a.enabled!==false).map(a=>'<option value="'+esc(a.id)+'">'+esc(a.displayName||a.id)+'</option>').join('')+'</select>';actions+='<input type="number" id="exec-timeout" value="120" min="10" max="3600" class="input-sm" style="width:60px;" title="超时秒数">';actions+='<label style="font-size:11px;color:var(--text2);"><input type="checkbox" id="exec-dryrun"> dry-run</label>';actions+='<input type="text" id="exec-project" value="G:/agent-chat-cluster" class="input-sm" style="width:180px;" title="项目路径">';actions+='<button class="btn btn-accent btn-sm" id="exec-btn" onclick="executeTask(\''+esc(task.id)+'\')">▶ 执行</button>';actions+='<span class="exec-status idle" id="exec-status">IDLE</span>'}else if(status==='in_progress'||status==='running'){actions+='<span class="exec-status running" id="exec-status"><span class="spin"></span> RUNNING</span>'}else if(status==='done'){actions+='<span class="exec-status done" id="exec-status">✓ DONE</span>'}else if(status==='failed'){actions+='<span class="exec-status failed" id="exec-status">✗ FAILED</span>'}else{actions+='<span class="exec-status idle" id="exec-status">'+status.toUpperCase()+'</span>'}actions+='</div>';content.innerHTML='<div class="detail-grid">'+'<div class="detail-field"><span class="detail-label">ID</span><span class="detail-value mono">'+esc(task.id)+'</span></div>'+'<div class="detail-field"><span class="detail-label">状态</span><span class="detail-value"><span class="badge badge-'+status+'">'+status+'</span></span></div>'+'<div class="detail-field"><span class="detail-label">优先级</span><span class="detail-value"><span class="prio prio-'+(task.priority||'medium')+'">'+esc(task.priority||'medium')+'</span></span></div>'+'<div class="detail-field"><span class="detail-label">指派</span><span class="detail-value">'+esc(task.assignee||'—')+'</span></div>'+'<div class="detail-field"><span class="detail-label">创建时间</span><span class="detail-value mono">'+fmtTime(task.createdAt)+'</span></div>'+'<div class="detail-field"><span class="detail-label">更新时间</span><span class="detail-value mono">'+fmtTime(task.updatedAt)+'</span></div>'+(task.output?'<div class="detail-field" style="grid-column:1/-1"><span class="detail-label">输出</span><span class="detail-value">'+esc(task.output)+'</span></div>':'')+'<div class="detail-notes">'+esc(task.notes||task.description||'无备注')+'</div>'+actions+'</div>';if(status==='in_progress'||status==='running'||status==='pending'){connectLogSSE(taskId)}}
+async function executeTask(taskId){const sel=document.getElementById('exec-assignee');const btn=document.getElementById('exec-btn');const statusEl=document.getElementById('exec-status');const assignee=sel?sel.value:'agent-exec-01';const project=document.getElementById('exec-project')?document.getElementById('exec-project').value:'';const timeout=parseInt(document.getElementById('exec-timeout')?document.getElementById('exec-timeout').value:'120');const dryRun=document.getElementById('exec-dryrun')?document.getElementById('exec-dryrun').checked:false;if(!confirm('确认执行任务 '+taskId+' ?\n指派给: '+assignee))return;if(btn)btn.disabled=true;if(statusEl){statusEl.className='exec-status running';statusEl.innerHTML='<span class="spin"></span> RUNNING'}try{const res=await fetch('/api/tasks/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:taskId,assignee:assignee,project:project,timeout:timeout,dry_run:dryRun})});const data=await res.json();if(data.ok){showToast('任务 '+taskId+' 已启动','success');connectLogSSE(taskId);setTimeout(loadAll,2000)}else{showToast('执行失败: '+(data.error||'Unknown'),'error');if(btn)btn.disabled=false;if(statusEl){statusEl.className='exec-status failed';statusEl.textContent='FAILED'}}}catch(e){showToast('请求失败: '+e.message,'error');if(btn)btn.disabled=false;if(statusEl){statusEl.className='exec-status failed';statusEl.textContent='FAILED'}}}
+function connectLogSSE(taskId){if(logSSE)logSSE.close();const panel=document.getElementById('task-detail-content');let logDiv=panel.querySelector('.log-panel');if(!logDiv){logDiv=document.createElement('div');logDiv.className='log-panel';panel.appendChild(logDiv)}logDiv.innerHTML='';logSSE=new EventSource('/api/stream/tasks/'+taskId+'/logs');logSSE.addEventListener('message',function(e){try{const msg=JSON.parse(e.data);if(msg.type==='log'){const line=document.createElement('div');line.className='log-line';const text=msg.data.line||'';if(/error/i.test(text))line.classList.add('log-error');else if(/warn/i.test(text))line.classList.add('log-warn');else if(/info/i.test(text))line.classList.add('log-info');line.textContent=text;logDiv.appendChild(line);logDiv.scrollTop=logDiv.scrollHeight}else if(msg.type==='status'){const st=msg.data.status||'unknown';const se=document.getElementById('exec-status');if(se){if(st==='done'){se.className='exec-status done';se.textContent='✓ DONE';logSSE.close()}else if(st==='failed'){se.className='exec-status failed';se.textContent='✗ FAILED';logSSE.close()}else if(st==='cancelled'){se.className='exec-status idle';se.textContent='CANCELLED';logSSE.close()}else{se.className='exec-status running';se.innerHTML='<span class="spin"></span> '+st.toUpperCase()}}}else if(msg.type==='end'){logSSE.close()}}catch(err){}});logSSE.onerror=function(){logDiv.insertAdjacentHTML('beforeend','<div class="log-line log-warn">— 连接断开 —</div>');logDiv.scrollTop=logDiv.scrollHeight}}
+function renderAgents(data){const list=document.getElementById('agent-list');agentsCache=data.agents||[];const enabled=agentsCache.filter(a=>a.enabled!==false).length;document.getElementById('agents-count').textContent=enabled+'/'+agentsCache.length+' active';document.getElementById('kpi-agents').textContent=agentsCache.length;const ddl=document.getElementById('qa-assignee');if(ddl){ddl.innerHTML=agentsCache.filter(a=>a.enabled!==false).map(a=>'<option value="'+esc(a.id)+'">'+esc(a.displayName||a.id)+'</option>').join('')}if(!agentsCache.length){list.innerHTML='<div class="empty-state">No agents configured.</div>';return}list.innerHTML=agentsCache.map(a=>{const en=a.enabled!==false;const cls=en?'agent-card':'agent-card disabled';const dotCls=en?'':'off';const txtCls=en?'on':'';const txt=en?'ACTIVE':'OFFLINE';const cmd=esc(a.executorCommand||(a.executor&&a.executor.command)||'N/A');const type=esc(a.executorType||(a.executor&&a.executor.type)||'N/A');const timeout=(a.executor&&a.executor.timeoutSeconds)||'—';return '<div class="'+cls+'">'+'<div class="agent-card-head"><div><div class="agent-name">'+esc(a.displayName||a.id)+'</div><div class="agent-id">'+esc(a.id)+'</div></div>'+'<div class="agent-status"><span class="dot '+dotCls+'"></span><span class="txt '+txtCls+'">'+txt+'</span></div></div>'+'<div class="agent-meta"><span>'+cmd+'</span><span>'+type+'</span><span>timeout:'+timeout+'s</span></div></div>'}).join('')}
+function renderAudit(data){const list=document.getElementById('audit-list');let entries=data.entries||[];if(!entries.length){if(!auditCache.length){list.innerHTML='<div class="empty-state">No audit entries.</div>';return}}else{auditCache=entries.concat(auditCache).slice(0,20)}list.innerHTML=auditCache.map(e=>{const evt=esc(e.event||e.type||'unknown');const tid=esc(e.taskId||e.task_id||e.id||'');const time=e.timestamp||e.ts||e.time||'';const timeStr=time?new Date(time).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';const msg=esc(e.message||e.action||e.details||'');const typeCls='audit-type-'+evt.toLowerCase().replace(/_/g,'-');return '<div class="audit-entry">'+'<span class="audit-time">'+timeStr+'</span>'+'<span class="audit-type '+typeCls+'">'+evt+'</span>'+'<span class="audit-msg">'+msg+(tid?'<span class="audit-taskid">'+tid+'</span>':'')+'</span></div>'}).join('')}
+function renderCostChart(cost){const byAgent=cost.byAgent||{};const labels=Object.keys(byAgent);const values=labels.map(k=>byAgent[k].cost);const total=cost.totalCost||0;const tokens=cost.totalTokens||0;document.getElementById('cost-summary').textContent='$'+total.toFixed(4)+' / '+tokens+' tokens';const ctx=document.getElementById('cost-chart').getContext('2d');if(costChart){costChart.data.labels=labels;costChart.data.datasets[0].data=values;costChart.update();return}costChart=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{data:values,backgroundColor:'rgba(88,166,255,0.6)',borderColor:'rgba(88,166,255,1)',borderWidth:1,borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.parsed.x.toFixed(4)}}},scales:{x:{grid:{color:'rgba(48,54,61,.5)'},ticks:{color:'#6e7681',font:{size:10,family:"'JetBrains Mono',monospace"}},title:{display:true,text:'USD',color:'#6e7681',font:{size:10}}},y:{grid:{display:false},ticks:{color:'#8b949e',font:{size:11}}}}}})}
+async function createTask(){const title=document.getElementById('qa-title-input').value.trim();const desc=document.getElementById('qa-desc-input').value.trim();const priority=document.getElementById('qa-priority').value;const assignee=document.getElementById('qa-assignee').value;const project=document.getElementById('qa-project-input').value.trim();if(!title){showToast('请输入任务标题','error');return}const btn=document.getElementById('qa-submit');btn.disabled=true;btn.textContent='创建中...';try{const res=await fetch('/api/tasks/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,description:desc,priority})});const data=await res.json();if(data.ok){showToast('任务创建成功','success');document.getElementById('qa-title-input').value='';document.getElementById('qa-desc-input').value='';await loadAll();if(data.task&&data.task.id){const taskId=data.task.id;const execRes=await fetch('/api/tasks/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:taskId,assignee:assignee,project:project})});const execData=await execRes.json();if(execData.ok){showToast('任务 '+taskId+' 已启动执行','success');selectTask(taskId)}else{showToast('执行失败: '+(execData.error||'Unknown'),'error')}}}else{showToast('创建失败: '+(data.error||'Unknown'),'error')}}catch(e){showToast('请求失败: '+e.message,'error')}btn.disabled=false;btn.textContent='创建并执行'}
+async function loadAll(){try{const[agents,tasks,audit,cost]=await Promise.all([fjson('/api/agents'),fjson('/api/tasks'),fjson('/api/audit?limit=20'),fjson('/api/cost')]);renderAgents(agents);tasksCache=tasks.tasks||[];renderKPIs(tasks);renderTasks();renderAudit(audit);renderCostChart(cost)}catch(e){console.error('Load error:',e);document.getElementById('status-text').textContent='ERROR';document.getElementById('status-dot').className='status-dot err'}}
+function connectSSE(){eventSSE=new EventSource('/api/stream/events');eventSSE.addEventListener('message',function(e){try{const msg=JSON.parse(e.data);if(msg.type==='tasks'){tasksCache=msg.data.tasks||[];renderKPIs(msg.data);renderTasks()}else if(msg.type==='agents'){renderAgents(msg.data)}else if(msg.type==='audit'){renderAudit({entries:[msg.data]})}}catch(err){}});eventSSE.onopen=function(){document.getElementById('status-dot').className='status-dot';document.getElementById('status-text').textContent='LIVE'};eventSSE.onerror=function(){document.getElementById('status-text').textContent='RECONNECTING';document.getElementById('status-dot').className='status-dot warn'}}
+document.getElementById('auto-refresh-toggle').addEventListener('change',function(){autoRefresh=this.checked;if(autoRefresh){refreshTimer=setInterval(loadAll,30000)}else{if(refreshTimer)clearInterval(refreshTimer)}});
+setupFilters();loadAll();connectSSE();refreshTimer=setInterval(loadAll,30000);
+
+async function quickExecute(taskId){var assignee=document.getElementById('qa-assignee').value||'agent-exec-01';if(!confirm('确认执行任务 '+taskId+' ?'))return;try{var res=await fetch('/api/tasks/execute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:taskId,assignee:assignee})});var data=await res.json();if(data.ok){showToast('任务已启动','success');setTimeout(loadAll,2000)}else{showToast('执行失败: '+data.error,'error')}}catch(e){showToast('请求失败: '+e.message,'error')}}
+async function killTask(taskId){if(!confirm('确认取消任务 '+taskId+' ?'))return;try{var res=await fetch('/api/tasks/kill',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:taskId})});var data=await res.json();if(data.ok){showToast('任务已取消','success');setTimeout(loadAll,2000)}else{showToast('取消失败: '+data.error,'error')}}catch(e){showToast('请求失败: '+e.message,'error')}}
+async function rerunTask(taskId){if(!confirm('确认重跑任务 '+taskId+' ?'))return;var assignee=document.getElementById('qa-assignee').value||'agent-exec-01';try{var res=await fetch('/api/tasks/rerun',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:taskId,assignee:assignee})});var data=await res.json();if(data.ok){showToast('任务已重跑','success');setTimeout(loadAll,2000)}else{showToast('重跑失败: '+data.error,'error')}}catch(e){showToast('请求失败: '+e.message,'error')}}
+async function batchExecute(){if(!confirm('确认执行所有 Pending 任务?'))return;try{var res=await fetch('/api/tasks/batch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'execute_pending'})});var data=await res.json();if(data.ok){showToast('已启动 '+data.count+' 个任务','success');setTimeout(loadAll,3000)}else{showToast('失败: '+data.error,'error')}}catch(e){showToast('请求失败: '+e.message,'error')}}
+async function batchCancel(){if(!confirm('确认取消所有 Running 任务?'))return;try{var res=await fetch('/api/tasks/batch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'cancel_running'})});var data=await res.json();if(data.ok){showToast('已取消 '+data.count+' 个任务','success');setTimeout(loadAll,3000)}else{showToast('失败: '+data.error,'error')}}catch(e){showToast('请求失败: '+e.message,'error')}}
+</script>
+</body>
+</html>
