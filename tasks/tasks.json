@@ -963,13 +963,13 @@
       "id": "Task-086",
       "title": "方案C终验: opencode真实产出",
       "description": "Write a Python function named add(a, b) that returns their sum. Include a one-line docstring. Output only the code.",
-      "status": "done",
+      "status": "failed",
       "priority": "low",
       "assignee": "agent-ext-02",
       "createdAt": "2026-07-13T07:23:51.220274+00:00",
-      "updatedAt": "2026-07-13T07:24:09.429632+00:00",
-      "output": "```python\ndef add(a, b):\n    \"\"\"Return the sum of a and b.\"\"\"\n    return a + b\n```\r\n",
-      "notes": "quality_check=good"
+      "updatedAt": "2026-07-20T07:12:40.076928+00:00",
+      "output": "",
+      "notes": "Executed via scheduler tick, return code -1"
     }
   ]
 }
