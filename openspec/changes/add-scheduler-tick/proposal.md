@@ -1,10 +1,10 @@
-## Why
+﻿## Why
 
 `queue_dispatch.py` reads from the legacy flat-file `tasks/tasks.json` and has no backpressure, no audit trail, and no loop mode, making it unsuitable for continuous operation in the multi-agent cluster. A proper scheduler is needed that drives the SQLite data layer and respects per-agent concurrency caps.
 
 ## What Changes
 
-- **New**: `scheduler_tick.py` — a SQLite-backed scheduler that replaces manual batch dispatch.
+- **New**: `scheduler_tick.py` - a SQLite-backed scheduler that replaces manual batch dispatch.
 - **Removed**: dependency on `tasks/tasks.json` for dispatch (file may remain for seeding but is no longer the source of truth at runtime).
 - Dispatch priority order: `high > medium > low`, then by `created` timestamp ascending.
 - Backpressure: per-agent in-progress count checked against `concurrency_cap` before dispatch.
