@@ -57,7 +57,8 @@ SUB_ENV = {
     "PYTHONIOENCODING": "utf-8",
 }
 
-_RUNNING_PIDS = {}  # task_id → subprocess.Popen
+_RUNNING_PIDS = {}  # task_id -> subprocess.Popen
+_SCHEDULER_PROC = None  # single scheduler_tick.py --loop daemon, or None
 
 
 # ===================================================================
@@ -223,6 +224,12 @@ def get_policies():
 
 def get_state():
     return read_json(STATE_FILE, {})
+
+
+def get_scheduler_status():
+    proc = _SCHEDULER_PROC
+    running = proc is not None and proc.poll() is None
+    return {"running": running, "pid": proc.pid if running else None}
 
 
 def get_alerts():
@@ -501,6 +508,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self._json(get_alerts())
         elif path == "/api/air_quality":
             self._json(get_air_quality(params))
+        elif path == "/api/scheduler/status":
+            self._json(get_scheduler_status())
         elif path == "/api/stream/events":
             self._sse_events()
         elif path.startswith("/api/stream/tasks/") and path.endswith("/logs"):
@@ -537,10 +546,66 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self._post_batch(body_data)
         elif path == "/api/messages/send":
             self._post_send_message(body_data)
+        elif path == "/api/scheduler/start":
+            self._post_scheduler_start(body_data)
+        elif path == "/api/scheduler/stop":
+            self._post_scheduler_stop(body_data)
         else:
             self._json({"ok": False, "error": "unknown endpoint"}, status=404)
 
     # --- POST handlers ---
+
+    def _post_scheduler_start(self, body):
+        global _SCHEDULER_PROC
+        if _SCHEDULER_PROC is not None and _SCHEDULER_PROC.poll() is None:
+            self._json({"ok": False, "error": "scheduler already running", "pid": _SCHEDULER_PROC.pid})
+            return
+        interval = body.get("interval", 10)
+        try:
+            interval = int(interval)
+            if interval < 1:
+                interval = 10
+        except (TypeError, ValueError):
+            interval = 10
+        execute_real = bool(body.get("executeReal", False))
+        cmd = [sys.executable, str(SCRIPTS_DIR / "scheduler_tick.py"), "--loop", str(interval)]
+        if execute_real:
+            cmd.append("--execute-real")
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                cwd=str(PROJECT_ROOT),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                env=SUB_ENV,
+            )
+            _SCHEDULER_PROC = proc
+            self._json({
+                "ok": True,
+                "message": f"Scheduler started (PID {proc.pid}), interval={interval}s, executeReal={execute_real}",
+                "pid": proc.pid,
+                "interval": interval,
+                "executeReal": execute_real,
+            })
+        except Exception as e:
+            self._json({"ok": False, "error": str(e)})
+
+    def _post_scheduler_stop(self, body):
+        global _SCHEDULER_PROC
+        if _SCHEDULER_PROC is None or _SCHEDULER_PROC.poll() is not None:
+            _SCHEDULER_PROC = None
+            self._json({"ok": True, "message": "scheduler not running"})
+            return
+        try:
+            _SCHEDULER_PROC.terminate()
+            try:
+                _SCHEDULER_PROC.wait(timeout=3)
+            except subprocess.TimeoutExpired:
+                _SCHEDULER_PROC.kill()
+        except Exception:
+            pass
+        _SCHEDULER_PROC = None
+        self._json({"ok": True, "message": "scheduler stopped"})
 
     def _post_create_task(self, body):
         title = body.get("title", "").strip()

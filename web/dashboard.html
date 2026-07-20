@@ -191,6 +191,10 @@
   .kpi-done .kpi-value { color: var(--success); }
   .kpi-failed .kpi-value { color: var(--danger); }
   .kpi-agents .kpi-value { color: var(--accent); }
+.sched-status { font-size:12px; font-weight:600; padding:8px 10px; border-radius:var(--radius); font-family:var(--font-mono,monospace); }
+.sched-status.running { color:var(--success); background:oklch(0.7 0.15 150 / 0.12); }
+.sched-status.stopped { color:var(--foreground-2); background:var(--surface-2); }
+.sched-status.unavailable { color:var(--warning); background:oklch(0.75 0.15 80 / 0.1); }
 
   /*  Left Column: Tasks  */
   .tasks-panel {
@@ -642,35 +646,35 @@
         <span class="kpi-label">Total Tasks</span>
         <span class="kpi-icon"><i data-lucide="list-checks" size="16"></i></span>
       </div>
-      <div class="kpi-value" id="kpi-total">?/div>
+      <div class="kpi-value" id="kpi-total">-</div>
     </div>
     <div class="kpi-card kpi-running" aria-label="Running tasks">
       <div class="kpi-top">
         <span class="kpi-label">Running</span>
         <span class="kpi-icon"><i data-lucide="play-circle" size="16"></i></span>
       </div>
-      <div class="kpi-value" id="kpi-running">?/div>
+      <div class="kpi-value" id="kpi-running">-</div>
     </div>
     <div class="kpi-card kpi-done" aria-label="Done tasks">
       <div class="kpi-top">
         <span class="kpi-label">Done</span>
         <span class="kpi-icon"><i data-lucide="check-circle" size="16"></i></span>
       </div>
-      <div class="kpi-value" id="kpi-done">?/div>
+      <div class="kpi-value" id="kpi-done">-</div>
     </div>
     <div class="kpi-card kpi-failed" aria-label="Failed tasks">
       <div class="kpi-top">
         <span class="kpi-label">Failed</span>
         <span class="kpi-icon"><i data-lucide="alert-circle" size="16"></i></span>
       </div>
-      <div class="kpi-value" id="kpi-failed">?/div>
+      <div class="kpi-value" id="kpi-failed">-</div>
     </div>
     <div class="kpi-card kpi-agents" aria-label="Agents">
       <div class="kpi-top">
         <span class="kpi-label">Agents</span>
         <span class="kpi-icon"><i data-lucide="bot" size="16"></i></span>
       </div>
-      <div class="kpi-value" id="kpi-agents">?/div>
+      <div class="kpi-value" id="kpi-agents">-</div>
     </div>
   </section>
 
@@ -757,6 +761,38 @@
     </div>
   </aside>
 
+  <!-- SCHEDULER CONTROL PANEL -->
+  <aside class="detail-panel" aria-label="Scheduler control" style="margin-top:16px;">
+    <div class="detail-header">
+      <h3><i data-lucide="timer" size="16" style="vertical-align:-3px;margin-right:6px;"></i>Scheduler</h3>
+    </div>
+    <div class="detail-body" style="display:flex;flex-direction:column;gap:14px;padding:16px;">
+      <div id="sched-status" class="sched-status unavailable" aria-live="polite">Scheduler: checking...</div>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--foreground-2);">
+        Tick interval (seconds)
+        <input id="sched-interval" type="number" min="1" value="10"
+          style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;color:var(--foreground);font-family:inherit;">
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--foreground);cursor:pointer;">
+        <input id="sched-exec-real" type="checkbox">
+        Execute Real
+        <span style="font-size:11px;color:var(--warning);">(unchecked = dry-run, safe)</span>
+      </label>
+      <div style="display:flex;gap:8px;">
+        <button onclick="startScheduler()" class="btn btn-primary"
+          style="flex:1;background:var(--success);color:#fff;border:none;border-radius:var(--radius);padding:9px 0;font-family:inherit;font-weight:600;cursor:pointer;transition:transform 150ms ease-out;"
+          onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+          <i data-lucide="play" size="14" style="vertical-align:-2px;"></i> Start
+        </button>
+        <button onclick="stopScheduler()" class="btn btn-danger"
+          style="flex:1;background:var(--danger);color:#fff;border:none;border-radius:var(--radius);padding:9px 0;font-family:inherit;font-weight:600;cursor:pointer;transition:transform 150ms ease-out;"
+          onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+          <i data-lucide="square" size="14" style="vertical-align:-2px;"></i> Stop
+        </button>
+      </div>
+    </div>
+  </aside>
+
 </main>
 
 <!--  NEW TASK MODAL (simple overlay)  -->
@@ -787,6 +823,10 @@
           <label style="display:block;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--foreground-2);margin-bottom:4px;">Assignee</label>
           <input type="text" style="width:100%;padding:8px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--foreground);font-size:0.85rem;font-family:var(--font-sans);outline:none;" placeholder="agent-id" id="new-task-assignee">
         </div>
+      </div>
+      <div>
+        <label style="display:block;font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--foreground-2);margin-bottom:4px;">Description</label>
+        <textarea rows="3" style="width:100%;padding:8px 12px;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;color:var(--foreground);font-size:0.85rem;font-family:var(--font-sans);outline:none;resize:vertical;" placeholder="Task details / prompt for the agent" id="new-task-desc"></textarea>
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px;">
         <button type="button" class="toolbar-btn" onclick="closeNewTaskModal()">Cancel</button>
@@ -874,7 +914,11 @@ async function startScheduler() {
 
 async function stopScheduler() {
   try {
-    await fetch('/api/scheduler/stop', { method: 'POST' });
+    await fetch('/api/scheduler/stop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
   } catch (err) { console.error('scheduler stop failed:', err); }
   pollSchedulerStatus();
 }
@@ -1012,7 +1056,7 @@ function renderTaskTable() {
       <td><span class="task-title" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</span></td>
       <td>${prioDot}${t.priority || '?}</td>
       <td>${statusBadge}</td>
-      <td>${t.assignee ? escapeHtml(t.assignee) : '<span style="color:var(--foreground-2)">?/span>'}</td>
+      <td>${t.assignee ? escapeHtml(t.assignee) : '<span style="color:var(--foreground-2)">-</span>'}</td>
       <td><span style="font-size:0.7rem;color:var(--foreground-2);font-family:var(--font-mono)">${updated}</span></td>
     </tr>`;
   }).join('');
