@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agent Cluster ?Control Dashboard</title>
+<title>Agent Cluster 鈥?Control Dashboard</title>
 
 <!-- Google Fonts: Inter + JetBrains Mono -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,7 @@
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
 <style>
-  /*  SuperDesign Dark Theme (oklch)  */
+  /* 鈹€鈹€ SuperDesign Dark Theme (oklch) 鈹€鈹€ */
   :root {
     --background:     oklch(0.11 0.015 260);
     --surface:        oklch(0.15 0.018 260);
@@ -60,13 +60,13 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /*  Scrollbar  */
+  /* 鈹€鈹€ Scrollbar 鈹€鈹€ */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 99px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--foreground-2); }
 
-  /*  Layout  */
+  /* 鈹€鈹€ Layout 鈹€鈹€ */
   .app-header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
@@ -136,7 +136,7 @@
     align-items: start;
   }
 
-  /*  KPI Row  */
+  /* 鈹€鈹€ KPI Row 鈹€鈹€ */
   .kpi-row {
     grid-column: 1 / -1;
     display: grid;
@@ -192,7 +192,7 @@
   .kpi-failed .kpi-value { color: var(--danger); }
   .kpi-agents .kpi-value { color: var(--accent); }
 
-  /*  Left Column: Tasks  */
+  /* 鈹€鈹€ Left Column: Tasks 鈹€鈹€ */
   .tasks-panel {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -216,7 +216,7 @@
     letter-spacing: -0.01em;
   }
 
-  /*  Filter Tabs  */
+  /* 鈹€鈹€ Filter Tabs 鈹€鈹€ */
   .filter-tabs {
     display: flex;
     gap: 2px;
@@ -262,7 +262,7 @@
     color: var(--primary);
   }
 
-  /*  Toolbar  */
+  /* 鈹€鈹€ Toolbar 鈹€鈹€ */
   .toolbar {
     display: flex;
     align-items: center;
@@ -329,7 +329,7 @@
   }
   .toolbar-search input::placeholder { color: var(--foreground-2); }
 
-  /*  Task Table  */
+  /* 鈹€鈹€ Task Table 鈹€鈹€ */
   .task-table-wrapper {
     overflow-y: auto;
     flex: 1;
@@ -386,7 +386,7 @@
     white-space: nowrap;
   }
 
-  /*  Status badges  */
+  /* 鈹€鈹€ Status badges 鈹€鈹€ */
   .status-badge {
     display: inline-flex;
     align-items: center;
@@ -431,7 +431,7 @@
   .priority-badge.medium { background: var(--primary); }
   .priority-badge.low { background: var(--foreground-2); }
 
-  /*  Right Panel: Detail  */
+  /* 鈹€鈹€ Right Panel: Detail 鈹€鈹€ */
   .detail-panel {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -524,7 +524,7 @@
     line-height: 1.5;
   }
 
-  /*  Log area (within detail)  */
+  /* 鈹€鈹€ Log area (within detail) 鈹€鈹€ */
   .log-area {
     background: var(--background);
     border: 1px solid var(--border);
@@ -542,7 +542,7 @@
   .log-area .log-line.warn { color: var(--warning); }
   .log-area .log-line.info { color: var(--primary); }
 
-  /*  Animations  */
+  /* 鈹€鈹€ Animations 鈹€鈹€ */
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
@@ -551,7 +551,7 @@
     animation: fadeIn 350ms ease-out;
   }
 
-  /*  Loading state  */
+  /* 鈹€鈹€ Loading state 鈹€鈹€ */
   .skeleton {
     background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
     background-size: 200% 100%;
@@ -563,7 +563,7 @@
     100% { background-position: -200% 0; }
   }
 
-  /*  Responsive tweaks  */
+  /* 鈹€鈹€ Responsive tweaks 鈹€鈹€ */
   @media (max-width: 1200px) {
     .dashboard-grid {
       grid-template-columns: 1fr 320px;
@@ -595,14 +595,14 @@
     .app-header { padding: 10px 16px; flex-wrap: wrap; gap: 8px; }
   }
 
-  /*  Focus ring  */
+  /* 鈹€鈹€ Focus ring 鈹€鈹€ */
   :focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
     border-radius: 4px;
   }
 
-  /*  Tailwind overrides for this theme  */
+  /* 鈹€鈹€ Tailwind overrides for this theme 鈹€鈹€ */
   .tw-override input,
   .tw-override button,
   .tw-override select,
@@ -613,7 +613,7 @@
 </head>
 <body>
 
-<!--  HEADER  -->
+<!-- 鈹€鈹€ HEADER 鈹€鈹€ -->
 <header class="app-header" role="banner">
   <div class="app-logo">
     <i data-lucide="cpu" size="20" style="color: var(--primary);"></i>
@@ -632,49 +632,49 @@
   </div>
 </header>
 
-<!--  DASHBOARD GRID  -->
+<!-- 鈹€鈹€ DASHBOARD GRID 鈹€鈹€ -->
 <main class="dashboard-grid" role="main" aria-label="Dashboard">
 
-  <!--  KPI ROW  -->
+  <!-- 鈹€鈹€ KPI ROW 鈹€鈹€ -->
   <section class="kpi-row" aria-label="Key performance indicators">
     <div class="kpi-card kpi-total" aria-label="Total tasks">
       <div class="kpi-top">
         <span class="kpi-label">Total Tasks</span>
         <span class="kpi-icon"><i data-lucide="list-checks" size="16"></i></span>
       </div>
-      <div class="kpi-value" id="kpi-total">?/div>
+      <div class="kpi-value" id="kpi-total">鈥?/div>
     </div>
     <div class="kpi-card kpi-running" aria-label="Running tasks">
       <div class="kpi-top">
         <span class="kpi-label">Running</span>
         <span class="kpi-icon"><i data-lucide="play-circle" size="16"></i></span>
       </div>
-      <div class="kpi-value" id="kpi-running">?/div>
+      <div class="kpi-value" id="kpi-running">鈥?/div>
     </div>
     <div class="kpi-card kpi-done" aria-label="Done tasks">
       <div class="kpi-top">
         <span class="kpi-label">Done</span>
         <span class="kpi-icon"><i data-lucide="check-circle" size="16"></i></span>
       </div>
-      <div class="kpi-value" id="kpi-done">?/div>
+      <div class="kpi-value" id="kpi-done">鈥?/div>
     </div>
     <div class="kpi-card kpi-failed" aria-label="Failed tasks">
       <div class="kpi-top">
         <span class="kpi-label">Failed</span>
         <span class="kpi-icon"><i data-lucide="alert-circle" size="16"></i></span>
       </div>
-      <div class="kpi-value" id="kpi-failed">?/div>
+      <div class="kpi-value" id="kpi-failed">鈥?/div>
     </div>
     <div class="kpi-card kpi-agents" aria-label="Agents">
       <div class="kpi-top">
         <span class="kpi-label">Agents</span>
         <span class="kpi-icon"><i data-lucide="bot" size="16"></i></span>
       </div>
-      <div class="kpi-value" id="kpi-agents">?/div>
+      <div class="kpi-value" id="kpi-agents">鈥?/div>
     </div>
   </section>
 
-  <!--  TASKS PANEL (Left)  -->
+  <!-- 鈹€鈹€ TASKS PANEL (Left) 鈹€鈹€ -->
   <section class="tasks-panel" aria-label="Task list">
     <div class="tasks-panel-header">
       <h2><i data-lucide="list-todo" size="16" style="margin-right: 6px; vertical-align: middle;"></i>Tasks</h2>
@@ -744,7 +744,7 @@
     </div>
   </section>
 
-  <!--  DETAIL PANEL (Right)  -->
+  <!-- 鈹€鈹€ DETAIL PANEL (Right) 鈹€鈹€ -->
   <aside class="detail-panel" aria-label="Task detail" id="detail-panel">
     <div class="detail-header">
       <h3 id="detail-title">Task Details</h3>
@@ -759,7 +759,7 @@
 
 </main>
 
-<!--  NEW TASK MODAL (simple overlay)  -->
+<!-- 鈹€鈹€ NEW TASK MODAL (simple overlay) 鈹€鈹€ -->
 <div id="new-task-overlay" style="display:none;position:fixed;inset:0;background:oklch(0 0 0 / 0.6);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);" role="dialog" aria-modal="true" aria-label="New task form">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;width:100%;max-width:480px;box-shadow:var(--shadow-md);animation:fadeIn 300ms ease-out;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
@@ -797,7 +797,7 @@
 </div>
 
 <script>
-/*  State  */
+/* 鈹€鈹€ State 鈹€鈹€ */
 const state = {
   tasks: [],
   agents: [],
@@ -807,79 +807,20 @@ const state = {
   selectedId: null,
 };
 
-/*  DOM refs  */
+/* 鈹€鈹€ DOM refs 鈹€鈹€ */
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
-/* -- Init -- */
+/* 鈹€鈹€ Init 鈹€鈹€ */
 document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
   loadTasks();
   loadAgents();
   // Auto-refresh every 15s
   setInterval(() => { loadTasks(); loadAgents(); }, 15000);
-  // Live event stream (SSE): refresh on any task/status change
-  initEventStream();
-  // Scheduler status polling
-  pollSchedulerStatus();
-  setInterval(pollSchedulerStatus, 5000);
 });
 
-/* -- Global SSE event stream -- */
-function initEventStream() {
-  try {
-    const es = new EventSource('/api/stream/events');
-    es.onmessage = () => { loadTasks(); };
-    es.addEventListener('status', () => { loadTasks(); });
-    es.addEventListener('task', () => { loadTasks(); });
-    es.onerror = () => { /* auto-reconnect handled by browser */ };
-  } catch (err) {
-    console.error('SSE unavailable:', err);
-  }
-}
-
-/* -- Scheduler control -- */
-async function pollSchedulerStatus() {
-  const el = document.getElementById('sched-status');
-  if (!el) return;
-  try {
-    const res = await fetch('/api/scheduler/status');
-    if (!res.ok) throw new Error('404');
-    const s = await res.json();
-    if (s.running) {
-      el.textContent = 'Scheduler: RUNNING (PID ' + s.pid + ')';
-      el.className = 'sched-status running';
-    } else {
-      el.textContent = 'Scheduler: STOPPED';
-      el.className = 'sched-status stopped';
-    }
-  } catch (err) {
-    el.textContent = 'Scheduler: unavailable';
-    el.className = 'sched-status unavailable';
-  }
-}
-
-async function startScheduler() {
-  const interval = parseInt(document.getElementById('sched-interval').value, 10) || 10;
-  const executeReal = document.getElementById('sched-exec-real').checked;
-  try {
-    await fetch('/api/scheduler/start', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ interval, executeReal }),
-    });
-  } catch (err) { console.error('scheduler start failed:', err); }
-  pollSchedulerStatus();
-}
-
-async function stopScheduler() {
-  try {
-    await fetch('/api/scheduler/stop', { method: 'POST' });
-  } catch (err) { console.error('scheduler stop failed:', err); }
-  pollSchedulerStatus();
-}
-
-/*  Data fetching  */
+/* 鈹€鈹€ Data fetching 鈹€鈹€ */
 async function loadTasks() {
   try {
     const res = await fetch('/api/tasks');
@@ -904,11 +845,11 @@ async function loadAgents() {
     lucide.createIcons();
   } catch (err) {
     console.error('Failed to load agents:', err);
-    updateKPI('kpi-agents', '?);
+    updateKPI('kpi-agents', '鈥?);
   }
 }
 
-/*  Fallback demo data  */
+/* 鈹€鈹€ Fallback demo data 鈹€鈹€ */
 function fallbackData() {
   state.tasks = [
     { id: 'T-001', title: 'Eval codex-v2 on benchmark', priority: 'high', status: 'in_progress', assignee: 'agent-alpha', updated: '2024-12-02T14:32:00Z', logs: ['[info] Starting evaluation...', '[info] Running test suite #42', '[warn] Memory usage at 78%'] },
@@ -928,7 +869,7 @@ function fallbackData() {
   ];
 }
 
-/*  Render  */
+/* 鈹€鈹€ Render 鈹€鈹€ */
 function renderAll() {
   computeStats();
   renderKPIs();
@@ -1010,9 +951,9 @@ function renderTaskTable() {
     return `<tr class="fade-in${selected}" data-id="${escapeHtml(t.id)}" onclick="selectTask('${escapeHtml(t.id)}')" tabindex="0" role="row">
       <td><span class="task-id">${escapeHtml(t.id)}</span></td>
       <td><span class="task-title" title="${escapeHtml(t.title)}">${escapeHtml(t.title)}</span></td>
-      <td>${prioDot}${t.priority || '?}</td>
+      <td>${prioDot}${t.priority || '鈥?}</td>
       <td>${statusBadge}</td>
-      <td>${t.assignee ? escapeHtml(t.assignee) : '<span style="color:var(--foreground-2)">?/span>'}</td>
+      <td>${t.assignee ? escapeHtml(t.assignee) : '<span style="color:var(--foreground-2)">鈥?/span>'}</td>
       <td><span style="font-size:0.7rem;color:var(--foreground-2);font-family:var(--font-mono)">${updated}</span></td>
     </tr>`;
   }).join('');
@@ -1053,11 +994,11 @@ function renderDetail() {
       </div>
       <div class="detail-field">
         <span class="field-label">Priority</span>
-        <span class="field-value">${task.priority || '?}</span>
+        <span class="field-value">${task.priority || '鈥?}</span>
       </div>
       <div class="detail-field">
         <span class="field-label">Assignee</span>
-        <span class="field-value mono">${task.assignee || '?}</span>
+        <span class="field-value mono">${task.assignee || '鈥?}</span>
       </div>
       <div class="detail-field">
         <span class="field-label">Updated</span>
@@ -1090,7 +1031,7 @@ function renderDetail() {
   lucide.createIcons();
 }
 
-/*  Interactions  */
+/* 鈹€鈹€ Interactions 鈹€鈹€ */
 function setFilter(status) {
   state.filter = status;
   $$('.filter-tab').forEach(tab => {
@@ -1120,44 +1061,29 @@ function clearSelection() {
 
 function deleteSelected() {
   if (!state.selectedId) return;
-  const id = state.selectedId;
-  if (!confirm('Kill task ' + id + '?')) return;
-  fetch('/api/tasks/kill', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id }),
-  }).then(() => refreshAll()).catch(err => console.error('kill failed:', err));
-}
-
-function executeTask(id) {
-  const task = state.tasks.find(t => t.id === id);
-  if (!task) return;
-  const assignee = task.assignee || 'agent-ext-07';
-  const executeReal = document.getElementById('exec-real-toggle');
-  fetch('/api/tasks/execute', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, assignee, executeReal: executeReal ? executeReal.checked : false }),
-  }).then(() => refreshAll()).catch(err => console.error('execute failed:', err));
+  if (!confirm('Delete task ' + state.selectedId + '?')) return;
+  // Optimistic removal
+  state.tasks = state.tasks.filter(t => t.id !== state.selectedId);
+  state.selectedId = null;
+  renderAll();
+  // Attempt real DELETE
+  fetch('/api/tasks/' + state.selectedId, { method: 'DELETE' }).catch(() => {});
 }
 
 function retryTask(id) {
   const task = state.tasks.find(t => t.id === id);
   if (!task) return;
-  const assignee = task.assignee || 'agent-ext-07';
-  fetch('/api/tasks/rerun', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, assignee }),
-  }).then(() => refreshAll()).catch(err => console.error('rerun failed:', err));
+  task.status = 'pending';
+  renderAll();
+  fetch('/api/tasks/' + id + '/retry', { method: 'POST' }).catch(() => {});
 }
 
 function cancelTask(id) {
-  fetch('/api/tasks/kill', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id }),
-  }).then(() => refreshAll()).catch(err => console.error('cancel failed:', err));
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+  task.status = 'cancelled';
+  renderAll();
+  fetch('/api/tasks/' + id + '/cancel', { method: 'POST' }).catch(() => {});
 }
 
 function refreshAll() {
@@ -1165,7 +1091,7 @@ function refreshAll() {
   loadAgents();
 }
 
-/*  New Task Modal  */
+/* 鈹€鈹€ New Task Modal 鈹€鈹€ */
 function showNewTaskModal() {
   const overlay = document.getElementById('new-task-overlay');
   overlay.style.display = 'flex';
@@ -1184,23 +1110,34 @@ async function createTask(event) {
   const title = document.getElementById('new-task-title').value.trim();
   if (!title) return;
   const priority = document.getElementById('new-task-priority').value;
-  const descEl = document.getElementById('new-task-desc');
-  const description = descEl ? descEl.value.trim() : '';
+  const assignee = document.getElementById('new-task-assignee').value.trim();
 
+  const newTask = {
+    id: 'T-' + String(Date.now()).slice(-6),
+    title,
+    priority,
+    status: 'pending',
+    assignee: assignee || null,
+    updated: new Date().toISOString(),
+    logs: [],
+  };
+
+  state.tasks.unshift(newTask);
   closeNewTaskModal();
+  renderAll();
+
   try {
-    await fetch('/api/tasks/create', {
+    await fetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, priority }),
+      body: JSON.stringify(newTask),
     });
-    refreshAll();
   } catch (err) {
-    console.error('POST /api/tasks/create failed:', err);
+    console.error('POST /api/tasks failed:', err);
   }
 }
 
-/*  Utility  */
+/* 鈹€鈹€ Utility 鈹€鈹€ */
 function escapeHtml(str) {
   if (!str) return '';
   return String(str).replace(/[&<>"']/g, function (m) {
@@ -1214,7 +1151,7 @@ function escapeHtml(str) {
 }
 
 function formatDate(iso) {
-  if (!iso) return '?;
+  if (!iso) return '鈥?;
   try {
     const d = new Date(iso);
     const pad = (n) => String(n).padStart(2, '0');
@@ -1225,7 +1162,7 @@ function formatDate(iso) {
   }
 }
 
-/*  Keyboard navigation for table rows  */
+/* 鈹€鈹€ Keyboard navigation for table rows 鈹€鈹€ */
 document.addEventListener('click', (e) => {
   const row = e.target.closest('tr[data-id]');
   if (row) {
@@ -1263,7 +1200,7 @@ document.addEventListener('keydown', (e) => {
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {});
 } else {
-  // Already loaded ?ensure init runs
+  // Already loaded 鈥?ensure init runs
 }
 </script>
 </body>

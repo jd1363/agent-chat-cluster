@@ -1,0 +1,103 @@
+﻿```python
+# --- Add near the top with other globals, after _RUNNING_PIDS ---
+_SCHEDULER_PROC = None   # subprocess.Popen for the scheduler daemon
+# ---------------------------------------------------------------
+
+# --- Add inside do_POST, after the existing endpoint chain ---
+        elif path == '/api/scheduler/start':
+            self._post_scheduler_start(body)
+        elif path == '/api/scheduler/stop':
+            self._post_scheduler_stop(body)
+# ------------------------------------------------------------
+
+# --- Add inside do_GET, after the existing endpoint chain ---
+        elif path == '/api/scheduler/status':
+            self._get_scheduler_status()
+# ------------------------------------------------------------
+
+# --- New handler methods (add inside the class, anywhere) ---
+
+    def _post_scheduler_start(self, body):
+        """Start the scheduler daemon if not already running."""
+        global _SCHEDULER_PROC
+
+        if _SCHEDULER_PROC is not None and _SCHEDULER_PROC.poll() is None:
+            self._json({'ok': False, 'error': 'scheduler already running'}, status=409)
+            return
+
+        interval = body.get('interval', 10)
+        execute_real = body.get('executeReal', False)
+
+        # Build the command: always passes --loop with the interval
+        cmd = [sys.executable, str(SCRIPTS_DIR / 'scheduler_tick.py'), '--loop', str(interval)]
+        if execute_real:
+            cmd.append('--executeReal')
+
+        try:
+            proc = subprocess.Popen(
+                cmd,
+                cwd=str(PROJECT_ROOT),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                env=SUB_ENV,
+            )
+            _SCHEDULER_PROC = proc
+            self._json({'ok': True, 'pid': proc.pid})
+        except Exception as e:
+            _SCHEDULER_PROC = None
+            self._json({'ok': False, 'error': f'failed to start scheduler: {e}'}, status=500)
+
+    def _post_scheduler_stop(self, body):
+        """Stop the running scheduler daemon."""
+        global _SCHEDULER_PROC
+
+        if _SCHEDULER_PROC is None:
+            self._json({'ok': False, 'error': 'scheduler not running'}, status=400)
+            return
+
+        proc = _SCHEDULER_PROC
+        if proc.poll() is not None:
+            # Process already exited
+            _SCHEDULER_PROC = None
+            self._json({'ok': True, 'message': 'scheduler already stopped'})
+            return
+
+        # Terminate gracefully, then force if needed
+        proc.terminate()
+        try:
+            proc.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+        _SCHEDULER_PROC = None
+        self._json({'ok': True, 'message': 'scheduler stopped'})
+
+    def _get_scheduler_status(self):
+        """Return current scheduler daemon status."""
+        global _SCHEDULER_PROC
+
+        if _SCHEDULER_PROC is None:
+            self._json({'ok': True, 'running': False})
+            return
+
+        proc = _SCHEDULER_PROC
+        if proc.poll() is None:
+            # Still running
+            self._json({
+                'ok': True,
+                'running': True,
+                'pid': proc.pid
+            })
+        else:
+            # Process exited on its own
+            self._json({
+                'ok': True,
+                'running': False,
+                'exitCode': proc.returncode
+            })
+            # Optionally clear the global so next start works
+            global _SCHEDULER_PROC
+            _SCHEDULER_PROC = None
+```
+
+鈥?turns:1 cache:76.1% cost:$0.000355 save-vs-claude:98.4%

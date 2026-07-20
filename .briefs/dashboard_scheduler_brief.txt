@@ -1,0 +1,59 @@
+You are modifying an existing stdlib-only Python HTTP server to add scheduler daemon control. Output ONLY a unified diff-style set of exact code blocks I can apply, OR the full modified functions. ASCII/English only in all code and comments (Windows GBK will corrupt non-ASCII).
+
+## Goal
+Wire `scripts/scheduler_tick.py --loop N` into the Web dashboard as a start/stop-able background daemon, with status polling. The scheduler script already exists and works. Do NOT modify scheduler_tick.py.
+
+## File to modify: web/server.py (Python stdlib http.server, no frameworks)
+
+### Existing patterns you MUST reuse (do not invent new mechanisms)
+- Global module-level dict already exists: `_RUNNING_PIDS = {}` (task_id -> subprocess.Popen). Add a NEW separate module-level global for the scheduler: `_SCHEDULER_PROC = None` (holds one subprocess.Popen or None).
+- Constants already defined at module level: `sys.executable`, `SCRIPTS_DIR` (Path to scripts/), `PROJECT_ROOT` (Path), `SUB_ENV` (dict, subprocess env).
+- Background-process launch template already used elsewhere in this file:
+  ```python
+  proc = subprocess.Popen(
+      cmd,
+      cwd=str(PROJECT_ROOT),
+      stdout=subprocess.DEVNULL,
+      stderr=subprocess.DEVNULL,
+      env=SUB_ENV,
+  )
+  ```
+- JSON response helper: `self._json({"ok": True, ...})` (optional `status=` kwarg).
+- POST body is already parsed and passed to each handler as `body` (a dict). Handlers are methods like `def _post_xxx(self, body):`.
+- POST routing lives in `do_POST`: a chain of `elif path == "/api/...": self._post_xxx(body_data)`. GET routing lives in `do_GET` similarly.
+
+### Add exactly these 3 endpoints
+
+1. **POST /api/scheduler/start**
+   - body: optional `interval` (int seconds, default 10), optional `executeReal` (bool, default False).
+   - If `_SCHEDULER_PROC` is not None AND `_SCHEDULER_PROC.poll() is None` (still running): return `{"ok": False, "error": "scheduler already running", "pid": _SCHEDULER_PROC.pid}`.
+   - Else build cmd: `[sys.executable, str(SCRIPTS_DIR / "scheduler_tick.py"), "--loop", str(interval)]` and append `"--execute-real"` if executeReal is truthy.
+   - Launch via the Popen template above, store into the module global `_SCHEDULER_PROC` (use `global _SCHEDULER_PROC`).
+   - Return `{"ok": True, "message": ..., "pid": proc.pid, "interval": interval, "executeReal": bool}`.
+
+2. **POST /api/scheduler/stop**
+   - If `_SCHEDULER_PROC` is None or already exited (`poll()` is not None): return `{"ok": True, "message": "scheduler not running"}`.
+   - Else `_SCHEDULER_PROC.terminate()`, then best-effort `_SCHEDULER_PROC.kill()` in a try/except if still alive after a short wait; set `_SCHEDULER_PROC = None` (use `global`). Return `{"ok": True, "message": "scheduler stopped"}`.
+
+3. **GET /api/scheduler/status**
+   - Return current state as JSON: `{"running": bool, "pid": int|None}`. running = `_SCHEDULER_PROC is not None and _SCHEDULER_PROC.poll() is None`. If not running, pid is None. Wire this into `do_GET`.
+
+### Wiring
+- Add the two POST elif branches in `do_POST` and the one GET elif branch in `do_GET`, following the exact existing style.
+- Declare `_SCHEDULER_PROC = None` next to the existing `_RUNNING_PIDS = {}` line.
+
+## File to modify: web/dashboard.html
+Add a small "Scheduler" control panel (a card/section consistent with existing UI). It must have:
+- A "Start" button, a "Stop" button.
+- An input for interval seconds (default 10).
+- A checkbox "Execute Real" (default unchecked) with a warning label that unchecked = dry-run.
+- A status indicator text (e.g. "Scheduler: running (PID 1234)" / "Scheduler: stopped") that polls `GET /api/scheduler/status` every 5 seconds via fetch and updates.
+- Start button POSTs `/api/scheduler/start` with `{interval, executeReal}`; Stop button POSTs `/api/scheduler/stop`. After each action, refresh status.
+Match the existing dashboard's fetch/JSON style and visual theme. Keep JS vanilla (no frameworks); the page is plain HTML+JS.
+
+## Safety
+- Default MUST be dry-run (executeReal unchecked / false).
+- Only ONE scheduler process at a time (enforce via the running check).
+- No external network calls, no broadcast.
+
+Output the exact code changes now: for server.py give me each new method + the exact elif lines + the global declaration; for dashboard.html give me the HTML block + the JS block to insert.

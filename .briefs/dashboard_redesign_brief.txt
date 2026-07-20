@@ -1,0 +1,57 @@
+You are redesigning the frontend of an existing agent-cluster control dashboard. Output ONLY the complete new `web/dashboard.html` (single self-contained file: HTML + CSS + vanilla JS, no build step, no frameworks except CDN Tailwind/Lucide allowed). ASCII/English only in code/comments (Windows GBK corrupts non-ASCII); UI visible text should be English.
+
+## Design mandate (follow SuperDesign guidelines)
+- Modern, beautiful, NOT generic-bootstrap. Use oklch() colors, semantic CSS variables (--background,--foreground,--primary,--muted,--border,--success,--warning,--danger,--accent).
+- Keep it a DARK developer/console theme (this is a cluster control panel), but modernize: Linear/Vercel-style dark. Subtle shadows (1-2 layers max), border-radius ~0.5rem, 4px spacing base.
+- Fonts via Google Fonts: sans = Inter or Space Grotesk; mono = JetBrains Mono (for logs/IDs/code).
+- Icons: Lucide via CDN (`<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>` then `lucide.createIcons()`).
+- Micro-interactions: hover lift 150-200ms ease-out on cards/buttons, fadeIn 300-400ms on panels. Keep tasteful.
+- Responsive-friendly but desktop-first is fine (min-width ~1100px acceptable, this is a control panel).
+- Accessibility: semantic HTML, aria-labels on buttons, focus states, contrast >=4.5:1.
+
+## MUST preserve ALL existing functionality (do not drop any feature)
+The dashboard is a live control panel backed by a stdlib HTTP server. Keep every capability:
+
+### KPI header row (5 stat cards)
+- Total tasks, Running, Done, Failed, Agents count. Pull from `GET /api/tasks` (returns {tasks:[...], stats:{...}}) and `GET /api/agents`.
+
+### Left main column: TASKS
+- Filter tabs by status (All / pending / in_progress / done / failed / cancelled) with per-status counts.
+- Task table: columns ID, Title, Priority, Status (colored badge), Assignee, Updated. Rows clickable to select.
+- Toolbar buttons above table: "New Task" (opens create form) and a danger action.
+- Selected task detail panel showing full fields (id,title,description,priority,status,assignee,output,notes,timestamps).
+- Live LOG panel under detail: streams via SSE `GET /api/stream/tasks/<taskId>/logs` for the selected task.
+
+### Right column: AGENTS + QUICK ACTIONS
+- Agent list from `GET /api/agents` (each: displayName, id, executorCommand, executorType, enabled). Show enabled/disabled state.
+- Quick action: create task form (title, description, priority select). POST `/api/tasks/create` {title,description,priority}.
+
+### Task row actions (buttons in detail or row)
+- Execute: POST `/api/tasks/execute` {id, assignee, executeReal?, dryRun?}
+- Kill: POST `/api/tasks/kill` {id}
+- Rerun: POST `/api/tasks/rerun` {id, assignee}
+- Batch: POST `/api/tasks/batch` (keep if present)
+
+### Global SSE
+- `GET /api/stream/events` pushes live task/status updates; update the table/KPIs in real time. IMPORTANT: use EventSource; terminal statuses (done/failed/cancelled/blocked) should stop per-task log polling.
+
+## NEW feature to ADD: Scheduler control panel
+Add a "SCHEDULER" card (top of right column or a dedicated header widget). It controls a background daemon:
+- Interval input (seconds, default 10).
+- "Execute Real" checkbox (default UNCHECKED). Show a warning that unchecked = dry-run (safe).
+- Start button -> POST `/api/scheduler/start` {interval, executeReal}
+- Stop button -> POST `/api/scheduler/stop`
+- Status text indicator, polls `GET /api/scheduler/status` every 5s -> {running:bool, pid:int|null}. Show "Scheduler: RUNNING (PID x)" in success color when running, "Scheduler: STOPPED" in muted otherwise.
+- After start/stop actions, immediately refresh status.
+(NOTE: the server endpoints /api/scheduler/* may not exist yet; the frontend should call them and degrade gracefully if they 404 — show "Scheduler: unavailable" instead of crashing.)
+
+## Existing theme reference (colors you are replacing/modernizing)
+Old palette was GitHub dark: bg #0d1117, accent #58a6ff, success #3fb950, warning #d29922, danger #f85149. Reinterpret these in oklch, keep the semantic meaning (blue accent, green success, amber warning, red danger). Title was "AGENT CLUSTER // CONTROL PANEL".
+
+## Technical constraints
+- Single file, no external JS bundling. CDN allowed for Tailwind (`https://cdn.tailwindcss.com`), Google Fonts, Lucide.
+- All fetch calls use the exact endpoints/payloads above.
+- Robust: if any endpoint errors, fail gracefully (empty states, no uncaught exceptions).
+- Keep JS vanilla. Use async/await + fetch. Use EventSource for SSE.
+
+First, briefly sketch the ASCII layout + list the oklch theme variables you will use (max ~15 lines), THEN output the full dashboard.html.
