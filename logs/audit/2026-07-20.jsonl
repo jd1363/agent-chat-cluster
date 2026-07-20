@@ -1,0 +1,2 @@
+{"timestamp": "2026-07-20T02:20:45.140763+00:00", "eventType": "executor_bridge_dry_run", "taskId": "Task-085", "message": "dry-run, agent=agent-ext-07, command=reasonix", "environment": "production"}
+{"timestamp": "2026-07-20T02:20:45.239232+00:00", "eventType": "executor_bridge_dry_run", "taskId": "Task-085", "message": "dry-run, agent=agent-ext-08, command=claude", "environment": "production"}

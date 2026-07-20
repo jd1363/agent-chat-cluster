@@ -162,52 +162,6 @@
         "timeoutSeconds": 300,
         "maxOutputKB": 1024
       }
-    },
-    {
-      "id": "agent-ext-07",
-      "role": "external",
-      "type": "extension",
-      "enabled": true,
-      "cwd": "agents/ext/ext07",
-      "riskLevel": "medium",
-      "notes": "Reasonix 执行引擎（DeepSeek 原生智能体）。通过 reasonix run <task> 非交互流式调用，低成本兑现。实测 v0.53.2 连通，成本约为 claude 的 5%。",
-      "displayName": "Reasonix",
-      "executor": {
-        "type": "cli",
-        "command": "reasonix",
-        "args": [
-          "run",
-          "{prompt}",
-          "--effort",
-          "high"
-        ],
-        "workDir": ".",
-        "timeoutSeconds": 300,
-        "maxOutputKB": 1024
-      }
-    },
-    {
-      "id": "agent-ext-08",
-      "role": "external",
-      "type": "extension",
-      "enabled": true,
-      "cwd": "agents/ext/ext08",
-      "riskLevel": "high",
-      "notes": "Claude Code 执行引擎（Anthropic）。通过 claude -p <prompt> --permission-mode bypassPermissions headless 调用。质量最高但成本最高，依赖中转站 key 余额（yuesecoding.top，注意 403/524）。",
-      "displayName": "Claude Code",
-      "executor": {
-        "type": "cli",
-        "command": "claude",
-        "args": [
-          "-p",
-          "{prompt}",
-          "--permission-mode",
-          "bypassPermissions"
-        ],
-        "workDir": ".",
-        "timeoutSeconds": 600,
-        "maxOutputKB": 2048
-      }
     }
   ]
 }
