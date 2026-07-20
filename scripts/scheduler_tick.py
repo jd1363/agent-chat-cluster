@@ -96,16 +96,14 @@ def dispatch_task(task: Dict[str, Any], agents: Dict[str, Dict[str, Any]], real:
         return 'skipped'
 
     executor = agent['executor']
-    command_template = executor.get('command', [])
-    args_template = executor.get('args', [])
     work_dir = executor.get('workDir', '.')
     timeout = executor.get('timeoutSeconds', 60)
     max_output_kb = executor.get('maxOutputKB', 100)
 
-    # Replace {prompt} in args with task description or title
+    # Build the command via executor_bridge so Windows .ps1/.cmd resolution and
+    # {prompt} substitution are handled consistently (do NOT hand-roll it).
     prompt_text = task.get('description') or task.get('title', '')
-    substituted_args = [arg.replace('{prompt}', prompt_text) for arg in args_template]
-    full_command = command_template + substituted_args
+    full_command = executor_bridge.build_command_args(executor, prompt_text)
 
     if not real:
         print(f"[DRY--UN] Would dispatch task {task_id} to {assignee}: {' '.join(full_command)}")
@@ -122,17 +120,18 @@ def dispatch_task(task: Dict[str, Any], agents: Dict[str, Dict[str, Any]], real:
             timeout=timeout,
             max_output_kb=max_output_kb,
         )
+        # execute_cli returns keys: success(bool), output, error, quality
         output = result.get('output', '')
-        return_code = result.get('returnCode', -1)
-        if return_code == 0:
-            status = 'completed'
-        else:
-            status = 'failed'
-        executor_bridge.update_task_status(
+        success = result.get('success', False)
+        status = 'completed' if success else 'failed'
+        # Write status to SQLite (the single source of truth), NOT the legacy
+        # tasks.json that executor_bridge.update_task_status still writes to.
+        err = result.get('error') or ''
+        db.update_task(
             task_id=task_id,
             status=status,
             output=output,
-            notes=f"Executed via scheduler tick, return code {return_code}"
+            notes=f"scheduler_tick real run; success={success}; {err}"[:500],
         )
         db.append_event('scheduler_dispatch', source='scheduler_tick',
                         payload={'task_id': task_id, 'status': status})
