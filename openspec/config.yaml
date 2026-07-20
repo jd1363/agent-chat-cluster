@@ -1,5 +1,16 @@
 schema: spec-driven
 
+context: |
+  Project: Agent Chat multi-agent cluster (MVP v1 done).
+  Stack: Python 3 stdlib-first, SQLite data layer, Windows + PowerShell.
+  Data layer: scripts/db.py is the unified SQLite interface (data/cluster.db) with six tables: tasks/audit/cost/events/messages/meta.
+  Key APIs: db.list_tasks(status,assignee,limit) / db.get_task / db.update_task(task_id,**fields) / db.get_task_stats / db.append_audit(event_type,message,task_id) / db.append_event(event_type,source,correlation_id,payload).
+  Execution layer: scripts/executor_bridge.py runs real CLIs (execute_cli/update_task_status/write_audit_log).
+  Current dispatch: scripts/queue_dispatch.py is a manual batch that still reads the legacy tasks/tasks.json (to be deprecated).
+  Agent config: config/agents.json, default assignee=agent-ext-02 (opencode).
+  Conventions: force UTF-8 output to avoid GBK mojibake; stdlib only; do not abort the whole batch on a single failure.
+  Safety: no automatic global broadcast / self-heal / external send; scheduler defaults to dry-run, real dispatch requires an explicit flag.
+
 # Project context (optional)
 # This is shown to AI when creating artifacts.
 # Add your tech stack, conventions, style guides, domain knowledge, etc.
