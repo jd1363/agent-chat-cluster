@@ -1,0 +1,59 @@
+You are implementing a Python file for an existing project. Output ONLY the complete Python source code for `scripts/scheduler_tick.py`. No markdown fences, no explanation, ASCII/English only in code and comments (avoid non-ASCII to prevent encoding corruption on Windows GBK).
+
+## Context
+This is a real scheduler for an agent-cluster task system backed by SQLite. It replaces the manual `queue_dispatch.py`. You MUST use the exact existing APIs below (do not invent function names or signatures).
+
+## Available module: scripts/db.py (import as `import db`)
+- db.list_tasks(status=None, assignee=None, limit=200) -> list[dict]   # each task dict has keys: id, title, priority, description, status, assignee, created (ISO string), output, notes
+- db.update_task(task_id: str, **fields) -> dict | None   # e.g. db.update_task("Task-001", status="failed")
+- db.get_task(task_id: str) -> dict | None
+- db.append_audit(event_type: str, message: str, task_id: str|None=None, data: dict|None=None, environment: str|None=None) -> None
+- db.append_event(event_type: str, source: str, correlation_id: str|None=None, causation_id: str|None=None, payload: dict|None=None, policy_snapshot: dict|None=None, status: str="pending") -> str
+
+## Available module: scripts/executor_bridge.py (import as `import executor_bridge`)
+- executor_bridge.execute_cli(command: List[str], cwd: str, timeout: int, max_output_kb: int, extra_env: dict|None=None) -> dict   # returns dict with output/return code info
+- executor_bridge.update_task_status(task_id: str, status: str, output: str, notes: str="") -> None
+
+## Config: config/agents.json
+It is EITHER a list of agent dicts OR an object with key "agents" -> list. Each agent dict has: id, enabled(bool), and optionally executor{command,args,workDir,timeoutSeconds,maxOutputKB}. concurrency_cap may live at agent top-level as "concurrency_cap" (int); if absent default to 1. Load robustly, handle both shapes, raise a clear RuntimeError if file missing/malformed.
+
+## Requirements (implement ALL 21 tasks)
+
+### 1. Scaffold
+1.1 UTF-8 output enforcement at top: reconfigure sys.stdout/sys.stderr to utf-8 (use `sys.stdout.reconfigure(encoding="utf-8")` guarded by hasattr). argparse flags: --dry-run, --once, --loop N (int), --execute-real.
+1.2 (Handled separately, ignore.)
+
+### 2. Config Loading
+2.1 load_agents(): read config/agents.json, return dict {agent_id: {"concurrency_cap": int, "enabled": bool, "executor": {...}}}; clear RuntimeError if missing/malformed.
+2.2 validate required fields (id present); reject tick start (raise) if malformed.
+
+### 3. Task Selection
+3.1 fetch_pending_tasks(): db.list_tasks(status="pending"), sort by priority rank (high=0,medium=1,low=2, unknown=3) then created ASC.
+3.2 count_in_progress(assignee): len(db.list_tasks(status="in_progress", assignee=assignee)).
+3.3 backpressure: skip tasks whose assignee is at/above concurrency_cap; log per-agent skip message.
+
+### 4. Dispatch Logic
+4.1 dispatch_task(task, agents, dry_run): dry-run -> log would-be dispatch and return "dryrun". real -> build command from agent executor (replace "{prompt}" placeholder in args with task description/title), call executor_bridge.execute_cli(...), then executor_bridge.update_task_status(...). Return status string.
+4.2 wrap in try/except: on failure log error, if not dry_run call db.update_task(task_id, status="failed"), continue to next task.
+4.3 skip tasks with no assignee: log warning, continue (safety constraint).
+
+### 5. Audit Trail
+5.1 at top of each tick BEFORE dispatch: db.append_event("scheduler_tick_start", source="scheduler_tick") AND db.append_audit("scheduler_tick_start", <msg>).
+5.2 per dispatched task: db.append_event("scheduler_dispatch", source="scheduler_tick", payload={"task_id":...}) AND db.append_audit("scheduler_dispatch", <msg>, task_id=task_id).
+5.3 end of tick: db.append_event("scheduler_tick_done", ...) AND db.append_audit("scheduler_tick_done", <msg with total dispatch count>).
+
+### 6. Run Modes
+6.1 run_once(dry_run, execute_real): one tick, return 0 on success, non-zero if ALL attempted tasks failed (0 tasks = success/0).
+6.2 run_loop(interval_seconds, dry_run, execute_real): loop run_once, sleep N between, exit clean on KeyboardInterrupt.
+6.3 wire argparse: no flags OR --dry-run -> single dry-run tick then exit; --once -> run_once (real only if --execute-real else dry-run); --loop N -> run_loop.
+
+### 7. (verification done by operator, no code needed)
+
+## Safety / behavior contract
+- Default is DRY-RUN. Real execution ONLY when --execute-real is passed.
+- NEVER broadcast, self-heal, or send external messages.
+- concurrency_cap backpressure enforced per agent.
+- All three audit points must fire even in dry-run.
+- sys.path: insert the script's own dir so `import db` / `import executor_bridge` work when run as `python scripts/scheduler_tick.py`.
+
+Output the full file now.

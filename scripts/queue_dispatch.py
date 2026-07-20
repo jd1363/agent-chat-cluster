@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# DEPRECATED: superseded by scripts/scheduler_tick.py (real SQLite-backed scheduler
+# with priority ordering, backpressure, audit trail, and --once/--loop run modes).
+# Kept for backward compatibility only. Prefer scheduler_tick.py for new work.
 """
 queue_dispatch.py — 多任务队列调度器（阶段 4）
 
